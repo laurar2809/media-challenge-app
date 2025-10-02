@@ -1,0 +1,49 @@
+<% layout('layout', { pageTitle: 'Übersicht' }) %>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h1 class="h3 m-0">Datensätze</h1>
+  <a href="/items/new" class="btn btn-primary">+ Neu</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table align-middle m-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width:4rem">Icon</th>
+          <th>Titel</th>
+          <th>Beschreibung</th>
+          <th style="width: 10rem" class="text-end">Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (items.length === 0) { %>
+          <tr>
+            <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los! 🎯</td>
+          </tr>
+        <% } %>
+        <% items.forEach(item => { %>
+          <tr>
+            <td>
+              <% if (item.icon && isUrl(item.icon)) { %>
+                <img src="<%= item.icon %>" alt="" class="rounded" style="width:32px;height:32px;object-fit:cover">
+              <% } else if (item.icon) { %>
+                <span class="fs-4"><%= item.icon %></span>
+              <% } else { %>
+                <span class="text-muted">–</span>
+              <% } %>
+            </td>
+            <td class="fw-medium"><%= item.title %></td>
+            <td class="text-body-secondary"><%= item.description %></td>
+            <td class="text-end">
+              <a href="/items/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+              <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

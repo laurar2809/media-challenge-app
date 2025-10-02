@@ -1,0 +1,4 @@
+/* Minimal, moderne Optik */
+body { background: #f8f9fb; }
+.card { border: 1px solid rgba(0,0,0,.06); }
+table td, table th { vertical-align: middle; }
