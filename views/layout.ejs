@@ -8,28 +8,30 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+  <nav class="navbar bg-primary" data-bs-theme="dark">
     <div class="container">
-      <a class="navbar-brand fw-semibold" href="/">📚 CRUD Liste</a>
-      <div class="ms-auto">
-        <a href="/items/new" class="btn btn-primary">+ Neu</a>
+      <a class="navbar-brand fw-semibold" href="/">CRUD Liste</a>
+      <div class="ms-auto d-flex gap-2">
+        <a href="/api/items" class="btn btn-outline-light btn-sm">API JSON</a>
       </div>
     </div>
   </nav>
 
   <main class="container my-4">
-    <% if (messages().error) { %>
-      <div class="alert alert-danger"><%= messages().error %></div>
+    <% if (flash && flash.error && flash.error.length) { %>
+      <div class="alert alert-danger"><%= flash.error[0] %></div>
     <% } %>
-    <% if (messages().success) { %>
-      <div class="alert alert-success"><%= messages().success %></div>
+    <% if (flash && flash.success && flash.success.length) { %>
+      <div class="alert alert-success"><%= flash.success[0] %></div>
     <% } %>
 
     <%- body %>
   </main>
 
-  <footer class="border-top py-3 small text-center text-muted">
-    Beispiel-App • Node.js + Express + SQLite + Bootstrap
+  <footer class="border-top py-3 small text-muted">
+    <div class="container">
+    Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads
+      </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,32 +1,70 @@
 // db.js
-const Database = require('better-sqlite3');
-const path = require('path');
+const knex = require('knex');
+require('dotenv').config();
 
-const db = new Database(path.join(__dirname, 'data.sqlite'));
+let client = (process.env.DB_CLIENT || 'sqlite').toLowerCase();
 
-// Initialize table
-db.exec(`
-CREATE TABLE IF NOT EXISTS items (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  icon TEXT
-);
-`);
+/**
+ * Supported clients:
+ *  - sqlite  (default)
+ *  - pg      (PostgreSQL)
+ *  - mysql   (MySQL/MariaDB)
+ */
+let dbConfig;
 
-// Seed if empty
-const count = db.prepare('SELECT COUNT(*) as c FROM items').get().c;
-if (count === 0) {
-  const stmt = db.prepare('INSERT INTO items (title, description, icon) VALUES (?, ?, ?)');
-  const seed = [
-    ['Beispiel 1', 'Kurze Beschreibung für Datensatz 1', '💡'],
-    ['Beispiel 2', 'Noch eine Beschreibung – mit etwas mehr Text.', 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png'],
-    ['Beispiel 3', 'Beschreibung 3', '⭐']
-  ];
-  const transaction = db.transaction((rows) => {
-    for (const row of rows) stmt.run(row);
-  });
-  transaction(seed);
+if (client === 'sqlite') {
+  dbConfig = {
+    client: 'sqlite3',
+    connection: { filename: process.env.DB_FILE || './data.sqlite' },
+    useNullAsDefault: true,
+    pool: { min: 1, max: 1 }
+  };
+} else if (client === 'pg') {
+  dbConfig = {
+    client: 'pg',
+    connection: {
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASS || '',
+      database: process.env.DB_NAME || 'postgres',
+      port: Number(process.env.DB_PORT || 5432),
+    }
+  };
+} else if (client === 'mysql') {
+  dbConfig = {
+    client: 'mysql2',
+    connection: {
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || '',
+      database: process.env.DB_NAME || 'test',
+      port: Number(process.env.DB_PORT || 3306),
+    }
+  };
+} else {
+  throw new Error("Unsupported DB_CLIENT. Use sqlite | pg | mysql");
 }
 
-module.exports = db;
+const db = knex(dbConfig);
+
+// Ensure table exists
+async function init() {
+  const exists = await db.schema.hasTable('items');
+  if (!exists) {
+    await db.schema.createTable('items', (table) => {
+      table.increments('id').primary();
+      table.string('title').notNullable();
+      table.text('description').notNullable();
+      table.string('icon'); // emoji, URL, or '/uploads/<filename>'
+    });
+    // Seed data
+    await db('items').insert([
+      { title: 'Beispiel 1', description: 'Kurze Beschreibung für Datensatz 1', icon: '💡' },
+      { title: 'Beispiel 2', description: 'Noch eine Beschreibung – mit etwas mehr Text.', icon: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png' },
+      { title: 'Beispiel 3', description: 'Beschreibung 3', icon: '⭐' },
+    ]);
+    console.log("Tabelle 'items' erstellt und Seed-Daten eingefügt.");
+  }
+}
+
+module.exports = { db, init };
