@@ -40,13 +40,53 @@
             <td class="text-end">
               <a href="/items/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
 
-              <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline">
-                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+              <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                <button type="button" class="btn btn-sm btn-outline-danger" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#confirmDeleteModal" 
+                        data-id="<%= item.id %>">
+                  Löschen
+                </button>
               </form>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Löschen bestätigen</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bist du sicher, dass du diesen Datensatz löschen möchtest?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <form id="deleteConfirmForm" method="POST">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit" class="btn btn-danger">Ja, löschen</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
+<script>
+  // Eventlistener für modales Fenster beim Delete
+  const deleteModal = document.getElementById('confirmDeleteModal');
+  const deleteForm = document.getElementById('deleteConfirmForm');
+
+  deleteModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
+    const itemId = button.getAttribute('data-id');
+    // Action auf die richtige ID setzen
+    deleteForm.action = `/items/${itemId}?_method=DELETE`;
+  });
+</script>
