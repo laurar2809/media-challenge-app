@@ -9,6 +9,7 @@ const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const mime = require('mime-types');
 
 const { db, init } = require('./db');
 
@@ -19,7 +20,20 @@ const PORT = process.env.PORT || 3000;
 const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-const upload = multer({ dest: uploadDir });
+// Dateiendungen aus dem MIME-Typ auslesen und schreiben
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Endung zuverlässig aus dem MIME-Typ ableiten (z. B. "image/png" -> "png")
+    const ext = mime.extension(file.mimetype) || 'bin';
+    const unique = Date.now() + '-' + Math.round(Math.random()*1e9);
+    cb(null, `icon-${unique}.${ext}`);                        // z.B. icon-169652…-123456789.png
+  }
+});
+
+const upload = multer({ storage });
 
 // Middleware
 app.use(morgan('dev'));

@@ -10,7 +10,7 @@
     <table class="table align-middle m-0">
       <thead class="table-light">
         <tr>
-          <th>Icon</th>
+          <th class="text-center">Icon</th>
           <th>Titel</th>
           <th>Beschreibung</th>
           <th class="text-end">Aktionen</th>
@@ -24,15 +24,15 @@
         <% } %>
         <% items.forEach(item => { %>
           <tr>
-            <td>
+            <td class="text-center">
               <% if (item.icon && isUrl(item.icon)) { %>
-                <img src="<%= item.icon %>" alt="" class="rounded" style="width:32px;height:32px;object-fit:cover">
+                <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
               <% } else if (item.icon && isUploadPath(item.icon)) { %>
-                <img src="<%= item.icon %>" alt="" class="rounded" style="width:32px;height:32px;object-fit:cover">
+                <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
               <% } else if (item.icon) { %>
                 <span class="fs-4"><%= item.icon %></span>
               <% } else { %>
-                <span class="text-muted"></span>
+                <span class="fs-4"><img src="/assets/file-image.svg" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover"></span>
               <% } %>
             </td>
             <td class="fw-medium"><%= item.title %></td>
