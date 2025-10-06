@@ -75,7 +75,7 @@ function isUploadPath(str) {
 
 // ----- Web Views (Server-rendered) -----
 app.get('/', async (req, res) => {
-  const items = await db('items').select('*').orderBy('id', 'desc');
+  const items = await db('items').select('*').orderBy('title', 'asc');
   res.render('index', { items, isUrl, isUploadPath });
 });
 
@@ -131,7 +131,7 @@ app.delete('/items/:id', async (req, res) => {
 
 // ----- REST API -----
 app.get('/api/items', async (req, res) => {
-  const items = await db('items').select('*').orderBy('id', 'desc');
+  const items = await db('items').select('*').orderBy('title', 'asc');
   res.json(items);
 });
 
