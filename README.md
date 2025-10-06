@@ -11,7 +11,6 @@
 
 ```bash
 npm install
-cp .env.example .env   # passe DB_CLIENT & Zugangsdaten an
 npm run start          # oder: npm run dev
 ```
 
@@ -193,101 +192,8 @@ Nehmen wir den Aufruf der Startseite `/`:
 
 ## 4. MySQL oder PostgreSQL verwenden
 
-Die App unterstützt das bereits – du stellst es über `.env` ein. Zwei Wege auf dem Mac:
-
-### A) Mit Docker (empfohlen im Unterricht)
-
-**PostgreSQL:**
-
-```bash
-docker run --name pg-demo -e POSTGRES_PASSWORD=pass123 -e POSTGRES_DB=testdb -p 5432:5432 -d postgres
-```
-
-`.env`:
-
-```ini
-DB_CLIENT=pg
-DB_HOST=localhost
-DB_USER=postgres
-DB_PASS=pass123
-DB_NAME=testdb
-DB_PORT=5432
-```
-
-**MySQL:**
-
-```bash
-docker run --name mysql-demo -e MYSQL_ROOT_PASSWORD=pass123 -e MYSQL_DATABASE=testdb -p 3306:3306 -d mysql
-```
-
-`.env`:
-
-```ini
-DB_CLIENT=mysql
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=pass123
-DB_NAME=testdb
-DB_PORT=3306
-```
-
-> Danach: `npm start` (die App erstellt die Tabelle `items`, falls sie fehlt).
-
-### B) Mit Homebrew lokal installieren
-
-**PostgreSQL:**
-
-```bash
-brew install postgresql
-brew services start postgresql
-createdb testdb
-```
-
-`.env`:
-
-```ini
-DB_CLIENT=pg
-DB_HOST=localhost
-DB_USER=$USER
-DB_PASS=
-DB_NAME=testdb
-DB_PORT=5432
-```
-
-**MySQL:**
-
-```bash
-brew install mysql
-brew services start mysql
-mysql -u root -e "CREATE DATABASE testdb;"
-```
-
-`.env`:
-
-```ini
-DB_CLIENT=mysql
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=
-DB_NAME=testdb
-DB_PORT=3306
-```
-
-#### Zusätzliche Hinweise (Prod-Tauglichkeit)
-
-* **Knex-Migrations** nutzen (statt Auto-Schema):
-
-  ```bash
-  npx knex migrate:make init_items
-  npx knex migrate:latest
-  ```
-* **Zeichensatz** bei MySQL auf `utf8mb4` setzen (für Emojis).
-* **SSL/Verbindungspools** bei Cloud-DBs konfigurieren.
-* Rechte-User anlegen (nicht `root`/`postgres` im Prod).
-
----
-
-### Mini-Cheatsheet (wichtigste `.env`)
+Die App unterstützt das bereits – wird über `.env` eingestellt.
+MySQL oder PostgreSQL musst erst installiert werden.
 
 **SQLite (einfachster Start):**
 
@@ -325,23 +231,3 @@ DB_PORT=3306
 ```
 
 
-# Nächste Schritte, um die App zu erweitern
-
-**Funktional**
-
-* **Validierung** (Server- & Client-seitig): Pflichtfelder, Längen, erlaubte Zeichensätze.
-* **Suche/Filter/Pagination** in der Liste.
-* **Detailansicht** (`GET /items/:id`) neben Edit-Ansicht.
-* **Soft-Delete** oder Papierkorb; Änderungs-Historie.
-* **Rollen/Authentifizierung**: Login, nur Lehrkräfte dürfen CRUD; Schüler:innen read-only.
-* **REST-API Versionierung** (`/api/v1/...`), OpenAPI/Swagger-Doku.
-
-**Technik/DevOps**
-
-* **Migrations/Seeds** via Knex CLI (statt Auto-Schema): reproduzierbare DB-Änderungen.
-* **Tests** (Jest + Supertest): Routen, DB-Layer, Validierungen.
-* **Docker Compose**: App + DB in einem Kommando starten.
-* **CI/CD** (GitHub Actions): Lint/Test/Build.
-* **Security**: Helmet, CSRF-Schutz für Forms, Rate-Limiting für API.
-* **Logging** (Winston/Pino), **Monitoring** (Healthcheck-Route).
-* **Frontend-Veredelung**: modale Dialoge, Toaster-Notifications, Drag&Drop-Upload.
