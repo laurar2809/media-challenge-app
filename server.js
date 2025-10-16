@@ -76,18 +76,64 @@ function isUploadPath(str) {
 // ----- Web Views (Server-rendered) -----
 app.get('/', async (req, res) => {
   const items = await db('items').select('*').orderBy('title', 'asc');
-  res.render('index', { items, isUrl, isUploadPath });
+  res.render('index', { items, isUrl, isUploadPath, activePage:'kategorien' });
 });
 
-app.get('/items/new', (req, res) => {
-  res.render('form', { item: {}, action: '/items', method: 'POST', title: 'Neuen Datensatz anlegen' });
+app.get('/challenges', (req, res) => {
+  res.render('challenges', { activePage: 'challenges'});
 });
 
-app.post('/items', upload.single('iconFile'), async (req, res) => {
-  let { title, description, icon } = req.body;
+
+
+// Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)
+app.get('/challenges', (req, res) => {
+  const challenges = [
+    {
+      id: 1,
+      title: "Video Challenge",
+      description: "Erstelle einen 1-minütigen Kurzfilm", 
+      kategorie: "Video"
+    }
+  ];
+  res.render('challenges', { challenges: challenges, activePage: 'challenges' });
+});
+
+
+app.get('/formChallenges', (req, res) => {
+  res.render('formChallenges', { activePage: 'formChallenges'});
+});
+
+ 
+
+app.get('/challenges/new', async (req, res) => {
+  const kategorien = await db('items').select('title').orderBy('title', 'asc');
+  res.render('formChallenges', { 
+    item: {}, 
+    action: '/challenges', 
+    method: 'POST', 
+    title: 'Neue Challenge anlegen', 
+    activePage: 'Neue Challenge anlegen',
+    kategorien: kategorien  // Kategorien aus DB übergeben
+  });
+});
+
+
+app.post('/challenges', upload.single('iconFile'), async (req, res) => {
+  let { kategorie, description, icon } = req.body;
+  
+  if (!kategorie || kategorie === "" || !description) {
+    req.flash('error', 'Kategorie und Beschreibung sind Pflichtfelder.');
+    return res.redirect('/challenges/new');
+  }
+  
+  req.flash('success', 'Challenge erfolgreich angelegt.');
+  res.redirect('/challenges');
+});
+
+app.post('/items', async (req, res) => {
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/items/new');
+    return res.redirect('/categories/new');
   }
   if (req.file) icon = '/uploads/' + req.file.filename;
 
@@ -102,7 +148,7 @@ app.get('/items/:id/edit', async (req, res) => {
     req.flash('error', 'Datensatz nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('form', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten' });
+  res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'Kategorie bearbeiten' });
 });
 
 app.put('/items/:id', upload.single('iconFile'), async (req, res) => {
@@ -128,6 +174,7 @@ app.delete('/items/:id', async (req, res) => {
   req.flash('success', 'Datensatz gelöscht.');
   res.redirect('/');
 });
+
 
 // ----- REST API -----
 app.get('/api/items', async (req, res) => {
@@ -186,3 +233,5 @@ init().then(() => {
   console.error('DB init error:', err);
   process.exit(1);
 });
+
+

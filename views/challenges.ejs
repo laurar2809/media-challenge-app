@@ -1,0 +1,75 @@
+<% pageTitle = "Challenges" %>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="d-flex align-items-center">
+    <table>
+      <th><h2 class="h4 m-0">Challenges</h2></th>
+      <th><h2> </h2></th>
+    </table>
+  </div>
+  <a href="/challenges/new" class="btn btn-primary">+ Neue Challenge</a>
+</div>
+
+  <div class="table-responsive">
+    <table class="table align-middle m-0">
+      <thead class="table-light">
+        <tr>
+          <th class="text-center">Kategorie</th>
+          <th>Name</th>
+          <th>Beschreibung</th>
+          <th class="text-end">Aktionen</th>
+        </tr>
+      </thead>
+
+      <!--Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)-->
+      <tbody>
+         <tr>
+          <td class="text-center">Video</td>
+          <td>Video Challenge</td>
+          <td>Erstelle einen 1-minütigen Kurzfilm</td>
+          <td class="text-end">
+            <a href="/challenges/1" class="btn btn-link">Details</a>
+            <a href="/challenges/1/edit" class="btn btn-link">Bearbeiten</a>
+            <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="1">Löschen</button>
+          </td>
+         </tr>
+      </tbody>
+     
+    </table>
+
+    <!-- Pop Up Fenster -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Löschen bestätigen</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bist du sicher, dass du diese Challenge löschen möchtest?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <form id="deleteConfirmForm" method="POST">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit" class="btn btn-danger">Ja, löschen</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // Eventlistener für modales Fenster beim Delete
+  const deleteModal = document.getElementById('confirmDeleteModal');
+  const deleteForm = document.getElementById('deleteConfirmForm');
+
+  deleteModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
+    const itemId = button.getAttribute('data-id');
+    // Action auf die richtige ID setzen
+    deleteForm.action = `/items/${itemId}?_method=DELETE`;
+  });
+</script>

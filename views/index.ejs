@@ -1,17 +1,21 @@
-<% pageTitle = "Übersicht" %>
+<% pageTitle = "Katergorien" %>
 
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h1 class="h4 m-0">Kategorien</h1>
-  <a href="/items/new" class="btn btn-primary">+ Neu</a>
+  <div class="d-flex align-items-center">
+    <table>
+      <th><h2 class="h4 m-0">Kategorien</h2></th>
+      <th><h2> </h2></th>
+    </table>
+  </div>
+  <a href="/categories/new" class="btn btn-primary">+ Neue Kategorie</a>
 </div>
-
 
   <div class="table-responsive">
     <table class="table align-middle m-0">
       <thead class="table-light">
         <tr>
           <th class="text-center">Icon</th>
-          <th>Titel</th>
+          <th>Name</th>
           <th>Beschreibung</th>
           <th class="text-end">Aktionen</th>
         </tr>
@@ -54,7 +58,7 @@
       </tbody>
     </table>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Pop Up Löschen Fenster -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -75,7 +79,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
 <script>

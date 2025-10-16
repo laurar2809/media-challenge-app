@@ -9,6 +9,7 @@
 
 ## Schnellstart
 
+cd "C:\Schule\Diplomarbeit\node-bootstrap-crud 1\node-bootstrap-crud"
 ```bash
 npm install
 npm run start          # oder: npm run dev

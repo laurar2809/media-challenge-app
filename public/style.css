@@ -2,3 +2,29 @@
 body { background: #f8f9fb; }
 .card { border: 1px solid rgba(0,0,0,.06); }
 table td, table th { vertical-align: middle; }
+
+/*Navigationsbalken*/
+.navbar-nav .nav-link {
+  position: relative;
+  padding-bottom: 5px; /*Abstand zur Schrift*/
+}
+.navbar-nav .nav-link.active::after {
+  content: "";
+  position: absolute; /*genaue Positionierung des Strichs*/
+  bottom: 0; /*Abstand zum Boden*/
+  left: 25%; /*Abstand des Strichs von der linken Seite*/
+  width: 50%; /*Abstand des Strichs von der rechten Seite*/
+  height: 2px; /*Dicke des Strichs*/
+  background-color: white; /*Farbe*/
+}
+
+.dropdown-toggle.fixed-width {
+  width: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
