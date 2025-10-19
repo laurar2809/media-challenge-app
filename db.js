@@ -65,6 +65,40 @@ async function init() {
     ]);
     console.log("Tabelle 'items' erstellt und Seed-Daten eingefügt.");
   }
+
+
+
+   // Prüfe ob challenges Tabelle existiert
+  const challengesExists = await db.schema.hasTable('challenges');
+  
+  if (!challengesExists) {
+    // NEUE Tabelle erstellen (ohne difficulty)
+    await db.schema.createTable('challenges', (table) => {
+      table.increments('id').primary();
+      table.string('title').notNullable();
+      table.text('description').notNullable();
+      table.string('icon');
+      table.string('kategorie').notNullable();
+      table.date('start_date');
+      table.date('end_date');
+      
+    });
+    console.log("Tabelle 'challenges' erstellt (ohne difficulty)");
+
+    // Beispiel-Challenge einfügen
+    await db('challenges').insert([
+      { 
+        title: 'Video Challenge', 
+        description: 'Erstelle einen 1-minütigen Kurzfilm', 
+        kategorie: 'Video',
+        icon: '🎬'
+      }
+    ]);
+    console.log("Beispiel-Challenge eingefügt");
+    
+  } 
+
+  
 }
 
 module.exports = { db, init };
