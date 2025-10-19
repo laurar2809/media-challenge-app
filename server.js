@@ -79,53 +79,63 @@ app.get('/', async (req, res) => {
   res.render('index', { items, isUrl, isUploadPath, activePage:'kategorien' });
 });
 
-app.get('/challenges', (req, res) => {
-  res.render('challenges', { activePage: 'challenges'});
-});
 
 
 
 // Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)
-app.get('/challenges', (req, res) => {
-  const challenges = [
-    {
-      id: 1,
-      title: "Video Challenge",
-      description: "Erstelle einen 1-minütigen Kurzfilm", 
-      kategorie: "Video"
-    }
-  ];
-  res.render('challenges', { challenges: challenges, activePage: 'challenges' });
+app.get('/challenges', async (req, res) => {
+   try {
+    const challenges = await db('challenges').select('*').orderBy('title', 'asc');
+    res.render('challenges', { 
+      challenges: challenges,  
+      activePage: 'challenges' 
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der Challenges:", error);
+    res.render('challenges', { 
+      challenges: [],  //Leere Array falls Fehler
+      activePage: 'challenges' 
+    });
+  }
 });
 
 
-app.get('/formChallenges', (req, res) => {
-  res.render('formChallenges', { activePage: 'formChallenges'});
-});
+
 
  
 
 app.get('/challenges/new', async (req, res) => {
-  const kategorien = await db('items').select('title').orderBy('title', 'asc');
+   const kategorien = await db('items').select('*').orderBy('title', 'asc');
   res.render('formChallenges', { 
     item: {}, 
-    action: '/challenges', 
-    method: 'POST', 
+    kategorien,
+    action: '/challenges',
     title: 'Neue Challenge anlegen', 
-    activePage: 'Neue Challenge anlegen',
-    kategorien: kategorien  // Kategorien aus DB übergeben
+    activePage: 'challenges'
   });
 });
 
 
+// Challenge speichern
 app.post('/challenges', upload.single('iconFile'), async (req, res) => {
-  let { kategorie, description, icon } = req.body;
+  let { kategorie, description, icon, title } = req.body;
   
-  if (!kategorie || kategorie === "" || !description) {
-    req.flash('error', 'Kategorie und Beschreibung sind Pflichtfelder.');
+  if (!kategorie || !description || !title) {
+    req.flash('error', 'Titel, Kategorie und Beschreibung sind Pflichtfelder.');
     return res.redirect('/challenges/new');
   }
-  
+
+  if (req.file) {
+    icon = '/uploads/' + req.file.filename;
+  }
+
+  await db('challenges').insert({ 
+    title: title.trim(), 
+    description: description.trim(), 
+    kategorie: kategorie.trim(),
+    icon: icon ? icon.trim() : null
+  });
+
   req.flash('success', 'Challenge erfolgreich angelegt.');
   res.redirect('/challenges');
 });

@@ -23,16 +23,26 @@
 
       <!--Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)-->
       <tbody>
-         <tr>
-          <td class="text-center">Video</td>
-          <td>Video Challenge</td>
-          <td>Erstelle einen 1-minütigen Kurzfilm</td>
-          <td class="text-end">
-            <a href="/challenges/1" class="btn btn-link">Details</a>
-            <a href="/challenges/1/edit" class="btn btn-link">Bearbeiten</a>
-            <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="1">Löschen</button>
-          </td>
-         </tr>
+         <!--  ECHTE DATEN AUS DER DATENBANK -->
+           <%if(locals.challenges){%>
+              <% if (challenges.length === 0) { %>
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">Noch keine Challenges</td>
+                </tr>
+              <% } %>
+              
+              <% challenges.forEach(challenge => { %>
+                <tr>
+                  <td class="text-center"><%= challenge.kategorie %></td>
+                  <td class="fw-medium"><%= challenge.title %></td>
+                  <td class="text-body-secondary"><%= challenge.description %></td>
+                  <td class="text-end">
+                    <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a>
+                    <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-link">Bearbeiten</a>
+                    <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
+                  </td>
+                </tr>
+              <% }) }%>
       </tbody>
      
     </table>

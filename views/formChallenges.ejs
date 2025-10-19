@@ -29,6 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+  <!-- Titel Feld hinzufügen -->
+  <div class="mb-3">
+    <label class="form-label">Titel der Challenge *</label>
+    <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
+  </div>
+
   <div class="mb-3">
     <label class="form-label">Beschreibung *</label>
     <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
@@ -37,6 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
     <label class="form-label d-flex align-items-center gap-2">Beispielbilder hochladen (Bild-URL)</label>
     <input type="text" name="icon" class="form-control" placeholder="https://..." value="<%= item.icon || '' %>">
   </div>
-    <button href="/challenges" class="btn btn-primary" type="submit">Speichern</button>
+    <button type="submit" class="btn btn-primary" type="submit">Speichern</button>
     <a href="/challenges" class="btn btn-outline-primary">Abbrechen</a>
 </form>
