@@ -72,7 +72,7 @@ async function init() {
   const challengesExists = await db.schema.hasTable('challenges');
   
   if (!challengesExists) {
-    // NEUE Tabelle erstellen (ohne difficulty)
+    // NEUE Tabelle erstellen
     await db.schema.createTable('challenges', (table) => {
       table.increments('id').primary();
       table.string('title').notNullable();
