@@ -140,10 +140,64 @@ app.post('/challenges', upload.single('iconFile'), async (req, res) => {
   res.redirect('/challenges');
 });
 
-app.post('/items', async (req, res) => {
+
+// DETAILED DELETE DEBUG
+app.delete('/challenges/:id', async (req, res) => {
+  
+  try {
+    // 1. ID in Zahl umwandeln (wichtig!)
+    const challengeId = parseInt(req.params.id);
+    
+    // 2. ALLE Challenges anzeigen (vorher)
+    const allChallengesBefore = await db('challenges').select('*');
+    
+    // 3. Spezifische Challenge suchen
+    const challengeToDelete = await db('challenges').where({ id: challengeId }).first();
+    
+    if (!challengeToDelete) {
+      req.flash('error', `Challenge mit ID ${challengeId} nicht gefunden.`);
+      return res.redirect('/challenges');
+    }
+    
+    // 4. LÖSCHEN versuchen
+    const deleteResult = await db('challenges').where({ id: challengeId }).del();
+    
+    // 5. ALLE Challenges anzeigen (nachher)
+    const allChallengesAfter = await db('challenges').select('*');
+    
+    // 6. Spezifisch prüfen ob noch da
+    const checkIfStillExists = await db('challenges').where({ id: challengeId }).first();
+    
+    if (deleteResult > 0 && !checkIfStillExists) {
+      console.log("🎉 ERFOLG: Challenge wurde gelöscht!");
+      req.flash('success', 'Challenge erfolgreich gelöscht.');
+    } else {
+      req.flash('error', 'Löschen fehlgeschlagen.');
+    }
+    
+  } catch (error) {
+    console.error("FEHLER:", error);
+    req.flash('error', 'Datenbank-Fehler: ' + error.message);
+  }
+  
+  res.redirect('/challenges');
+});
+
+app.get('/items/new', (req, res) => {
+  res.render('formKategorien', { 
+    item: {}, 
+    action: '/items', 
+    method: 'POST', 
+    title: 'Neuen Datensatz anlegen',  
+    activePage: 'kategorien' 
+  });
+});
+
+app.post('/items', upload.single('iconFile'), async (req, res) => {
+  let { title, description, icon } = req.body;  // AUS req.body HOLEN!
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/categories/new');
+    return res.redirect('/items/new');
   }
   if (req.file) icon = '/uploads/' + req.file.filename;
 
@@ -152,14 +206,17 @@ app.post('/items', async (req, res) => {
   res.redirect('/');
 });
 
+
 app.get('/items/:id/edit', async (req, res) => {
   const item = await db('items').where({ id: req.params.id }).first();
   if (!item) {
     req.flash('error', 'Datensatz nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'Kategorie bearbeiten' });
+  res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'kategorien' });
 });
+
+
 
 app.put('/items/:id', upload.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;

@@ -80,6 +80,7 @@
     const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
     const itemId = button.getAttribute('data-id');
     // Action auf die richtige ID setzen
-    deleteForm.action = `/items/${itemId}?_method=DELETE`;
+     deleteForm.action = `/items/${itemId}?_method=DELETE`;
+     deleteForm.action = `/challenges/${itemId}?_method=DELETE`;
   });
 </script>
