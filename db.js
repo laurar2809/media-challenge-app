@@ -95,9 +95,7 @@ async function init() {
       }
     ]);
     console.log("Beispiel-Challenge eingefügt");
-    
   } 
-  
 }
 
 module.exports = { db, init };
