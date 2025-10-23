@@ -37,7 +37,7 @@
                   <td class="fw-medium"><%= challenge.title %></td>
                   <td class="text-body-secondary"><%= challenge.description %></td>
                   <td class="text-end">
-                    <!-- <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a> -->
+                    <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a>
                     <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-link">Bearbeiten</a>
                     <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
                   </td>
