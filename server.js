@@ -188,7 +188,7 @@ app.get('/items/new', (req, res) => {
     item: {}, 
     action: '/items', 
     method: 'POST', 
-    title: 'Neuen Datensatz anlegen',  
+    title: 'Neue Kategorie anlegen',  
     activePage: 'kategorien' 
   });
 });
@@ -202,7 +202,7 @@ app.post('/items', upload.single('iconFile'), async (req, res) => {
   if (req.file) icon = '/uploads/' + req.file.filename;
 
   await db('items').insert({ title: title.trim(), description: description.trim(), icon: icon ? icon.trim() : null });
-  req.flash('success', 'Datensatz erfolgreich angelegt.');
+  req.flash('success', 'Kategorie erfolgreich angelegt.');
   res.redirect('/');
 });
 
@@ -210,7 +210,7 @@ app.post('/items', upload.single('iconFile'), async (req, res) => {
 app.get('/items/:id/edit', async (req, res) => {
   const item = await db('items').where({ id: req.params.id }).first();
   if (!item) {
-    req.flash('error', 'Datensatz nicht gefunden.');
+    req.flash('error', 'Kategorie nicht gefunden.');
     return res.redirect('/');
   }
   res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'kategorien' });
@@ -238,7 +238,7 @@ app.delete('/items/:id', async (req, res) => {
     fs.unlink(filePath, () => {});
   }
   await db('items').where({ id: req.params.id }).del();
-  req.flash('success', 'Datensatz gelöscht.');
+  req.flash('success', 'Kategorie gelöscht.');
   res.redirect('/');
 });
 
