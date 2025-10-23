@@ -141,6 +141,57 @@ app.post('/challenges', upload.single('iconFile'), async (req, res) => {
 });
 
 
+// DEBUG ROUTE - GANZ OBEN einfügen 
+app.get('/challenges/:id/edit', async (req, res) => {
+  
+  try {
+    const challenge = await db('challenges').where({ id: req.params.id }).first();
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    
+    console.log("Challenge gefunden:", challenge);
+    console.log("Kategorien gefunden:", kategorien.length);
+    
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+    
+    res.render('formChallenges', { 
+      item: challenge, 
+      kategorien,
+      action: `/challenges/${challenge.id}?_method=PUT`, 
+      method: 'POST', 
+      title: 'Challenge bearbeiten', 
+      activePage: 'challenges' 
+    });
+    
+  } catch (error) {
+    console.log("FEHLER:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge.');
+    res.redirect('/challenges');
+  }
+});
+
+
+app.put('/challenges/:id', upload.single('iconFile'), async (req, res) => {
+  let { kategorie, description, icon, title } = req.body;
+  
+  if (req.file) {
+    icon = '/uploads/' + req.file.filename;
+  }
+
+  await db('challenges').where({ id: req.params.id }).update({
+    title: title.trim(),
+    description: description.trim(),
+    kategorie: kategorie.trim(),
+    icon: icon ? icon.trim() : null
+  });
+  
+  req.flash('success', 'Änderungen gespeichert.');
+  res.redirect('/challenges');  // Zurück zu Challenges, nicht zur Startseite!
+});
+
+
 // DETAILED DELETE DEBUG
 app.delete('/challenges/:id', async (req, res) => {
   
@@ -302,3 +353,4 @@ init().then(() => {
 });
 
 
+// db init erstellen lassen für datenbank struktur
