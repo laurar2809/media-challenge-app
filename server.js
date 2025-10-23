@@ -81,7 +81,6 @@ app.get('/', async (req, res) => {
 
 
 
-
 // Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)
 app.get('/challenges', async (req, res) => {
    try {
@@ -100,7 +99,16 @@ app.get('/challenges', async (req, res) => {
 });
 
 
-
+// Test-Route für Environment Variables
+app.get('/test-env', (req, res) => {
+  res.json({
+    dbHost: process.env.DB_HOST,
+    dbUser: process.env.DB_USER, 
+    dbName: process.env.DB_NAME,
+    dbClient: process.env.DB_CLIENT,
+    envFile: 'Werte werden aus .env gelesen'
+  });
+});
 
  
 
