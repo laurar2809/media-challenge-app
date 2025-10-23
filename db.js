@@ -83,7 +83,7 @@ async function init() {
       table.date('end_date');
       
     });
-    console.log("Tabelle 'challenges' erstellt (ohne difficulty)");
+    console.log("Tabelle 'challenges' erstellt");
 
     // Beispiel-Challenge einfügen
     await db('challenges').insert([
@@ -96,18 +96,7 @@ async function init() {
     ]);
     console.log("Beispiel-Challenge eingefügt");
     
-  } else {
-    //  TABELLE EXISTIERT BEREITS - Prüfe ob sie korrekt ist
-    console.log(" Tabelle 'challenges' existiert bereits");
-    
-    // Optional: Teste ob wir auf die Tabelle zugreifen können
-    try {
-      const testChallenges = await db('challenges').select('*').limit(3);
-      console.log(`Challenges in DB: ${testChallenges.length} Einträge`);
-    } catch (error) {
-      console.error(" Fehler beim Zugriff auf challenges:", error);
-    }
-  }
+  } 
   
 }
 
