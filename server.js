@@ -188,7 +188,7 @@ app.get('/items/new', (req, res) => {
     item: {}, 
     action: '/items', 
     method: 'POST', 
-    title: 'Neue Kategorie anlegen',  
+    title: 'Neuen Datensatz anlegen',  
     activePage: 'kategorien' 
   });
 });
