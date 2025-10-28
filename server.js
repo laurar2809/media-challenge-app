@@ -81,18 +81,22 @@ app.get('/', async (req, res) => {
 
 
 
-// Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)
+// Datensatz aus Datenbank
 app.get('/challenges', async (req, res) => {
    try {
     const challenges = await db('challenges').select('*').orderBy('title', 'asc');
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+
     res.render('challenges', { 
       challenges: challenges,  
+      kategorien: kategorien,
       activePage: 'challenges' 
     });
   } catch (error) {
     console.error("Fehler beim Laden der Challenges:", error);
     res.render('challenges', { 
       challenges: [],  //Leere Array falls Fehler
+      kategorien: [],
       activePage: 'challenges' 
     });
   }
@@ -241,6 +245,39 @@ app.delete('/challenges/:id', async (req, res) => {
   
   res.redirect('/challenges');
 });
+
+// ----- Challenge Filter nach Kategorie -----
+app.get('/challenges/filter/:kategorie', async (req, res) => {
+  try {
+    const kategorie = req.params.kategorie;
+    
+    // Alle Challenges der gewählten Kategorie
+    const challenges = await db('challenges')
+      .where({ kategorie: kategorie })
+      .orderBy('title', 'asc');
+    
+    // Alle Kategorien für das Dropdown
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    
+    res.render('challenges', { 
+      challenges: challenges,
+      kategorien: kategorien,
+      activeKategorie: kategorie,
+      activePage: 'challenges'
+      
+    });
+    
+  } catch (error) {
+    console.error("Fehler beim Filtern:", error);
+    req.flash('error', 'Fehler beim Filtern der Challenges');
+    res.redirect('/challenges');
+  }
+});
+
+
+
+
+
 
 app.get('/items/new', (req, res) => {
   res.render('formKategorien', { 
