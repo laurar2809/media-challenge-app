@@ -274,8 +274,57 @@ app.get('/challenges/filter/:kategorie', async (req, res) => {
   }
 });
 
+// ----- Challenge Search API -----
+app.get('/api/challenges/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+    
+    if (!searchTerm || searchTerm.length < 2) {
+      return res.json([]);
+    }
+
+    const challenges = await db('challenges')
+      .where('title', 'like', `%${searchTerm}%`)
+      .orWhere('description', 'like', `%${searchTerm}%`)
+      .orWhere('kategorie', 'like', `%${searchTerm}%`)
+      .select('*')
+      .limit(10);
+
+    res.json(challenges);
+    
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
 
 
+// Challenge Detail Route (server.js)
+app.get('/challenges/:id', async (req, res) => {
+  try {
+    const challenge = await db('challenges').where({ id: req.params.id }).first();
+    
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+    
+    // Einfache Detailansicht - du kannst später ein eigenes Template erstellen
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    
+    res.render('challenges', { 
+      challenges: [challenge], // Nur diese eine Challenge anzeigen
+      kategorien: kategorien,
+      activePage: 'challenges',
+      searchHighlight: true
+    });
+    
+  } catch (error) {
+    console.error("Fehler:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge.');
+    res.redirect('/challenges');
+  }
+});
 
 
 
