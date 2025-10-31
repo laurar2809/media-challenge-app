@@ -21,19 +21,36 @@ const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Dateiendungen aus dem MIME-Typ auslesen und schreiben
-const storage = multer.diskStorage({
+// Storage für Challenges
+const challengeStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    const dir = path.join(uploadDir, 'challenges');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
-    // Endung zuverlässig aus dem MIME-Typ ableiten (z. B. "image/png" -> "png")
     const ext = mime.extension(file.mimetype) || 'bin';
     const unique = Date.now() + '-' + Math.round(Math.random()*1e9);
-    cb(null, `icon-${unique}.${ext}`);                        // z.B. icon-169652…-123456789.png
+    cb(null, `challenge-${unique}.${ext}`);
   }
 });
 
-const upload = multer({ storage });
+// Storage für Kategorien
+const categoryStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(uploadDir, 'categories');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = mime.extension(file.mimetype) || 'bin';
+    const unique = Date.now() + '-' + Math.round(Math.random()*1e9);
+    cb(null, `category-${unique}.${ext}`);
+  }
+});
+
+const uploadChallenge = multer({ storage: challengeStorage });
+const uploadCategory = multer({ storage: categoryStorage });
 
 // Middleware
 app.use(morgan('dev'));
@@ -129,7 +146,7 @@ app.get('/challenges/new', async (req, res) => {
 
 
 // Challenge speichern
-app.post('/challenges', upload.single('iconFile'), async (req, res) => {
+app.post('/challenges', uploadChallenge.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
   
   if (!kategorie || !description || !title) {
@@ -138,7 +155,7 @@ app.post('/challenges', upload.single('iconFile'), async (req, res) => {
   }
 
   if (req.file) {
-    icon = '/uploads/' + req.file.filename;
+    icon = '/uploads/challenges/' + req.file.filename;
   }
 
   await db('challenges').insert({ 
@@ -185,11 +202,11 @@ app.get('/challenges/:id/edit', async (req, res) => {
 });
 
 
-app.put('/challenges/:id', upload.single('iconFile'), async (req, res) => {
+app.put('/challenges/:id', uploadChallenge.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
   
   if (req.file) {
-    icon = '/uploads/' + req.file.filename;
+    icon = '/uploads/challenges/' + req.file.filename;
   }
 
   await db('challenges').where({ id: req.params.id }).update({
@@ -299,7 +316,6 @@ app.get('/api/challenges/search', async (req, res) => {
 });
 
 
-// Challenge Detail Route (server.js)
 app.get('/challenges/:id', async (req, res) => {
   try {
     const challenge = await db('challenges').where({ id: req.params.id }).first();
@@ -309,14 +325,11 @@ app.get('/challenges/:id', async (req, res) => {
       return res.redirect('/challenges');
     }
     
-    // Einfache Detailansicht - du kannst später ein eigenes Template erstellen
-    const kategorien = await db('items').select('*').orderBy('title', 'asc');
-    
-    res.render('challenges', { 
-      challenges: [challenge], // Nur diese eine Challenge anzeigen
-      kategorien: kategorien,
+    res.render('challengeDetail', { 
+      challenge: challenge,
       activePage: 'challenges',
-      searchHighlight: true
+      isUrl: isUrl,
+      isUploadPath: isUploadPath
     });
     
   } catch (error) {
@@ -325,7 +338,6 @@ app.get('/challenges/:id', async (req, res) => {
     res.redirect('/challenges');
   }
 });
-
 
 
 app.get('/items/new', (req, res) => {
@@ -338,13 +350,13 @@ app.get('/items/new', (req, res) => {
   });
 });
 
-app.post('/items', upload.single('iconFile'), async (req, res) => {
+app.post('/items', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;  // AUS req.body HOLEN!
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
     return res.redirect('/items/new');
   }
-  if (req.file) icon = '/uploads/' + req.file.filename;
+  if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
   await db('items').insert({ title: title.trim(), description: description.trim(), icon: icon ? icon.trim() : null });
   req.flash('success', 'Kategorie erfolgreich angelegt.');
@@ -363,9 +375,9 @@ app.get('/items/:id/edit', async (req, res) => {
 
 
 
-app.put('/items/:id', upload.single('iconFile'), async (req, res) => {
+app.put('/items/:id', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
-  if (req.file) icon = '/uploads/' + req.file.filename;
+  if (req.file) icon = '/uploads/cateogries/' + req.file.filename;
   await db('items').where({ id: req.params.id }).update({
     title: title.trim(),
     description: description.trim(),
