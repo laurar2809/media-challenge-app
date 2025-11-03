@@ -79,77 +79,144 @@ app.get('/', async (req, res) => {
   res.render('index', { items, isUrl, isUploadPath, activePage:'kategorien' });
 });
 
-app.get('/challenges', (req, res) => {
-  res.render('challenges', { activePage: 'challenges'});
-});
 
 
 
 // Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)
-app.get('/challenges', (req, res) => {
-  const challenges = [
-    {
-      id: 1,
-      title: "Video Challenge",
-      description: "Erstelle einen 1-minütigen Kurzfilm", 
-      kategorie: "Video"
-    }
-  ];
-  res.render('challenges', { challenges: challenges, activePage: 'challenges' });
+app.get('/challenges', async (req, res) => {
+   try {
+    const challenges = await db('challenges').select('*').orderBy('title', 'asc');
+    res.render('challenges', { 
+      challenges: challenges,  
+      activePage: 'challenges' 
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der Challenges:", error);
+    res.render('challenges', { 
+      challenges: [],  //Leere Array falls Fehler
+      activePage: 'challenges' 
+    });
+  }
 });
 
 
-app.get('/formChallenges', (req, res) => {
-  res.render('formChallenges', { activePage: 'formChallenges'});
-});
+
 
  
 
 app.get('/challenges/new', async (req, res) => {
-  const kategorien = await db('items').select('title').orderBy('title', 'asc');
+   const kategorien = await db('items').select('*').orderBy('title', 'asc');
   res.render('formChallenges', { 
     item: {}, 
-    action: '/challenges', 
-    method: 'POST', 
+    kategorien,
+    action: '/challenges',
     title: 'Neue Challenge anlegen', 
-    activePage: 'Neue Challenge anlegen',
-    kategorien: kategorien  // Kategorien aus DB übergeben
+    activePage: 'challenges'
   });
 });
 
 
+// Challenge speichern
 app.post('/challenges', upload.single('iconFile'), async (req, res) => {
-  let { kategorie, description, icon } = req.body;
+  let { kategorie, description, icon, title } = req.body;
   
-  if (!kategorie || kategorie === "" || !description) {
-    req.flash('error', 'Kategorie und Beschreibung sind Pflichtfelder.');
+  if (!kategorie || !description || !title) {
+    req.flash('error', 'Titel, Kategorie und Beschreibung sind Pflichtfelder.');
     return res.redirect('/challenges/new');
   }
-  
+
+  if (req.file) {
+    icon = '/uploads/' + req.file.filename;
+  }
+
+  await db('challenges').insert({ 
+    title: title.trim(), 
+    description: description.trim(), 
+    kategorie: kategorie.trim(),
+    icon: icon ? icon.trim() : null
+  });
+
   req.flash('success', 'Challenge erfolgreich angelegt.');
   res.redirect('/challenges');
 });
 
-app.post('/items', async (req, res) => {
+
+// DETAILED DELETE DEBUG
+app.delete('/challenges/:id', async (req, res) => {
+  
+  try {
+    // 1. ID in Zahl umwandeln (wichtig!)
+    const challengeId = parseInt(req.params.id);
+    
+    // 2. ALLE Challenges anzeigen (vorher)
+    const allChallengesBefore = await db('challenges').select('*');
+    
+    // 3. Spezifische Challenge suchen
+    const challengeToDelete = await db('challenges').where({ id: challengeId }).first();
+    
+    if (!challengeToDelete) {
+      req.flash('error', `Challenge mit ID ${challengeId} nicht gefunden.`);
+      return res.redirect('/challenges');
+    }
+    
+    // 4. LÖSCHEN versuchen
+    const deleteResult = await db('challenges').where({ id: challengeId }).del();
+    
+    // 5. ALLE Challenges anzeigen (nachher)
+    const allChallengesAfter = await db('challenges').select('*');
+    
+    // 6. Spezifisch prüfen ob noch da
+    const checkIfStillExists = await db('challenges').where({ id: challengeId }).first();
+    
+    if (deleteResult > 0 && !checkIfStillExists) {
+      console.log("🎉 ERFOLG: Challenge wurde gelöscht!");
+      req.flash('success', 'Challenge erfolgreich gelöscht.');
+    } else {
+      req.flash('error', 'Löschen fehlgeschlagen.');
+    }
+    
+  } catch (error) {
+    console.error("FEHLER:", error);
+    req.flash('error', 'Datenbank-Fehler: ' + error.message);
+  }
+  
+  res.redirect('/challenges');
+});
+
+app.get('/items/new', (req, res) => {
+  res.render('formKategorien', { 
+    item: {}, 
+    action: '/items', 
+    method: 'POST', 
+    title: 'Neue Kategorie anlegen',  
+    activePage: 'kategorien' 
+  });
+});
+
+app.post('/items', upload.single('iconFile'), async (req, res) => {
+  let { title, description, icon } = req.body;  // AUS req.body HOLEN!
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/categories/new');
+    return res.redirect('/items/new');
   }
   if (req.file) icon = '/uploads/' + req.file.filename;
 
   await db('items').insert({ title: title.trim(), description: description.trim(), icon: icon ? icon.trim() : null });
-  req.flash('success', 'Datensatz erfolgreich angelegt.');
+  req.flash('success', 'Kategorie erfolgreich angelegt.');
   res.redirect('/');
 });
+
 
 app.get('/items/:id/edit', async (req, res) => {
   const item = await db('items').where({ id: req.params.id }).first();
   if (!item) {
-    req.flash('error', 'Datensatz nicht gefunden.');
+    req.flash('error', 'Kategorie nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'Kategorie bearbeiten' });
+  res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'kategorien' });
 });
+
+
 
 app.put('/items/:id', upload.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
@@ -171,7 +238,7 @@ app.delete('/items/:id', async (req, res) => {
     fs.unlink(filePath, () => {});
   }
   await db('items').where({ id: req.params.id }).del();
-  req.flash('success', 'Datensatz gelöscht.');
+  req.flash('success', 'Kategorie gelöscht.');
   res.redirect('/');
 });
 
