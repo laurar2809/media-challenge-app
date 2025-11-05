@@ -9,7 +9,7 @@
     <div class="d-flex align-items-center position-absolute start-50 translate-middle-x">  
     <!-- Filter Dropdown -->
       <div class="dropdown">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown">
           <% if (locals.activeKategorie) { %>
             Kategorie: <%= locals.activeKategorie %>
           <% } else { %>
@@ -35,14 +35,6 @@
           <% } %>
         </ul>
       </div>
-      
-      <!-- Aktive Filter anzeigen -->
-      <% if (locals.activeKategorie) { %>
-        <span class="badge bg-primary d-flex align-items-center">
-          <%= locals.activeKategorie %>
-          <a href="/challenges" class="text-white ms-2 text-decoration-none">×</a>
-        </span>
-      <% } %>
     
       <!-- DISKRETE SUCHLEISTE - wird nur bei Eingabe sichtbar -->
       <div class="position-relative ms-3" id="searchContainer">
@@ -77,10 +69,10 @@
     <table class="table align-middle m-0">
       <thead class="table-light">
         <tr>
-          <th class="text-center">Kategorie</th>
+          <th class="text-start">Kategorie</th>
           <th>Name</th>
           <th>Beschreibung</th>
-          <th class="text-end">Aktionen</th>
+          <th class="text-end" style="min-width: 200px;">Aktionen</th>
         </tr>
       </thead>
 
@@ -95,10 +87,10 @@
           
           <% challenges.forEach(challenge => { %>
            <tr class="challenge-row" data-id="<%= challenge.id %>">
-              <td class="text-center"><%= challenge.kategorie %></td>
+              <td class="text-start"><%= challenge.kategorie %></td>
               <td class="fw-medium"><%= challenge.title %></td>
               <td class="text-body-secondary"><%= challenge.description %></td>
-              <td class="text-end">
+              <td class="text-end" style="white-space: nowrap;">
                 <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a>
                 <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-link">Bearbeiten</a>
                 <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
@@ -136,7 +128,6 @@
 
 <script>
  // Suchfunktionalität
-  const searchToggle = document.getElementById('searchToggle');
   const searchContainer = document.getElementById('searchContainer');
   const searchInput = document.getElementById('challengeSearch');
   const searchResults = document.getElementById('searchResults');
@@ -146,21 +137,6 @@
   const challengeRows = document.querySelectorAll('.challenge-row');
 
   let searchTimeout;
-
-  // Suchleiste ein-/ausblenden
-  searchToggle.addEventListener('click', function() {
-    const isVisible = searchContainer.style.width !== '0px';
-    
-    if (!isVisible) {
-      searchContainer.style.width = '200px';
-      searchInput.style.width = '200px';
-      searchInput.style.padding = '0.375rem 0.75rem';
-      searchInput.style.border = '1px solid #ced4da';
-      searchInput.focus();
-    } else {
-      closeSearch();
-    }
-  });
 
   // Suche bei Eingabe
   searchInput.addEventListener('input', function() {
@@ -229,22 +205,12 @@
           searchTermText.textContent = challengeTitle;
           searchBadge.style.display = 'block';
           
-          // Suchleiste schließen
-          closeSearch();
+          searchInput.value = '';
         });
       });
     }
     
     searchResults.style.display = 'block';
-  }
-
-  function closeSearch() {
-    searchContainer.style.width = '0';
-    searchInput.style.width = '0';
-    searchInput.style.padding = '0';
-    searchInput.style.border = '0';
-    searchInput.value = '';
-    searchResults.style.display = 'none';
   }
 
   // Search beenden
@@ -259,7 +225,7 @@
 
   // Klick außerhalb schließt Autocomplete
   document.addEventListener('click', function(e) {
-    if (!searchContainer.contains(e.target) && !searchToggle.contains(e.target)) {
+    if (!searchContainer.contains(e.target)) {
       searchResults.style.display = 'none';
     }
   });
