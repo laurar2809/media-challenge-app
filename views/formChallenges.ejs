@@ -1,9 +1,9 @@
 <% pageTitle = title %>
 <h1 class="h4 mb-3"><%= title %></h1>
-<form action="/challenges" method="POST" enctype="multipart/form-data">
+<form action="<%= action %>" method="POST" enctype="multipart/form-data">
   <div class="dropdown">
   <button class="btn btn-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Kategorien
+     <%= item.kategorie || 'Kategorien' %>
   </button>
   <ul class="dropdown-menu">
     <% kategorien.forEach(kategorie => { %>
@@ -40,10 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
     <label class="form-label">Beschreibung *</label>
     <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
   </div>
+
   <div class="mb-3">
-    <label class="form-label d-flex align-items-center gap-2">Beispielbilder hochladen (Bild-URL)</label>
-    <input type="text" name="icon" class="form-control" placeholder="https://..." value="<%= item.icon || '' %>">
-  </div>
+  <label class="form-label">Icon (Bild hochladen) *</label>
+  <input type="file" name="iconFile" class="form-control" required>
+  <div class="form-text">Lade ein Bild für diese Challenge hoch</div>
+</div>
+
     <button type="submit" class="btn btn-primary" type="submit">Speichern</button>
     <a href="/challenges" class="btn btn-outline-primary">Abbrechen</a>
 </form>

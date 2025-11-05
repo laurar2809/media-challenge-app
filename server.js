@@ -21,19 +21,36 @@ const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Dateiendungen aus dem MIME-Typ auslesen und schreiben
-const storage = multer.diskStorage({
+// Storage für Challenges
+const challengeStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    const dir = path.join(uploadDir, 'challenges');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
-    // Endung zuverlässig aus dem MIME-Typ ableiten (z. B. "image/png" -> "png")
     const ext = mime.extension(file.mimetype) || 'bin';
     const unique = Date.now() + '-' + Math.round(Math.random()*1e9);
-    cb(null, `icon-${unique}.${ext}`);                        // z.B. icon-169652…-123456789.png
+    cb(null, `challenge-${unique}.${ext}`);
   }
 });
 
-const upload = multer({ storage });
+// Storage für Kategorien
+const categoryStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(uploadDir, 'categories');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = mime.extension(file.mimetype) || 'bin';
+    const unique = Date.now() + '-' + Math.round(Math.random()*1e9);
+    cb(null, `category-${unique}.${ext}`);
+  }
+});
+
+const uploadChallenge = multer({ storage: challengeStorage });
+const uploadCategory = multer({ storage: categoryStorage });
 
 // Middleware
 app.use(morgan('dev'));
@@ -81,26 +98,38 @@ app.get('/', async (req, res) => {
 
 
 
-
-// Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)
+// Datensatz aus Datenbank
 app.get('/challenges', async (req, res) => {
    try {
     const challenges = await db('challenges').select('*').orderBy('title', 'asc');
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+
     res.render('challenges', { 
       challenges: challenges,  
+      kategorien: kategorien,
       activePage: 'challenges' 
     });
   } catch (error) {
     console.error("Fehler beim Laden der Challenges:", error);
     res.render('challenges', { 
       challenges: [],  //Leere Array falls Fehler
+      kategorien: [],
       activePage: 'challenges' 
     });
   }
 });
 
 
-
+// Test-Route für Environment Variables
+app.get('/test-env', (req, res) => {
+  res.json({
+    dbHost: process.env.DB_HOST,
+    dbUser: process.env.DB_USER, 
+    dbName: process.env.DB_NAME,
+    dbClient: process.env.DB_CLIENT,
+    envFile: 'Werte werden aus .env gelesen'
+  });
+});
 
  
 
@@ -117,7 +146,7 @@ app.get('/challenges/new', async (req, res) => {
 
 
 // Challenge speichern
-app.post('/challenges', upload.single('iconFile'), async (req, res) => {
+app.post('/challenges', uploadChallenge.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
   
   if (!kategorie || !description || !title) {
@@ -126,7 +155,7 @@ app.post('/challenges', upload.single('iconFile'), async (req, res) => {
   }
 
   if (req.file) {
-    icon = '/uploads/' + req.file.filename;
+    icon = '/uploads/challenges/' + req.file.filename;
   }
 
   await db('challenges').insert({ 
@@ -138,6 +167,57 @@ app.post('/challenges', upload.single('iconFile'), async (req, res) => {
 
   req.flash('success', 'Challenge erfolgreich angelegt.');
   res.redirect('/challenges');
+});
+
+
+// DEBUG ROUTE - GANZ OBEN einfügen 
+app.get('/challenges/:id/edit', async (req, res) => {
+  
+  try {
+    const challenge = await db('challenges').where({ id: req.params.id }).first();
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    
+    console.log("Challenge gefunden:", challenge);
+    console.log("Kategorien gefunden:", kategorien.length);
+    
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+    
+    res.render('formChallenges', { 
+      item: challenge, 
+      kategorien,
+      action: `/challenges/${challenge.id}?_method=PUT`, 
+      method: 'POST', 
+      title: 'Challenge bearbeiten', 
+      activePage: 'challenges' 
+    });
+    
+  } catch (error) {
+    console.log("FEHLER:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge.');
+    res.redirect('/challenges');
+  }
+});
+
+
+app.put('/challenges/:id', uploadChallenge.single('iconFile'), async (req, res) => {
+  let { kategorie, description, icon, title } = req.body;
+  
+  if (req.file) {
+    icon = '/uploads/challenges/' + req.file.filename;
+  }
+
+  await db('challenges').where({ id: req.params.id }).update({
+    title: title.trim(),
+    description: description.trim(),
+    kategorie: kategorie.trim(),
+    icon: icon ? icon.trim() : null
+  });
+  
+  req.flash('success', 'Änderungen gespeichert.');
+  res.redirect('/challenges');  // Zurück zu Challenges, nicht zur Startseite!
 });
 
 
@@ -183,6 +263,83 @@ app.delete('/challenges/:id', async (req, res) => {
   res.redirect('/challenges');
 });
 
+// ----- Challenge Filter nach Kategorie -----
+app.get('/challenges/filter/:kategorie', async (req, res) => {
+  try {
+    const kategorie = req.params.kategorie;
+    
+    // Alle Challenges der gewählten Kategorie
+    const challenges = await db('challenges')
+      .where({ kategorie: kategorie })
+      .orderBy('title', 'asc');
+    
+    // Alle Kategorien für das Dropdown
+    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    
+    res.render('challenges', { 
+      challenges: challenges,
+      kategorien: kategorien,
+      activeKategorie: kategorie,
+      activePage: 'challenges'
+      
+    });
+    
+  } catch (error) {
+    console.error("Fehler beim Filtern:", error);
+    req.flash('error', 'Fehler beim Filtern der Challenges');
+    res.redirect('/challenges');
+  }
+});
+
+// ----- Challenge Search API -----
+app.get('/api/challenges/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+    
+    if (!searchTerm || searchTerm.length < 2) {
+      return res.json([]);
+    }
+
+    const challenges = await db('challenges')
+      .where('title', 'like', `%${searchTerm}%`)
+      .orWhere('description', 'like', `%${searchTerm}%`)
+      .orWhere('kategorie', 'like', `%${searchTerm}%`)
+      .select('*')
+      .limit(10);
+
+    res.json(challenges);
+    
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+
+app.get('/challenges/:id', async (req, res) => {
+  try {
+    const challenge = await db('challenges').where({ id: req.params.id }).first();
+    
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+    
+    res.render('challengeDetail', { 
+      challenge: challenge,
+      activePage: 'challenges',
+      isUrl: isUrl,
+      isUploadPath: isUploadPath
+    });
+    
+  } catch (error) {
+    console.error("Fehler:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge.');
+    res.redirect('/challenges');
+  }
+});
+
+
 app.get('/items/new', (req, res) => {
   res.render('formKategorien', { 
     item: {}, 
@@ -193,13 +350,13 @@ app.get('/items/new', (req, res) => {
   });
 });
 
-app.post('/items', upload.single('iconFile'), async (req, res) => {
+app.post('/items', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;  // AUS req.body HOLEN!
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
     return res.redirect('/items/new');
   }
-  if (req.file) icon = '/uploads/' + req.file.filename;
+  if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
   await db('items').insert({ title: title.trim(), description: description.trim(), icon: icon ? icon.trim() : null });
   req.flash('success', 'Kategorie erfolgreich angelegt.');
@@ -218,9 +375,9 @@ app.get('/items/:id/edit', async (req, res) => {
 
 
 
-app.put('/items/:id', upload.single('iconFile'), async (req, res) => {
+app.put('/items/:id', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
-  if (req.file) icon = '/uploads/' + req.file.filename;
+  if (req.file) icon = '/uploads/cateogries/' + req.file.filename;
   await db('items').where({ id: req.params.id }).update({
     title: title.trim(),
     description: description.trim(),
@@ -302,3 +459,4 @@ init().then(() => {
 });
 
 
+// db init erstellen lassen für datenbank struktur

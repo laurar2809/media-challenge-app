@@ -48,67 +48,34 @@ if (client === 'sqlite') {
 const db = knex(dbConfig);
 
 // Ensure table exists
+// db.js - ANGEPASSTE VERSION FÜR MYSQL
 async function init() {
-  const exists = await db.schema.hasTable('items');
-  if (!exists) {
-    await db.schema.createTable('items', (table) => {
-      table.increments('id').primary();
-      table.string('title').notNullable();
-      table.text('description').notNullable();
-      table.string('icon'); // emoji, URL, or '/uploads/<filename>'
-    });
-    // Seed data
-    await db('items').insert([
-      { title: 'Beispiel 1', description: 'Kurze Beschreibung für Datensatz 1', icon: '💡' },
-      { title: 'Beispiel 2', description: 'Noch eine Beschreibung – mit etwas mehr Text.', icon: 'https://cdn-icons-png.flaticon.com/512/1829/1829586.png' },
-      { title: 'Beispiel 3', description: 'Beschreibung 3', icon: '⭐' },
-    ]);
-    console.log("Tabelle 'items' erstellt und Seed-Daten eingefügt.");
-  }
-
-
-
-   // Prüfe ob challenges Tabelle existiert
-  const challengesExists = await db.schema.hasTable('challenges');
-  
-  if (!challengesExists) {
-    // NEUE Tabelle erstellen
-    await db.schema.createTable('challenges', (table) => {
-      table.increments('id').primary();
-      table.string('title').notNullable();
-      table.text('description').notNullable();
-      table.string('icon');
-      table.string('kategorie').notNullable();
-      table.date('start_date');
-      table.date('end_date');
-      
-    });
-    console.log("Tabelle 'challenges' erstellt (ohne difficulty)");
-
-    // Beispiel-Challenge einfügen
-    await db('challenges').insert([
-      { 
-        title: 'Video Challenge', 
-        description: 'Erstelle einen 1-minütigen Kurzfilm', 
-        kategorie: 'Video',
-        icon: '🎬'
-      }
-    ]);
-    console.log("Beispiel-Challenge eingefügt");
+  try {
+    console.log('Prüfe MySQL-Verbindung...');
     
-  } else {
-    //  TABELLE EXISTIERT BEREITS - Prüfe ob sie korrekt ist
-    console.log(" Tabelle 'challenges' existiert bereits");
+    // Einfache Abfrage um Verbindung zu testen
+    await db.raw('SELECT 1');
+    console.log('MySQL-Verbindung erfolgreich!');
     
-    // Optional: Teste ob wir auf die Tabelle zugreifen können
-    try {
-      const testChallenges = await db('challenges').select('*').limit(3);
-      console.log(`Challenges in DB: ${testChallenges.length} Einträge`);
-    } catch (error) {
-      console.error(" Fehler beim Zugriff auf challenges:", error);
+    // Tabellen existieren lassen (nicht automatisch erstellen)
+    const itemsExists = await db.schema.hasTable('items');
+    const challengesExists = await db.schema.hasTable('challenges');
+    
+    console.log(`Items-Tabelle vorhanden: ${itemsExists}`);
+    console.log(`Challenges-Tabelle vorhanden: ${challengesExists}`);
+    
+    if (!itemsExists) {
+      console.log('Items-Tabelle fehlt. Bitte manuell in MySQL erstellen.');
     }
+    if (!challengesExists) {
+      console.log('ℹChallenges-Tabelle fehlt. Bitte manuell in MySQL erstellen.');
+    }
+    
+  } catch (error) {
+    console.error('MySQL-Verbindungsfehler:', error.message);
+    throw error;
   }
-  
 }
+
 
 module.exports = { db, init };
