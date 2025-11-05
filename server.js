@@ -154,10 +154,6 @@ app.post('/challenges', uploadChallenge.single('iconFile'), async (req, res) => 
     return res.redirect('/challenges/new');
   }
 
-  if (req.file) {
-    icon = '/uploads/challenges/' + req.file.filename;
-  }
-
   await db('challenges').insert({ 
     title: title.trim(), 
     description: description.trim(), 
@@ -204,10 +200,7 @@ app.get('/challenges/:id/edit', async (req, res) => {
 
 app.put('/challenges/:id', uploadChallenge.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
-  
-  if (req.file) {
-    icon = '/uploads/challenges/' + req.file.filename;
-  }
+
 
   await db('challenges').where({ id: req.params.id }).update({
     title: title.trim(),
