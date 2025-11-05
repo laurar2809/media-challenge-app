@@ -4,6 +4,10 @@ body { background: #f8f9fb; }
 table td, table th { vertical-align: middle; }
 
 /*Navigationsbalken*/
+.navbar.bg-primary {
+  background: linear-gradient(135deg, #2e4269 0%, #0082ba 120%) !important;
+}
+
 .navbar-nav .nav-link {
   position: relative;
   padding-bottom: 5px; /*Abstand zur Schrift*/
@@ -38,4 +42,66 @@ table td, table th { vertical-align: middle; }
     gap: 0.5rem;
 }
 
+/* Custom Button Styles */
+.btn-custom-details {
+  color: #0082ba !important;
+  border-color: #0082ba !important;
+}
+.btn-custom-details:hover {
+  background-color: #0082ba !important;
+  color: white !important;
+}
 
+.btn-custom-edit {
+  color: #636e72 !important;
+  border-color: #636e72 !important;
+}
+
+.btn-custom-edit:hover {
+  background-color: #636e72 !important;
+  color: white !important;
+}
+
+.btn-custom-delete {
+  color: #e9872f !important;
+  border-color: #e9872f !important;
+}
+
+.btn-custom-delete:hover {
+  background-color: #e9872f !important;
+  color: white !important;
+}
+
+/*Löschen Fenster*/
+.modal-header.custom-delete-header {
+  background-color: #e9872f !important;
+  color: white;
+}
+
+.btn-custom-danger {
+  background-color: #e9872f !important;
+  border-color: #e9872f !important;
+  color: white !important;
+}
+
+.btn-custom-newCategorieChallenge {
+  background-color: #0082ba !important;
+  border-color: #0082ba !important;
+  color: white !important;
+}
+
+.btn-custom-newCategorieChallenge:hover {
+  background-color: color-mix(in srgb, #0082ba 85%, black) !important;
+  border-color: color-mix(in srgb, #0082ba 85%, black) !important;
+}
+
+.btn-custom-safe {
+  background-color: #0082ba !important;
+  border-color: #0082ba !important;
+  color: white !important;
+}
+
+.btn-custom-safe:hover {
+  background-color: color-mix(in srgb, #0082ba 85%, black) !important;
+  border-color: color-mix(in srgb, #0082ba 85%, black) !important;
+}

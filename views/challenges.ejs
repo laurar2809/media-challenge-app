@@ -53,7 +53,7 @@
 
 
 
-  <a href="/challenges/new" class="btn btn-primary">+ Neue Challenge</a>
+  <a href="/challenges/new" class="btn btn-custom-newCategorieChallenge">+ Neue Challenge</a>
 </div>
 
 <!-- Such-Badge (unsichtbar bis zur Suche) -->
@@ -91,9 +91,9 @@
               <td class="fw-medium"><%= challenge.title %></td>
               <td class="text-body-secondary"><%= challenge.description %></td>
               <td class="text-end" style="white-space: nowrap;">
-                <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a>
-                <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-link">Bearbeiten</a>
-                <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
+                <a href="/challenges/<%= challenge.id %>" class="btn btn-outline-primary btn-custom-details">Details</a>
+                <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-outline-secondary btn-custom-edit">Bearbeiten</a>
+                <button type="button" class="btn btn-outline-danger btn-custom-delete" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
               </td>
             </tr>
           <% }) %>
