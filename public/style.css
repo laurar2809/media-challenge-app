@@ -105,3 +105,10 @@ table td, table th { vertical-align: middle; }
   background-color: color-mix(in srgb, #0082ba 85%, black) !important;
   border-color: color-mix(in srgb, #0082ba 85%, black) !important;
 }
+
+/*Filter Fenster*/
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: transparent !important;
+  color: inherit !important;
+}

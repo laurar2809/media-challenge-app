@@ -131,7 +131,6 @@
   const searchContainer = document.getElementById('searchContainer');
   const searchInput = document.getElementById('challengeSearch');
   const searchResults = document.getElementById('searchResults');
-  const searchBadge = document.getElementById('searchBadge');
   const searchTermText = document.getElementById('searchTermText');
   const clearSearch = document.getElementById('clearSearch');
   const challengeRows = document.querySelectorAll('.challenge-row');
@@ -199,13 +198,6 @@
           if (selectedRow) {
             selectedRow.style.display = '';
           }
-          
-          // Such-Badge anzeigen
-          const challengeTitle = this.querySelector('.fw-medium').textContent;
-          searchTermText.textContent = challengeTitle;
-          searchBadge.style.display = 'block';
-          
-          searchInput.value = '';
         });
       });
     }
@@ -216,7 +208,6 @@
   // Search beenden
   clearSearch.addEventListener('click', function(e) {
     e.preventDefault();
-    searchBadge.style.display = 'none';
     // Alle Challenges wieder anzeigen
     challengeRows.forEach(row => {
       row.style.display = '';
