@@ -29,4 +29,13 @@ table td, table th { vertical-align: middle; }
   align-items: center;
 }
 
+.center-filters {
+  position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 

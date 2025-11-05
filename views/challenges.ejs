@@ -6,60 +6,57 @@
       <h2 class="h4 m-0">Challenges</h2>
 
 
+    <div class="d-flex align-items-center position-absolute start-50 translate-middle-x">  
     <!-- Filter Dropdown -->
-    <div class="dropdown">
-      <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        <% if (locals.activeKategorie) { %>
-          Kategorie: <%= locals.activeKategorie %>
-        <% } else { %>
-          Alle Kategorien
-        <% } %>
-      </button>
-      <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="/challenges">Alle Kategorien</a></li>
-        <li><hr class="dropdown-divider"></li>
-        
-        <!-- KATEGORIEN LISTE - VEREINFACHT -->
-        <% if (locals.kategorien && locals.kategorien.length > 0) { %>
-          <% locals.kategorien.forEach(kat => { %>
-            <li>
-              <a class="dropdown-item <%= locals.activeKategorie === kat.title ? 'active' : '' %>" 
-                 href="/challenges/filter/<%= encodeURIComponent(kat.title) %>">
-                 <%= kat.title %>
-              </a>
-            </li>
-          <% }) %>
-        <% } else { %>
-          <li><a class="dropdown-item text-muted" href="#">Keine Kategorien vorhanden</a></li>
-        <% } %>
-      </ul>
-    </div>
-    
-    <!-- Aktive Filter anzeigen -->
-    <% if (locals.activeKategorie) { %>
-      <span class="badge bg-primary d-flex align-items-center">
-        <%= locals.activeKategorie %>
-        <a href="/challenges" class="text-white ms-2 text-decoration-none">×</a>
-      </span>
-    <% } %>
-  
-    <!-- DISKRETE SUCHLEISTE - wird nur bei Eingabe sichtbar -->
-    <div class="position-relative ms-3" style="width: 0; transition: width 0.3s;" id="searchContainer">
-      <input type="text" 
-             id="challengeSearch" 
-             class="form-control" 
-             placeholder="Suchen..." 
-             style="width: 0; padding: 0; border: 0; transition: all 0.3s;"
-             autocomplete="off">
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <% if (locals.activeKategorie) { %>
+            Kategorie: <%= locals.activeKategorie %>
+          <% } else { %>
+            Alle Kategorien
+          <% } %>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="/challenges">Alle Kategorien</a></li>
+          <li><hr class="dropdown-divider"></li>
+          
+          <!-- KATEGORIEN LISTE - VEREINFACHT -->
+          <% if (locals.kategorien && locals.kategorien.length > 0) { %>
+            <% locals.kategorien.forEach(kat => { %>
+              <li>
+                <a class="dropdown-item <%= locals.activeKategorie === kat.title ? 'active' : '' %>" 
+                  href="/challenges/filter/<%= encodeURIComponent(kat.title) %>">
+                  <%= kat.title %>
+                </a>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li><a class="dropdown-item text-muted" href="#">Keine Kategorien vorhanden</a></li>
+          <% } %>
+        </ul>
+      </div>
       
-      <!-- Autocomplete Dropdown -->
-      <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
+      <!-- Aktive Filter anzeigen -->
+      <% if (locals.activeKategorie) { %>
+        <span class="badge bg-primary d-flex align-items-center">
+          <%= locals.activeKategorie %>
+          <a href="/challenges" class="text-white ms-2 text-decoration-none">×</a>
+        </span>
+      <% } %>
+    
+      <!-- DISKRETE SUCHLEISTE - wird nur bei Eingabe sichtbar -->
+      <div class="position-relative ms-3" id="searchContainer">
+        <input type="text" 
+              id="challengeSearch" 
+              class="form-control" 
+              placeholder="🔍Suchen..." 
+              autocomplete="off">
+        
+        <!-- Autocomplete Dropdown -->
+        <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
+      </div>
+      
     </div>
-
-    <!-- Such-Icon das die Suchleiste aktiviert -->
-    <button class="btn btn-outline-secondary ms-2" id="searchToggle" type="button">
-      🔍
-    </button>
   </div>
 
 
