@@ -1,14 +1,80 @@
 <% pageTitle = "Challenges" %>
 
 <div class="d-flex align-items-center justify-content-between mb-3">
+ 
   <div class="d-flex align-items-center">
-    <table>
-      <th><h2 class="h4 m-0">Challenges</h2></th>
-      <th><h2> </h2></th>
-    </table>
+      <h2 class="h4 m-0">Challenges</h2>
+
+
+    <!-- Filter Dropdown -->
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <% if (locals.activeKategorie) { %>
+          Kategorie: <%= locals.activeKategorie %>
+        <% } else { %>
+          Alle Kategorien
+        <% } %>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="/challenges">Alle Kategorien</a></li>
+        <li><hr class="dropdown-divider"></li>
+        
+        <!-- KATEGORIEN LISTE - VEREINFACHT -->
+        <% if (locals.kategorien && locals.kategorien.length > 0) { %>
+          <% locals.kategorien.forEach(kat => { %>
+            <li>
+              <a class="dropdown-item <%= locals.activeKategorie === kat.title ? 'active' : '' %>" 
+                 href="/challenges/filter/<%= encodeURIComponent(kat.title) %>">
+                 <%= kat.title %>
+              </a>
+            </li>
+          <% }) %>
+        <% } else { %>
+          <li><a class="dropdown-item text-muted" href="#">Keine Kategorien vorhanden</a></li>
+        <% } %>
+      </ul>
+    </div>
+    
+    <!-- Aktive Filter anzeigen -->
+    <% if (locals.activeKategorie) { %>
+      <span class="badge bg-primary d-flex align-items-center">
+        <%= locals.activeKategorie %>
+        <a href="/challenges" class="text-white ms-2 text-decoration-none">×</a>
+      </span>
+    <% } %>
+  
+    <!-- DISKRETE SUCHLEISTE - wird nur bei Eingabe sichtbar -->
+    <div class="position-relative ms-3" style="width: 0; transition: width 0.3s;" id="searchContainer">
+      <input type="text" 
+             id="challengeSearch" 
+             class="form-control" 
+             placeholder="Suchen..." 
+             style="width: 0; padding: 0; border: 0; transition: all 0.3s;"
+             autocomplete="off">
+      
+      <!-- Autocomplete Dropdown -->
+      <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
+    </div>
+
+    <!-- Such-Icon das die Suchleiste aktiviert -->
+    <button class="btn btn-outline-secondary ms-2" id="searchToggle" type="button">
+      🔍
+    </button>
   </div>
+
+
+
   <a href="/challenges/new" class="btn btn-primary">+ Neue Challenge</a>
 </div>
+
+<!-- Such-Badge (unsichtbar bis zur Suche) -->
+<div id="searchBadge" class="mb-2" style="display: none;">
+  <span class="badge bg-primary d-inline-flex align-items-center">
+    Suchergebnisse für: <span id="searchTermText" class="ms-1"></span>
+    <a href="#" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
+  </span>
+</div>
+
 
   <div class="table-responsive">
     <table class="table align-middle m-0">
@@ -22,28 +88,28 @@
       </thead>
 
       <!--Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)-->
-      <tbody>
-         <!--  ECHTE DATEN AUS DER DATENBANK -->
-           <%if(locals.challenges){%>
-              <% if (challenges.length === 0) { %>
-                <tr>
-                  <td colspan="4" class="text-center py-4 text-muted">Noch keine Challenges</td>
-                </tr>
-              <% } %>
-              
-              <% challenges.forEach(challenge => { %>
-                <tr>
-                  <td class="text-center"><%= challenge.kategorie %></td>
-                  <td class="fw-medium"><%= challenge.title %></td>
-                  <td class="text-body-secondary"><%= challenge.description %></td>
-                  <td class="text-end">
-                    <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a>
-                    <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-link">Bearbeiten</a>
-                    <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
-                  </td>
-                </tr>
-              <% }) }%>
-      </tbody>
+      <tbody id="challengesTableBody">
+        <%if(locals.challenges){%>
+          <% if (challenges.length === 0) { %>
+            <tr>
+              <td colspan="4" class="text-center py-4 text-muted">Noch keine Challenges</td>
+            </tr>
+          <% } %>
+          
+          <% challenges.forEach(challenge => { %>
+           <tr class="challenge-row" data-id="<%= challenge.id %>">
+              <td class="text-center"><%= challenge.kategorie %></td>
+              <td class="fw-medium"><%= challenge.title %></td>
+              <td class="text-body-secondary"><%= challenge.description %></td>
+              <td class="text-end">
+                <a href="/challenges/<%= challenge.id %>" class="btn btn-link">Details</a>
+                <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-link">Bearbeiten</a>
+                <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
+              </td>
+            </tr>
+          <% }) %>
+      <% } %>
+    </tbody>
      
     </table>
 
@@ -72,6 +138,137 @@
   </div>
 
 <script>
+ // Suchfunktionalität
+  const searchToggle = document.getElementById('searchToggle');
+  const searchContainer = document.getElementById('searchContainer');
+  const searchInput = document.getElementById('challengeSearch');
+  const searchResults = document.getElementById('searchResults');
+  const searchBadge = document.getElementById('searchBadge');
+  const searchTermText = document.getElementById('searchTermText');
+  const clearSearch = document.getElementById('clearSearch');
+  const challengeRows = document.querySelectorAll('.challenge-row');
+
+  let searchTimeout;
+
+  // Suchleiste ein-/ausblenden
+  searchToggle.addEventListener('click', function() {
+    const isVisible = searchContainer.style.width !== '0px';
+    
+    if (!isVisible) {
+      searchContainer.style.width = '200px';
+      searchInput.style.width = '200px';
+      searchInput.style.padding = '0.375rem 0.75rem';
+      searchInput.style.border = '1px solid #ced4da';
+      searchInput.focus();
+    } else {
+      closeSearch();
+    }
+  });
+
+  // Suche bei Eingabe
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    
+    if (query.length < 2) {
+      searchResults.style.display = 'none';
+      return;
+    }
+    
+    searchTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  });
+
+  // API-Suche für Autocomplete
+  async function performSearch(query) {
+    try {
+      const response = await fetch(`/api/challenges/search?q=${encodeURIComponent(query)}`);
+      const challenges = await response.json();
+      
+      displayAutocompleteResults(challenges, query);
+    } catch (error) {
+      console.error('Search error:', error);
+    }
+  }
+
+  // Autocomplete Ergebnisse anzeigen
+  function displayAutocompleteResults(challenges, query) {
+    if (challenges.length === 0) {
+      searchResults.innerHTML = '<div class="dropdown-item text-muted">Keine Ergebnisse</div>';
+    } else {
+      searchResults.innerHTML = challenges.map(challenge => `
+        <a class="dropdown-item d-flex justify-content-between align-items-center search-result" 
+           href="#" 
+           data-challenge-id="${challenge.id}">
+          <div>
+            <div class="fw-medium">${challenge.title}</div>
+            <small class="text-muted">${challenge.kategorie}</small>
+          </div>
+          <small class="text-body-secondary">→</small>
+        </a>
+      `).join('');
+
+      // Event Listener für Suchergebnisse
+      document.querySelectorAll('.search-result').forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          const challengeId = this.getAttribute('data-challenge-id');
+          
+          // ALLE Challenges verstecken
+          challengeRows.forEach(row => {
+            row.style.display = 'none';
+          });
+          
+          // NUR die ausgewählte Challenge anzeigen
+        // NUR die ausgewählte Challenge anzeigen
+          const selectedRow = document.querySelector(`[data-id="${challengeId}"]`);
+          if (selectedRow) {
+            selectedRow.style.display = '';
+          }
+          
+          // Such-Badge anzeigen
+          const challengeTitle = this.querySelector('.fw-medium').textContent;
+          searchTermText.textContent = challengeTitle;
+          searchBadge.style.display = 'block';
+          
+          // Suchleiste schließen
+          closeSearch();
+        });
+      });
+    }
+    
+    searchResults.style.display = 'block';
+  }
+
+  function closeSearch() {
+    searchContainer.style.width = '0';
+    searchInput.style.width = '0';
+    searchInput.style.padding = '0';
+    searchInput.style.border = '0';
+    searchInput.value = '';
+    searchResults.style.display = 'none';
+  }
+
+  // Search beenden
+  clearSearch.addEventListener('click', function(e) {
+    e.preventDefault();
+    searchBadge.style.display = 'none';
+    // Alle Challenges wieder anzeigen
+    challengeRows.forEach(row => {
+      row.style.display = '';
+    });
+  });
+
+  // Klick außerhalb schließt Autocomplete
+  document.addEventListener('click', function(e) {
+    if (!searchContainer.contains(e.target) && !searchToggle.contains(e.target)) {
+      searchResults.style.display = 'none';
+    }
+  });
+
+
+
   // Eventlistener für modales Fenster beim Delete
   const deleteModal = document.getElementById('confirmDeleteModal');
   const deleteForm = document.getElementById('deleteConfirmForm');
@@ -80,7 +277,6 @@
     const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
     const itemId = button.getAttribute('data-id');
     // Action auf die richtige ID setzen
-     deleteForm.action = `/items/${itemId}?_method=DELETE`;
      deleteForm.action = `/challenges/${itemId}?_method=DELETE`;
   });
 </script>
