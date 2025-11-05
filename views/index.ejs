@@ -7,7 +7,7 @@
       <th><h2> </h2></th>
     </table>
   </div>
-  <a href="/items/new" class="btn btn-primary">+ Neue Kategorie</a>
+  <a href="/items/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
 </div>
 
   <div class="table-responsive">
@@ -42,14 +42,13 @@
             <td class="fw-medium"><%= item.title %></td>
             <td class="text-body-secondary"><%= item.description %></td>
             <td class="text-end">
-              <a href="/items/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+              <a href="/items/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
 
               <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
-                <button type="button" class="btn btn-sm btn-outline-danger" 
+                <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" 
                         data-bs-toggle="modal" 
                         data-bs-target="#confirmDeleteModal" 
-                        data-id="<%= item.id %>">
-                  Löschen
+                        data-id="<%= item.id %>">Löschen
                 </button>
               </form>
             </td>
@@ -62,7 +61,7 @@
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
+          <div class="modal-header custom-delete-header">
             <h5 class="modal-title">Löschen bestätigen</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -73,7 +72,7 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
             <form id="deleteConfirmForm" method="POST">
               <input type="hidden" name="_method" value="DELETE">
-              <button type="submit" class="btn btn-danger">Ja, löschen</button>
+              <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
             </form>
           </div>
         </div>
