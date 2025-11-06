@@ -29,11 +29,10 @@
         <% items.forEach(item => { %>
           <tr>
             <td class="text-center">
-              <% if (item.icon && isUrl(item.icon)) { %>
+              <% if (item.icon && isUploadPath(item.icon)) { %>
                 <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
-              <% } else if (item.icon && isUploadPath(item.icon)) { %>
+              <% } else if (item.icon && isUrl(item.icon)) { %>
                 <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
-              <% } else if (item.icon) { %>
                 <span class="fs-4"><%= item.icon %></span>
               <% } else { %>
                 <span class="fs-4"><img src="/assets/file-image.svg" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover"></span>

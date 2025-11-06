@@ -357,8 +357,6 @@ app.get('/items/new', (req, res) => {
 
 app.post('/items', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;  // AUS req.body HOLEN!
-  const currentItem = await db('items').where({ id: req.params.id }).first();
-  if (!req.file) icon = currentItem.icon;
   
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
@@ -385,7 +383,17 @@ app.get('/items/:id/edit', async (req, res) => {
 
 app.put('/items/:id', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
+  const currentItem = await db('items').where({ id: req.params.id }).first();
+  if (!req.file) icon = currentItem.icon;
+  
   if (req.file) icon = '/uploads/categories/' + req.file.filename;
+
+  await db('items').where({ id: req.params.id }).update({
+    title: title.trim(),
+    description: description.trim(), 
+    icon: icon ? icon.trim() : null
+  });
+
   req.flash('success', 'Änderungen gespeichert.');
   res.redirect('/');
 });
@@ -460,6 +468,8 @@ init().then(() => {
   console.error('DB init error:', err);
   process.exit(1);
 });
+
+
 
 
 // db init erstellen lassen für datenbank struktur
