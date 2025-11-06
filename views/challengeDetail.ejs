@@ -1,60 +1,69 @@
-<% pageTitle = challenge.title %>
+<% pageTitle=challenge.title %>
 
-<div class="card">
-  <div class="navbar card-header bg-primary text-white">
-    <div class="d-flex justify-content-between align-items-center">
-      <h2 class="h4 m-0"><%= challenge.title %></h2>
+  <div class="card">
+    <div class="navbar card-header bg-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="h4 m-0">
+          <%= challenge.title %>
+        </h2>
+      </div>
     </div>
-  </div>
-  
-  <div class="card-body">
-    <!-- Icon/Image -->
-        <% if (challenge.icon && challenge.icon.startsWith('/uploads/')) { %>
+
+    <div class="card-body">
+      <!-- Icon/Image -->
+      <% if (challenge.icon && challenge.icon.startsWith('/uploads/')) { %>
         <!-- ECHTES HOCHGELADENES BILD -->
         <div class="text-center mb-4">
-            <img src="<%= challenge.icon %>" class="img-fluid rounded" style="max-height: 200px;">
+          <img src="<%= challenge.icon %>" class="img-fluid rounded" style="max-height: 200px;">
         </div>
         <% } else if (challenge.icon && (challenge.icon.startsWith('http') || challenge.icon.startsWith('data:'))) { %>
-        <!-- EXTERNE URL ODER DATA-URI -->
-        <div class="text-center mb-4">
+          <!-- EXTERNE URL ODER DATA-URI -->
+          <div class="text-center mb-4">
             <img src="<%= challenge.icon %>" class="img-fluid rounded" style="max-height: 200px;">
-        </div>
-        <% } else if (challenge.icon) { %>
-        <!-- EMOJI -->
-        <div class="text-center mb-4">
-            <span class="display-1"><%= challenge.icon %></span>
-        </div>
-        <% } else { %>
-        <!-- FALLBACK: ASSETS FILE-IMAGE.SVG -->
-        <div class="text-center mb-4 text-muted">
-            <img src="/assets/file-image.svg" class="img-fluid rounded" style="max-height: 200px; opacity: 0.5;">
-            <p class="small mt-2">Kein Bild vorhanden</p>
-        </div>
-        <% } %>
+          </div>
+          <% } else if (challenge.icon) { %>
+            <!-- EMOJI -->
+            <div class="text-center mb-4">
+              <span class="display-1">
+                <%= challenge.icon %>
+              </span>
+            </div>
+            <% } else { %>
+              <!-- FALLBACK: ASSETS FILE-IMAGE.SVG -->
+              <div class="text-center mb-4 text-muted">
+                <img src="/assets/file-image.svg" class="img-fluid rounded" style="max-height: 200px; opacity: 0.5;">
+                <p class="small mt-2">Kein Bild vorhanden</p>
+              </div>
+              <% } %>
 
-        
-    <!-- Beschreibung -->
-    <div class="mb-4">
-      <h5 class="text-muted">Beschreibung</h5>
-      <p class="fs-6"><%= challenge.description %></p>
+
+                <!-- Beschreibung -->
+                <div class="mb-4">
+                  <h5 class="text-muted">Beschreibung</h5>
+                  <p class="fs-6">
+                    <%= challenge.description %>
+                  </p>
+                </div>
+
+                <!-- Metadaten -->
+                <div class="row text-muted small">
+                  <div class="col-md-6">
+                    <strong>Erstellt:</strong>
+                    <%= challenge.created_at ? new Date(challenge.created_at).toLocaleDateString('de-DE') : 'Unbekannt'
+                      %>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Geändert:</strong>
+                    <%= challenge.updated_at ? new Date(challenge.updated_at).toLocaleDateString('de-DE') : 'Unbekannt'
+                      %>
+                  </div>
+                </div>
     </div>
 
-    <!-- Metadaten -->
-    <div class="row text-muted small">
-      <div class="col-md-6">
-        <strong>Erstellt:</strong> <%= challenge.created_at ? new Date(challenge.created_at).toLocaleDateString('de-DE') : 'Unbekannt' %>
-      </div>
-      <div class="col-md-6">
-        <strong>Geändert:</strong> <%= challenge.updated_at ? new Date(challenge.updated_at).toLocaleDateString('de-DE') : 'Unbekannt' %>
+    <div class="card-footer">
+      <div class="d-flex gap-2">
+        <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-custom-safe">Bearbeiten</a>
+        <a href="/challenges" class="btn btn-outline-secondary">← Zurück zur Übersicht</a>
       </div>
     </div>
   </div>
-  
-  <div class="card-footer">
-    <div class="d-flex gap-2">
-      <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-custom-safe">Bearbeiten</a>
-      <a href="/challenges" class="btn btn-outline-secondary">← Zurück zur Übersicht</a>
-    </div>
-  </div>
-</div>
-

@@ -1,61 +1,66 @@
-<% pageTitle = title %>
-<h1 class="h4 mb-3"><%= title %></h1>
-<form action="<%= action %>" method="POST" enctype="multipart/form-data">
-  <div class="dropdown">
-  <button class="btn btn-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-     <%= item.kategorie || 'Kategorien' %>
-  </button>
-  <ul class="dropdown-menu">
-    <% kategorien.forEach(kategorie => { %>
-      <li><a class="dropdown-item" href="#" data-value="<%= kategorie.title %>"><%= kategorie.title %></a></li>
-    <% }) %>
-  </ul>
-</div>
-<input type="hidden" name="kategorie" id="selectedKategorie" value="<%= item.kategorie || '' %>" required>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const dropdownItems = document.querySelectorAll(".dropdown-item");
-  const dropdownButton = document.querySelector(".dropdown-toggle");
-  const hiddenInput = document.getElementById("selectedKategorie");
-
-  dropdownItems.forEach(item => {
-    item.addEventListener("click", (e) => {
-      e.preventDefault();
-      const selectedValue = item.getAttribute("data-value");
-      dropdownButton.textContent = selectedValue;
-      hiddenInput.value = selectedValue;
-    });
-  });
-});
-</script>
-
-  <!-- Titel Feld hinzufügen -->
-  <div class="mb-3">
-    <label class="form-label">Titel der Challenge *</label>
-    <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
-  </div>
-
-  <div class="mb-3">
-    <label class="form-label">Beschreibung *</label>
-    <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
-  </div>
-
-  <div class="mb-3">
-  <label class="form-label">Bild (Bild hochladen) </label>
-
-  <!--Bild sichtbar, wenn hochgeladen-->
-  <% if (item.icon) { %>
-    <div class="mb-2">
-      <p class="text-muted">Aktuelles Bild:</p>
-      <img src="<%= item.icon %>" alt="Current image" style="max-height: 100px;" class="img-thumbnail">
+<% pageTitle=title %>
+  <h1 class="h4 mb-3">
+    <%= title %>
+  </h1>
+  <form action="<%= action %>" method="POST" enctype="multipart/form-data">
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <%= item.kategorie || 'Kategorien' %>
+      </button>
+      <ul class="dropdown-menu">
+        <% kategorien.forEach(kategorie=> { %>
+          <li><a class="dropdown-item" href="#" data-value="<%= kategorie.title %>">
+              <%= kategorie.title %>
+            </a></li>
+          <% }) %>
+      </ul>
     </div>
-  <% } %>
+    <input type="hidden" name="kategorie" id="selectedKategorie" value="<%= item.kategorie || '' %>" required>
 
-  <input type="file" name="iconFile" class="form-control">
-  <div class="form-text">Optional. Lade ein Bild für diese Challenge hoch</div>
-</div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const dropdownItems = document.querySelectorAll(".dropdown-item");
+        const dropdownButton = document.querySelector(".dropdown-toggle");
+        const hiddenInput = document.getElementById("selectedKategorie");
+
+        dropdownItems.forEach(item => {
+          item.addEventListener("click", (e) => {
+            e.preventDefault();
+            const selectedValue = item.getAttribute("data-value");
+            dropdownButton.textContent = selectedValue;
+            hiddenInput.value = selectedValue;
+          });
+        });
+      });
+    </script>
+
+    <!-- Titel Feld hinzufügen -->
+    <div class="mb-3">
+      <label class="form-label">Titel der Challenge *</label>
+      <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Beschreibung *</label>
+      <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Bild (Bild hochladen) </label>
+
+      <!--Bild sichtbar, wenn hochgeladen-->
+      <% if (item.icon) { %>
+        <div class="mb-2">
+          <p class="text-muted">Aktuelles Bild:</p>
+          <img src="<%= item.icon %>" alt="Current image" style="max-height: 100px;" class="img-thumbnail">
+        </div>
+        <% } %>
+
+          <input type="file" name="iconFile" class="form-control">
+          <div class="form-text">Optional. Lade ein Bild für diese Challenge hoch</div>
+    </div>
 
     <button type="submit" class="btn btn-custom-safe" type="submit">Speichern</button>
     <a href="/challenges" class="btn btn-outline-secondary">Abbrechen</a>
-</form>
+  </form>

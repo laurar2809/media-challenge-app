@@ -23,7 +23,7 @@ table td, table th { vertical-align: middle; }
 }
 
 .dropdown-toggle.fixed-width {
-  width: 200px;
+  width: 300px;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
