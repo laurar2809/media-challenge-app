@@ -11,7 +11,7 @@
     <% }) %>
   </ul>
 </div>
-<input type="hidden" name="kategorie" id="selectedKategorie" required>
+<input type="hidden" name="kategorie" id="selectedKategorie" value="<%= item.kategorie || '' %>" required>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -43,7 +43,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   <div class="mb-3">
   <label class="form-label">Bild (Bild hochladen) </label>
-  <input type="file" name="image" class="form-control">
+
+  <!--Bild sichtbar, wenn hochgeladen-->
+  <% if (item.icon) { %>
+    <div class="mb-2">
+      <p class="text-muted">Aktuelles Bild:</p>
+      <img src="<%= item.icon %>" alt="Current image" style="max-height: 100px;" class="img-thumbnail">
+    </div>
+  <% } %>
+
+  <input type="file" name="iconFile" class="form-control">
   <div class="form-text">Optional. Lade ein Bild für diese Challenge hoch</div>
 </div>
 
