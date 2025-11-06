@@ -61,14 +61,14 @@ async function init() {
     const itemsExists = await db.schema.hasTable('items');
     const challengesExists = await db.schema.hasTable('challenges');
     
-    console.log(`Items-Tabelle vorhanden: ${itemsExists}`);
-    console.log(`Challenges-Tabelle vorhanden: ${challengesExists}`);
+    console.log(`Categories-Tabelle vorhanden: ${itemsExists}`);
+    console.log(`Aufgabenpakete-Tabelle vorhanden: ${challengesExists}`);
     
     if (!itemsExists) {
-      console.log('Items-Tabelle fehlt. Bitte manuell erstellen.');
+      console.log('Categories-Tabelle fehlt. Bitte manuell erstellen.');
     }
     if (!challengesExists) {
-      console.log('ℹChallenges-Tabelle fehlt. Bitte manuell erstellen.');
+      console.log('ℹAufgabenpakete-Tabelle fehlt. Bitte manuell erstellen.');
     }
     
   } catch (error) {
