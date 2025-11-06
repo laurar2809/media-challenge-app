@@ -410,6 +410,167 @@ app.delete('/categories/:id', async (req, res) => {
   res.redirect('/');
 });
 
+// ----- CHALLENGES ROUTES -----
+
+// Challenges Liste
+app.get('/challenges', async (req, res) => {
+  try {
+    const challenges = await db('challenges').select('*').orderBy('title', 'asc');
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+
+    res.render('challenges', {
+      challenges: challenges,
+      kategorien: kategorien,
+      activePage: 'challenges'
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der Challenges:", error);
+    res.render('challenges', {
+      challenges: [],
+      kategorien: [],
+      activePage: 'challenges'
+    });
+  }
+});
+
+// Neue Challenge erstellen
+app.get('/challenges/new', async (req, res) => {
+  const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+  res.render('formChallenges', {
+    item: {},
+    kategorien,
+    action: '/challenges',
+    title: 'Neue Challenge anlegen',
+    activePage: 'challenges'
+  });
+});
+
+// Challenge speichern
+app.post('/challenges', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
+  let { kategorie, description, icon, title } = req.body;
+
+  if (!kategorie || !description || !title) {
+    req.flash('error', 'Titel, Kategorie und Beschreibung sind Pflichtfelder.');
+    return res.redirect('/challenges/new');
+  }
+
+  if (req.file) {
+    icon = '/uploads/aufgabenpakete/' + req.file.filename;
+  }
+
+  await db('challenges').insert({
+    title: title.trim(),
+    description: description.trim(),
+    kategorie: kategorie.trim(),
+    icon: icon ? icon.trim() : null
+  });
+
+  req.flash('success', 'Challenge erfolgreich angelegt.');
+  res.redirect('/challenges');
+});
+
+// Challenge bearbeiten
+app.get('/challenges/:id/edit', async (req, res) => {
+  try {
+    const challenge = await db('challenges').where({ id: req.params.id }).first();
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+
+    res.render('formChallenges', {
+      item: challenge,
+      kategorien,
+      action: `/challenges/${challenge.id}?_method=PUT`,
+      method: 'POST',
+      title: 'Challenge bearbeiten',
+      activePage: 'challenges'
+    });
+  } catch (error) {
+    console.log("FEHLER:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge.');
+    res.redirect('/challenges');
+  }
+});
+
+// Challenge updaten
+app.put('/challenges/:id', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
+  let { kategorie, description, icon, title } = req.body;
+
+  const currentChallenge = await db('challenges').where({ id: req.params.id }).first();
+  if (!req.file) icon = currentChallenge.icon;
+
+  if (req.file) {
+    icon = '/uploads/aufgabenpakete/' + req.file.filename;
+  }
+
+  await db('challenges').where({ id: req.params.id }).update({
+    title: title.trim(),
+    description: description.trim(),
+    kategorie: kategorie.trim(),
+    icon: icon ? icon.trim() : null
+  });
+
+  req.flash('success', 'Änderungen gespeichert.');
+  res.redirect('/challenges');
+});
+
+// Challenge löschen
+app.delete('/challenges/:id', async (req, res) => {
+  try {
+    const challengeId = parseInt(req.params.id);
+    await db('challenges').where({ id: challengeId }).del();
+    req.flash('success', 'Challenge erfolgreich gelöscht.');
+  } catch (error) {
+    console.error("FEHLER:", error);
+    req.flash('error', 'Datenbank-Fehler: ' + error.message);
+  }
+  res.redirect('/challenges');
+});
+
+// Challenge Filter
+app.get('/challenges/filter/:kategorie', async (req, res) => {
+  try {
+    const kategorie = req.params.kategorie;
+    const challenges = await db('challenges')
+      .where({ kategorie: kategorie })
+      .orderBy('title', 'asc');
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+
+    res.render('challenges', {
+      challenges: challenges,
+      kategorien: kategorien,
+      activeKategorie: kategorie,
+      activePage: 'challenges'
+    });
+  } catch (error) {
+    console.error("Fehler beim Filtern:", error);
+    req.flash('error', 'Fehler beim Filtern der Challenges');
+    res.redirect('/challenges');
+  }
+});
+
+// Challenge Search API
+app.get('/api/challenges/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+    if (!searchTerm || searchTerm.length < 2) return res.json([]);
+
+    const challenges = await db('challenges')
+      .where('title', 'like', `%${searchTerm}%`)
+      .orWhere('description', 'like', `%${searchTerm}%`)
+      .orWhere('kategorie', 'like', `%${searchTerm}%`)
+      .select('*')
+      .limit(10);
+
+    res.json(challenges);
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
 
 // ----- REST API -----
 app.get('/api/categories', async (req, res) => {
