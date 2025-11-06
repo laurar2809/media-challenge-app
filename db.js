@@ -58,8 +58,8 @@ async function init() {
     console.log('Verbindung erfolgreich!');
     
     // Tabellen existieren lassen (nicht automatisch erstellen)
-    const itemsExists = await db.schema.hasTable('items');
-    const challengesExists = await db.schema.hasTable('challenges');
+    const itemsExists = await db.schema.hasTable('categories');
+    const challengesExists = await db.schema.hasTable('aufgabenpakete');
     
     console.log(`Categories-Tabelle vorhanden: ${itemsExists}`);
     console.log(`Aufgabenpakete-Tabelle vorhanden: ${challengesExists}`);
