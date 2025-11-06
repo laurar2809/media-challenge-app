@@ -96,6 +96,161 @@ app.get('/', async (req, res) => {
   res.render('index', { categories, isUrl, isUploadPath, activePage: 'kategorien' });
 });
 
+// ----- SCHUELER ROUTES -----
+
+// Schüler Übersicht
+app.get('/schueler', async (req, res) => {
+  try {
+    const schueler = await db('schueler')
+      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+      .select('schueler.*', 'klassen.name as klasse_name')
+      .orderBy('schueler.nachname', 'asc');
+    
+    const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+    
+    res.render('schueler', { 
+      schueler, 
+      klassen,
+      activePage: 'schueler' 
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der Schüler:", error);
+    res.render('schueler', { 
+      schueler: [], 
+      klassen: [],
+      activePage: 'schueler' 
+    });
+  }
+});
+
+// Neuer Schüler Formular
+app.get('/schueler/new', async (req, res) => {
+  const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+  res.render('formSchueler', {
+    item: {},
+    klassen,
+    action: '/schueler',
+    title: 'Neuen Schüler anlegen',
+    activePage: 'schueler'
+  });
+});
+
+// Schüler speichern
+app.post('/schueler', async (req, res) => {
+  const { vorname, nachname, klasse_id } = req.body;
+  
+  if (!vorname || !nachname) {
+    req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
+    return res.redirect('/schueler/new');
+  }
+  
+  await db('schueler').insert({
+    vorname: vorname.trim(),
+    nachname: nachname.trim(),
+    klasse_id: klasse_id || null
+  });
+  
+  req.flash('success', 'Schüler erfolgreich angelegt.');
+  res.redirect('/schueler');
+});
+
+// ----- SCHUELER ROUTES -----
+
+// Schüler Übersicht
+app.get('/schueler', async (req, res) => {
+  try {
+    const schueler = await db('schueler')
+      .select('*')
+      .orderBy('klasse', 'asc')
+      .orderBy('nachname', 'asc');
+    
+    res.render('schueler', { 
+      schueler, 
+      activePage: 'schueler' 
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der Schüler:", error);
+    res.render('schueler', { 
+      schueler: [], 
+      activePage: 'schueler' 
+    });
+  }
+});
+
+// Neuer Schüler Formular
+app.get('/schueler/new', async (req, res) => {
+  res.render('formSchueler', {
+    item: {},
+    action: '/schueler',
+    title: 'Neuen Schüler anlegen',
+    activePage: 'schueler'
+  });
+});
+
+// Schüler speichern
+app.post('/schueler', async (req, res) => {
+  const { vorname, nachname, klasse } = req.body;
+  
+  if (!vorname || !nachname) {
+    req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
+    return res.redirect('/schueler/new');
+  }
+  
+  await db('schueler').insert({
+    vorname: vorname.trim(),
+    nachname: nachname.trim(),
+    klasse: klasse || null
+  });
+  
+  req.flash('success', 'Schüler erfolgreich angelegt.');
+  res.redirect('/schueler');
+});
+
+// Schüler bearbeiten Formular
+app.get('/schueler/:id/edit', async (req, res) => {
+  try {
+    const schueler = await db('schueler').where({ id: req.params.id }).first();
+    
+    if (!schueler) {
+      req.flash('error', 'Schüler nicht gefunden.');
+      return res.redirect('/schueler');
+    }
+    
+    res.render('formSchueler', {
+      item: schueler,
+      action: `/schueler/${schueler.id}?_method=PUT`,
+      method: 'POST',
+      title: 'Schüler bearbeiten',
+      activePage: 'schueler'
+    });
+  } catch (error) {
+    console.error("Fehler:", error);
+    req.flash('error', 'Fehler beim Laden des Schülers.');
+    res.redirect('/schueler');
+  }
+});
+
+// Schüler aktualisieren
+app.put('/schueler/:id', async (req, res) => {
+  const { vorname, nachname, klasse } = req.body;
+  
+  await db('schueler').where({ id: req.params.id }).update({
+    vorname: vorname.trim(),
+    nachname: nachname.trim(),
+    klasse: klasse || null
+  });
+  
+  req.flash('success', 'Änderungen gespeichert.');
+  res.redirect('/schueler');
+});
+
+// Schüler löschen
+app.delete('/schueler/:id', async (req, res) => {
+  await db('schueler').where({ id: req.params.id }).del();
+  req.flash('success', 'Schüler erfolgreich gelöscht.');
+  res.redirect('/schueler');
+});
+
 
 
 // Datensatz aus Datenbank

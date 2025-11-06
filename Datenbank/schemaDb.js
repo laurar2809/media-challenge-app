@@ -37,18 +37,14 @@ async function createSchema() {
     console.log(' Klassen-Tabelle erstellt/geprüft');
 
     // schueler Tabelle
-    await db.schema.createTableIfNotExists('schueler', (table) => {
-      table.increments('id').primary();
-      table.string('vorname', 100).notNullable();
-      table.string('nachname', 100).notNullable();
-      table.integer('klasse_id').unsigned();
-      table.timestamps(true, true);
-      
-      // Fremdschlüssel nur wenn nicht SQLite (wegen Problemen mit SQLite)
-      if (dbClient !== 'sqlite') {
-        table.foreign('klasse_id').references('id').inTable('klassen').onDelete('SET NULL');
-      }
-    });
+  // schueler Tabelle - VEREINFACHTE VERSION
+await db.schema.createTableIfNotExists('schueler', (table) => {
+  table.increments('id').primary();
+  table.string('vorname', 100).notNullable();
+  table.string('nachname', 100).notNullable();
+  table.string('klasse', 20); // Einfaches Textfeld statt Fremdschlüssel
+  table.timestamps(true, true);
+});
     console.log(' Schueler-Tabelle erstellt/geprüft');
 
     // TEAMS Tabelle (NEU - für Team-Challenges)

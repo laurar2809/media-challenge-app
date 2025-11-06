@@ -1,0 +1,82 @@
+<% pageTitle="Schüler" %>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 m-0">Schüler</h2>
+  <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table align-middle m-0">
+    <thead class="table-light">
+      <tr>
+        <th>Vorname</th>
+        <th>Nachname</th>
+        <th>Klasse</th>
+        <th class="text-end" style="min-width: 200px;">Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (schueler && schueler.length === 0) { %>
+        <tr>
+          <td colspan="4" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
+        </tr>
+      <% } %>
+
+      <% if (schueler && schueler.length > 0) { %>
+        <% schueler.forEach(schueler => { %>
+          <tr>
+            <td class="fw-medium">
+              <%= schueler.vorname %>
+            </td>
+            <td class="fw-medium">
+              <%= schueler.nachname %>
+            </td>
+            <td class="text-body-secondary">
+              <%= schueler.klasse || 'Keine Klasse' %>
+            </td>
+            <td class="text-end" style="white-space: nowrap;">
+              <a href="/schueler/<%= schueler.id %>/edit" class="btn btn-outline-secondary btn-custom-edit">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn-custom-delete" data-bs-toggle="modal"
+                data-bs-target="#confirmDeleteModal" data-id="<%= schueler.id %>">Löschen</button>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+
+  <!-- Pop Up Löschen Fenster -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header custom-delete-header">
+          <h5 class="modal-title">Löschen bestätigen</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Bist du sicher, dass du diesen Schüler löschen möchtest?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+          <form id="deleteConfirmForm" method="POST">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Eventlistener für modales Fenster beim Delete
+  const deleteModal = document.getElementById('confirmDeleteModal');
+  const deleteForm = document.getElementById('deleteConfirmForm');
+
+  deleteModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
+    const itemId = button.getAttribute('data-id');
+    // Action auf die richtige ID setzen
+    deleteForm.action = `/schueler/${itemId}?_method=DELETE`;
+  });
+</script>
