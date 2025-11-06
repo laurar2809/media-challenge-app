@@ -51,11 +51,11 @@ const db = knex(dbConfig);
 // db.js - ANGEPASSTE VERSION FÜR MYSQL
 async function init() {
   try {
-    console.log('Prüfe MySQL-Verbindung...');
+    console.log('Prüfe Verbindung...');
     
     // Einfache Abfrage um Verbindung zu testen
     await db.raw('SELECT 1');
-    console.log('MySQL-Verbindung erfolgreich!');
+    console.log('Verbindung erfolgreich!');
     
     // Tabellen existieren lassen (nicht automatisch erstellen)
     const itemsExists = await db.schema.hasTable('items');
@@ -65,14 +65,14 @@ async function init() {
     console.log(`Challenges-Tabelle vorhanden: ${challengesExists}`);
     
     if (!itemsExists) {
-      console.log('Items-Tabelle fehlt. Bitte manuell in MySQL erstellen.');
+      console.log('Items-Tabelle fehlt. Bitte manuell erstellen.');
     }
     if (!challengesExists) {
-      console.log('ℹChallenges-Tabelle fehlt. Bitte manuell in MySQL erstellen.');
+      console.log('ℹChallenges-Tabelle fehlt. Bitte manuell erstellen.');
     }
     
   } catch (error) {
-    console.error('MySQL-Verbindungsfehler:', error.message);
+    console.error('Verbindungsfehler:', error.message);
     throw error;
   }
 }
