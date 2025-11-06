@@ -20,11 +20,11 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const dropdownItems = document.querySelectorAll(".dropdown-item");
+        const dropdowncategories = document.querySelectorAll(".dropdown-item");
         const dropdownButton = document.querySelector(".dropdown-toggle");
         const hiddenInput = document.getElementById("selectedKategorie");
 
-        dropdownItems.forEach(item => {
+        dropdowncategories.forEach(item => {
           item.addEventListener("click", (e) => {
             e.preventDefault();
             const selectedValue = item.getAttribute("data-value");
@@ -37,7 +37,7 @@
 
     <!-- Titel Feld hinzufügen -->
     <div class="mb-3">
-      <label class="form-label">Titel der Challenge *</label>
+      <label class="form-label">Titel des Aufgabenpaketes *</label>
       <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
     </div>
 
@@ -58,9 +58,9 @@
         <% } %>
 
           <input type="file" name="iconFile" class="form-control">
-          <div class="form-text">Optional. Lade ein Bild für diese Challenge hoch</div>
+          <div class="form-text">Optional. Lade ein Bild für diese Aufgabenpaket hoch</div>
     </div>
 
     <button type="submit" class="btn btn-custom-safe" type="submit">Speichern</button>
-    <a href="/challenges" class="btn btn-outline-secondary">Abbrechen</a>
+    <a href="/aufgabenpakete" class="btn btn-outline-secondary">Abbrechen</a>
   </form>

@@ -21,17 +21,17 @@ const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 // Dateiendungen aus dem MIME-Typ auslesen und schreiben
-// Storage für Challenges
-const challengeStorage = multer.diskStorage({
+// Storage für aufgabenpakete
+const aufgabenpaketeStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = path.join(uploadDir, 'challenges');
+    const dir = path.join(uploadDir, 'aufgabenpakete');
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
     const ext = mime.extension(file.mimetype) || 'bin';
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `challenge-${unique}.${ext}`);
+    cb(null, `aufgabenpaket-${unique}.${ext}`);
   }
 });
 
@@ -49,7 +49,7 @@ const categoryStorage = multer.diskStorage({
   }
 });
 
-const uploadChallenge = multer({ storage: challengeStorage });
+const uploadAufgabenpaket = multer({ storage: aufgabenpaketeStorage });
 const uploadCategory = multer({ storage: categoryStorage });
 
 // Middleware
@@ -92,29 +92,29 @@ function isUploadPath(str) {
 
 // ----- Web Views (Server-rendered) -----
 app.get('/', async (req, res) => {
-  const items = await db('items').select('*').orderBy('title', 'asc');
-  res.render('index', { items, isUrl, isUploadPath, activePage: 'kategorien' });
+  const categories = await db('categories').select('*').orderBy('title', 'asc');
+  res.render('index', { categories, isUrl, isUploadPath, activePage: 'kategorien' });
 });
 
 
 
 // Datensatz aus Datenbank
-app.get('/challenges', async (req, res) => {
+app.get('/aufgabenpakete', async (req, res) => {
   try {
-    const challenges = await db('challenges').select('*').orderBy('title', 'asc');
-    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
-    res.render('challenges', {
-      challenges: challenges,
+    res.render('aufgabenpakete', {
+      aufgabenpakete: aufgabenpakete,
       kategorien: kategorien,
-      activePage: 'challenges'
+      activePage: 'aufgabenpakete'
     });
   } catch (error) {
-    console.error("Fehler beim Laden der Challenges:", error);
-    res.render('challenges', {
-      challenges: [],  //Leere Array falls Fehler
+    console.error("Fehler beim Laden der aufgabenpakete:", error);
+    res.render('aufgabenpakete', {
+      aufgabenpakete: [],  //Leere Array falls Fehler
       kategorien: [],
-      activePage: 'challenges'
+      activePage: 'aufgabenpakete'
     });
   }
 });
@@ -133,88 +133,88 @@ app.get('/test-env', (req, res) => {
 
 
 
-app.get('/challenges/new', async (req, res) => {
-  const kategorien = await db('items').select('*').orderBy('title', 'asc');
-  res.render('formChallenges', {
+app.get('/aufgabenpakete/new', async (req, res) => {
+  const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+  res.render('formAufgabenpakete', {
     item: {},
     kategorien,
-    action: '/challenges',
-    title: 'Neue Challenge anlegen',
-    activePage: 'challenges'
+    action: '/aufgabenpakete',
+    title: 'Neues Aufgabenpaket anlegen',
+    activePage: 'aufgabenpakete'
   });
 });
 
 
-// Challenge speichern
-app.post('/challenges', uploadChallenge.single('iconFile'), async (req, res) => {
+// Aufgabenpaket speichern
+app.post('/aufgabenpakete', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
 
   if (!kategorie || !description || !title) {
     req.flash('error', 'Titel, Kategorie und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/challenges/new');
+    return res.redirect('/aufgabenpakete/new');
   }
 
   // BILD VERARBEITUNG HINZUFÜGEN
   if (req.file) {
-    icon = '/uploads/challenges/' + req.file.filename;
+    icon = '/uploads/aufgabenpakete/' + req.file.filename;
   }
 
-  await db('challenges').insert({
+  await db('aufgabenpakete').insert({
     title: title.trim(),
     description: description.trim(),
     kategorie: kategorie.trim(),
     icon: icon ? icon.trim() : null
   });
 
-  req.flash('success', 'Challenge erfolgreich angelegt.');
-  res.redirect('/challenges');
+  req.flash('success', 'Aufgabenpaket erfolgreich angelegt.');
+  res.redirect('/aufgabenpakete');
 });
 
 
 // DEBUG ROUTE - GANZ OBEN einfügen 
-app.get('/challenges/:id/edit', async (req, res) => {
+app.get('/aufgabenpakete/:id/edit', async (req, res) => {
 
   try {
-    const challenge = await db('challenges').where({ id: req.params.id }).first();
-    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    const aufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
-    console.log("Challenge gefunden:", challenge);
+    console.log("Aufgabenpaket gefunden:", aufgabenpaket);
     console.log("Kategorien gefunden:", kategorien.length);
 
-    if (!challenge) {
-      req.flash('error', 'Challenge nicht gefunden.');
-      return res.redirect('/challenges');
+    if (!aufgabenpaket) {
+      req.flash('error', 'Aufgabenpaket nicht gefunden.');
+      return res.redirect('/aufgabenpakete');
     }
 
-    res.render('formChallenges', {
-      item: challenge,
+    res.render('formAufgabenpakete', {
+      item: aufgabenpaket,
       kategorien,
-      action: `/challenges/${challenge.id}?_method=PUT`,
+      action: `/aufgabenpakete/${aufgabenpaket.id}?_method=PUT`,
       method: 'POST',
-      title: 'Challenge bearbeiten',
-      activePage: 'challenges'
+      title: 'Aufgabenpakete bearbeiten',
+      activePage: 'aufgabenpakete'
     });
 
   } catch (error) {
     console.log("FEHLER:", error);
-    req.flash('error', 'Fehler beim Laden der Challenge.');
-    res.redirect('/challenges');
+    req.flash('error', 'Fehler beim Laden des Aufgabenpaketes.');
+    res.redirect('/aufgabenpakete');
   }
 });
 
 
-app.put('/challenges/:id', uploadChallenge.single('iconFile'), async (req, res) => {
+app.put('/aufgabenpakete/:id', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
 
-  const currentChallenge = await db('challenges').where({ id: req.params.id }).first();
-  if (!req.file) icon = currentChallenge.icon;
+  const currentAufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
+  if (!req.file) icon = currentAufgabenpaket.icon;
 
   // BILD VERARBEITUNG HINZUFÜGEN
   if (req.file) {
-    icon = '/uploads/challenges/' + req.file.filename;
+    icon = '/uploads/aufgabenpakete/' + req.file.filename;
   }
 
-  await db('challenges').where({ id: req.params.id }).update({
+  await db('aufgabenpakete').where({ id: req.params.id }).update({
     title: title.trim(),
     description: description.trim(),
     kategorie: kategorie.trim(),
@@ -222,40 +222,40 @@ app.put('/challenges/:id', uploadChallenge.single('iconFile'), async (req, res) 
   });
 
   req.flash('success', 'Änderungen gespeichert.');
-  res.redirect('/challenges');  // Zurück zu Challenges, nicht zur Startseite!
+  res.redirect('/aufgabenpakete');  // Zurück zu aufgabenpakete, nicht zur Startseite!
 });
 
 
 // DETAILED DELETE DEBUG
-app.delete('/challenges/:id', async (req, res) => {
+app.delete('/aufgabenpakete/:id', async (req, res) => {
 
   try {
     // 1. ID in Zahl umwandeln (wichtig!)
-    const challengeId = parseInt(req.params.id);
+    const aufgabenpaketId = parseInt(req.params.id);
 
-    // 2. ALLE Challenges anzeigen (vorher)
-    const allChallengesBefore = await db('challenges').select('*');
+    // 2. ALLE aufgabenpakete anzeigen (vorher)
+    const allaufgabenpaketeBefore = await db('aufgabenpakete').select('*');
 
-    // 3. Spezifische Challenge suchen
-    const challengeToDelete = await db('challenges').where({ id: challengeId }).first();
+    // 3. Spezifische Aufgabenpaket suchen
+    const aufgabenpaketToDelete = await db('aufgabenpakete').where({ id: aufgabenpaketId }).first();
 
-    if (!challengeToDelete) {
-      req.flash('error', `Challenge mit ID ${challengeId} nicht gefunden.`);
-      return res.redirect('/challenges');
+    if (!aufgabenpaketToDelete) {
+      req.flash('error', `Aufgabenpaket mit ID ${aufgabenpaketId} nicht gefunden.`);
+      return res.redirect('/aufgabenpakete');
     }
 
     // 4. LÖSCHEN versuchen
-    const deleteResult = await db('challenges').where({ id: challengeId }).del();
+    const deleteResult = await db('aufgabenpakete').where({ id: aufgabepaketId }).del();
 
-    // 5. ALLE Challenges anzeigen (nachher)
-    const allChallengesAfter = await db('challenges').select('*');
+    // 5. ALLE aufgabenpakete anzeigen (nachher)
+    const allaufgabenpaketeAfter = await db('aufgabenpakete').select('*');
 
     // 6. Spezifisch prüfen ob noch da
-    const checkIfStillExists = await db('challenges').where({ id: challengeId }).first();
+    const checkIfStillExists = await db('aufgabenpakete').where({ id: aufgabenpaketId }).first();
 
     if (deleteResult > 0 && !checkIfStillExists) {
-      console.log("🎉 ERFOLG: Challenge wurde gelöscht!");
-      req.flash('success', 'Challenge erfolgreich gelöscht.');
+      console.log("🎉 ERFOLG: Aufgabenpaket wurde gelöscht!");
+      req.flash('success', 'Aufgabenpaket erfolgreich gelöscht.');
     } else {
       req.flash('error', 'Löschen fehlgeschlagen.');
     }
@@ -265,39 +265,39 @@ app.delete('/challenges/:id', async (req, res) => {
     req.flash('error', 'Datenbank-Fehler: ' + error.message);
   }
 
-  res.redirect('/challenges');
+  res.redirect('/aufgabenpakete');
 });
 
-// ----- Challenge Filter nach Kategorie -----
-app.get('/challenges/filter/:kategorie', async (req, res) => {
+// ----- Aufgabenpaket Filter nach Kategorie -----
+app.get('/aufgabenpakete/filter/:kategorie', async (req, res) => {
   try {
     const kategorie = req.params.kategorie;
 
-    // Alle Challenges der gewählten Kategorie
-    const challenges = await db('challenges')
+    // Alle aufgabenpakete der gewählten Kategorie
+    const aufgabenpakete = await db('aufgabenpakete')
       .where({ kategorie: kategorie })
       .orderBy('title', 'asc');
 
     // Alle Kategorien für das Dropdown
-    const kategorien = await db('items').select('*').orderBy('title', 'asc');
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
-    res.render('challenges', {
-      challenges: challenges,
+    res.render('aufgabenpakete', {
+      aufgabenpakete: aufgabenpakete,
       kategorien: kategorien,
       activeKategorie: kategorie,
-      activePage: 'challenges'
+      activePage: 'aufgabenpakete'
 
     });
 
   } catch (error) {
     console.error("Fehler beim Filtern:", error);
-    req.flash('error', 'Fehler beim Filtern der Challenges');
-    res.redirect('/challenges');
+    req.flash('error', 'Fehler beim Filtern der aufgabenpakete');
+    res.redirect('/aufgabenpakete');
   }
 });
 
-// ----- Challenge Search API -----
-app.get('/api/challenges/search', async (req, res) => {
+// ----- Aufgabenpaket Search API -----
+app.get('/api/aufgabenpakete/search', async (req, res) => {
   try {
     const searchTerm = req.query.q;
 
@@ -305,14 +305,14 @@ app.get('/api/challenges/search', async (req, res) => {
       return res.json([]);
     }
 
-    const challenges = await db('challenges')
+    const aufgabenpakete = await db('aufgabenpakete')
       .where('title', 'like', `%${searchTerm}%`)
       .orWhere('description', 'like', `%${searchTerm}%`)
       .orWhere('kategorie', 'like', `%${searchTerm}%`)
       .select('*')
       .limit(10);
 
-    res.json(challenges);
+    res.json(aufgabenpakete);
 
   } catch (error) {
     console.error("Search error:", error);
@@ -321,74 +321,74 @@ app.get('/api/challenges/search', async (req, res) => {
 });
 
 
-app.get('/challenges/:id', async (req, res) => {
+app.get('/aufgabenpakete/:id', async (req, res) => {
   try {
-    const challenge = await db('challenges').where({ id: req.params.id }).first();
+    const aufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
 
-    if (!challenge) {
-      req.flash('error', 'Challenge nicht gefunden.');
-      return res.redirect('/challenges');
+    if (!aufgabenpaket) {
+      req.flash('error', 'Aufgabenpaket nicht gefunden.');
+      return res.redirect('/aufgabenpakete');
     }
 
-    res.render('challengeDetail', {
-      challenge: challenge,
-      activePage: 'challenges',
+    res.render('aufgabenpaketeDetail', {
+      aufgabenpaket: aufgabenpaket,
+      activePage: 'aufgabenpakete',
       isUrl: isUrl,
       isUploadPath: isUploadPath
     });
 
   } catch (error) {
     console.error("Fehler:", error);
-    req.flash('error', 'Fehler beim Laden der Challenge.');
-    res.redirect('/challenges');
+    req.flash('error', 'Fehler beim Laden des Aufgabenpaketes.');
+    res.redirect('/aufgabenpakete');
   }
 });
 
 
-app.get('/items/new', (req, res) => {
+app.get('/categories/new', (req, res) => {
   res.render('formKategorien', {
     item: {},
-    action: '/items',
+    action: '/categories',
     method: 'POST',
     title: 'Neue Kategorie anlegen',
     activePage: 'kategorien'
   });
 });
 
-app.post('/items', uploadCategory.single('iconFile'), async (req, res) => {
+app.post('/categories', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;  // AUS req.body HOLEN!
 
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/items/new');
+    return res.redirect('/categories/new');
   }
   if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
-  await db('items').insert({ title: title.trim(), description: description.trim(), icon: icon ? icon.trim() : null });
+  await db('categories').insert({ title: title.trim(), description: description.trim(), icon: icon ? icon.trim() : null });
   req.flash('success', 'Kategorie erfolgreich angelegt.');
   res.redirect('/');
 });
 
 
-app.get('/items/:id/edit', async (req, res) => {
-  const item = await db('items').where({ id: req.params.id }).first();
+app.get('/categories/:id/edit', async (req, res) => {
+  const item = await db('categories').where({ id: req.params.id }).first();
   if (!item) {
     req.flash('error', 'Kategorie nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('formKategorien', { item, action: `/items/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'kategorien' });
+  res.render('formKategorien', { item, action: `/categories/${item.id}?_method=PUT`, method: 'POST', title: 'Kategorie bearbeiten', activePage: 'kategorien' });
 });
 
 
 
-app.put('/items/:id', uploadCategory.single('iconFile'), async (req, res) => {
+app.put('/categories/:id', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
-  const currentItem = await db('items').where({ id: req.params.id }).first();
+  const currentItem = await db('categories').where({ id: req.params.id }).first();
   if (!req.file) icon = currentItem.icon;
 
   if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
-  await db('items').where({ id: req.params.id }).update({
+  await db('categories').where({ id: req.params.id }).update({
     title: title.trim(),
     description: description.trim(),
     icon: icon ? icon.trim() : null
@@ -398,36 +398,36 @@ app.put('/items/:id', uploadCategory.single('iconFile'), async (req, res) => {
   res.redirect('/');
 });
 
-app.delete('/items/:id', async (req, res) => {
-  const item = await db('items').where({ id: req.params.id }).first();
+app.delete('/categories/:id', async (req, res) => {
+  const item = await db('categories').where({ id: req.params.id }).first();
   if (item && isUploadPath(item.icon)) {
     // try to remove uploaded file
     const filePath = path.join(__dirname, 'public', item.icon);
     fs.unlink(filePath, () => { });
   }
-  await db('items').where({ id: req.params.id }).del();
+  await db('categories').where({ id: req.params.id }).del();
   req.flash('success', 'Kategorie gelöscht.');
   res.redirect('/');
 });
 
 
 // ----- REST API -----
-app.get('/api/items', async (req, res) => {
-  const items = await db('items').select('*').orderBy('title', 'asc');
-  res.json(items);
+app.get('/api/categories', async (req, res) => {
+  const categories = await db('categories').select('*').orderBy('title', 'asc');
+  res.json(categories);
 });
 
-app.get('/api/items/:id', async (req, res) => {
-  const item = await db('items').where({ id: req.params.id }).first();
+app.get('/api/categories/:id', async (req, res) => {
+  const item = await db('categories').where({ id: req.params.id }).first();
   if (!item) return res.status(404).json({ error: 'Not found' });
   res.json(item);
 });
 
-app.post('/api/items', async (req, res) => {
+app.post('/api/categories', async (req, res) => {
   const { title, description, icon } = req.body;
   if (!title || !description) return res.status(400).json({ error: 'Missing fields' });
 
-  let insertQuery = db('items').insert({ title, description, icon });
+  let insertQuery = db('categories').insert({ title, description, icon });
 
   // For PostgreSQL we can return id; for others, we can get it in different ways
   try {
@@ -448,14 +448,14 @@ app.post('/api/items', async (req, res) => {
   }
 });
 
-app.put('/api/items/:id', async (req, res) => {
+app.put('/api/categories/:id', async (req, res) => {
   const { title, description, icon } = req.body;
-  await db('items').where({ id: req.params.id }).update({ title, description, icon });
+  await db('categories').where({ id: req.params.id }).update({ title, description, icon });
   res.json({ success: true });
 });
 
-app.delete('/api/items/:id', async (req, res) => {
-  await db('items').where({ id: req.params.id }).del();
+app.delete('/api/categories/:id', async (req, res) => {
+  await db('categories').where({ id: req.params.id }).del();
   res.json({ success: true });
 });
 

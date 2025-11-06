@@ -1,7 +1,7 @@
 <% pageTitle="Katergorien" %>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <div class="d-flex align-items-center">
+  <div class="d-flex align-categories-center justify-content-between mb-3">
+    <div class="d-flex align-categories-center">
       <table>
         <th>
           <h2 class="h4 m-0">Kategorien</h2>
@@ -11,7 +11,7 @@
         </th>
       </table>
     </div>
-    <a href="/items/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
+    <a href="/categories/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
   </div>
 
   <div class="table-responsive">
@@ -25,12 +25,12 @@
         </tr>
       </thead>
       <tbody>
-        <% if (items.length===0) { %>
+        <% if (categories.length===0) { %>
           <tr>
             <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los! 🎯</td>
           </tr>
           <% } %>
-            <% items.forEach(item=> { %>
+            <% categories.forEach(item=> { %>
               <tr>
                 <td class="text-center">
                   <% if (item.icon && isUploadPath(item.icon)) { %>
@@ -53,10 +53,10 @@
                   <%= item.description %>
                 </td>
                 <td class="text-end">
-                  <a href="/items/<%= item.id %>/edit"
+                  <a href="/categories/<%= item.id %>/edit"
                     class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
 
-                  <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                  <form action="/categories/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
                     <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" data-bs-toggle="modal"
                       data-bs-target="#confirmDeleteModal" data-id="<%= item.id %>">Löschen
                     </button>
@@ -99,6 +99,6 @@
       const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
       const itemId = button.getAttribute('data-id');
       // Action auf die richtige ID setzen
-      deleteForm.action = `/items/${itemId}?_method=DELETE`;
+      deleteForm.action = `/categories/${itemId}?_method=DELETE`;
     });
   </script>

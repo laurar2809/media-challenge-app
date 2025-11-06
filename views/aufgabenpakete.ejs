@@ -1,12 +1,12 @@
 <% pageTitle="Challenges" %>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="d-flex align-categories-center justify-content-between mb-3">
 
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-categories-center">
       <h2 class="h4 m-0">Challenges</h2>
 
 
-      <div class="d-flex align-items-center position-absolute start-50 translate-middle-x">
+      <div class="d-flex align-categories-center position-absolute start-50 translate-middle-x">
         <!-- Filter Dropdown -->
         <div class="dropdown">
           <button class="btn btn-outline-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown">
@@ -56,7 +56,7 @@
 
   <!-- Such-Badge (unsichtbar bis zur Suche) -->
   <div id="searchBadge" class="mb-2" style="display: none;">
-    <span class="badge bg-primary d-inline-flex align-items-center">
+    <span class="badge bg-primary d-inline-flex align-categories-center">
       Suchergebnisse für: <span id="searchTermText" class="ms-1"></span>
       <a href="#" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
     </span>
@@ -177,7 +177,7 @@
         searchResults.innerHTML = '<div class="dropdown-item text-muted">Keine Ergebnisse</div>';
       } else {
         searchResults.innerHTML = challenges.map(challenge => `
-        <a class="dropdown-item d-flex justify-content-between align-items-center search-result" 
+        <a class="dropdown-item d-flex justify-content-between align-categories-center search-result" 
            href="#" 
            data-challenge-id="${challenge.id}">
           <div>
