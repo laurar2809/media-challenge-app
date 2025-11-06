@@ -1,14 +1,18 @@
-<% pageTitle = "Katergorien" %>
+<% pageTitle="Katergorien" %>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <div class="d-flex align-items-center">
-    <table>
-      <th><h2 class="h4 m-0">Kategorien</h2></th>
-      <th><h2> </h2></th>
-    </table>
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center">
+      <table>
+        <th>
+          <h2 class="h4 m-0">Kategorien</h2>
+        </th>
+        <th>
+          <h2> </h2>
+        </th>
+      </table>
+    </div>
+    <a href="/items/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
   </div>
-  <a href="/items/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
-</div>
 
   <div class="table-responsive">
     <table class="table align-middle m-0">
@@ -21,38 +25,45 @@
         </tr>
       </thead>
       <tbody>
-        <% if (items.length === 0) { %>
+        <% if (items.length===0) { %>
           <tr>
             <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los! 🎯</td>
           </tr>
-        <% } %>
-        <% items.forEach(item => { %>
-          <tr>
-            <td class="text-center">
-              <% if (item.icon && isUploadPath(item.icon)) { %>
-                <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
-              <% } else if (item.icon && isUrl(item.icon)) { %>
-                <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
-                <span class="fs-4"><%= item.icon %></span>
-              <% } else { %>
-                <span class="fs-4"><img src="/assets/file-image.svg" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover"></span>
-              <% } %>
-            </td>
-            <td class="fw-medium"><%= item.title %></td>
-            <td class="text-body-secondary"><%= item.description %></td>
-            <td class="text-end">
-              <a href="/items/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
+          <% } %>
+            <% items.forEach(item=> { %>
+              <tr>
+                <td class="text-center">
+                  <% if (item.icon && isUploadPath(item.icon)) { %>
+                    <img src="<%= item.icon %>" alt="" class="rounded" style="width:20px;height:20px;object-fit:cover">
+                    <% } else if (item.icon && isUrl(item.icon)) { %>
+                      <img src="<%= item.icon %>" alt="" class="rounded"
+                        style="width:20px;height:20px;object-fit:cover">
+                      <span class="fs-4">
+                        <%= item.icon %>
+                      </span>
+                      <% } else { %>
+                        <span class="fs-4"><img src="/assets/file-image.svg" alt="" class="rounded"
+                            style="width:20px;height:20px;object-fit:cover"></span>
+                        <% } %>
+                </td>
+                <td class="fw-medium">
+                  <%= item.title %>
+                </td>
+                <td class="text-body-secondary">
+                  <%= item.description %>
+                </td>
+                <td class="text-end">
+                  <a href="/items/<%= item.id %>/edit"
+                    class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
 
-              <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#confirmDeleteModal" 
-                        data-id="<%= item.id %>">Löschen
-                </button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
+                  <form action="/items/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" data-bs-toggle="modal"
+                      data-bs-target="#confirmDeleteModal" data-id="<%= item.id %>">Löschen
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
       </tbody>
     </table>
 
@@ -79,15 +90,15 @@
     </div>
   </div>
 
-<script>
-  // Eventlistener für modales Fenster beim Delete
-  const deleteModal = document.getElementById('confirmDeleteModal');
-  const deleteForm = document.getElementById('deleteConfirmForm');
+  <script>
+    // Eventlistener für modales Fenster beim Delete
+    const deleteModal = document.getElementById('confirmDeleteModal');
+    const deleteForm = document.getElementById('deleteConfirmForm');
 
-  deleteModal.addEventListener('show.bs.modal', event => {
-    const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
-    const itemId = button.getAttribute('data-id');
-    // Action auf die richtige ID setzen
-    deleteForm.action = `/items/${itemId}?_method=DELETE`;
-  });
-</script>
+    deleteModal.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
+      const itemId = button.getAttribute('data-id');
+      // Action auf die richtige ID setzen
+      deleteForm.action = `/items/${itemId}?_method=DELETE`;
+    });
+  </script>
