@@ -154,6 +154,11 @@ app.post('/challenges', uploadChallenge.single('iconFile'), async (req, res) => 
     return res.redirect('/challenges/new');
   }
 
+  // BILD VERARBEITUNG HINZUFÜGEN
+  if (req.file) {
+    icon = '/uploads/challenges/' + req.file.filename;
+  }
+
   await db('challenges').insert({ 
     title: title.trim(), 
     description: description.trim(), 
@@ -201,6 +206,13 @@ app.get('/challenges/:id/edit', async (req, res) => {
 app.put('/challenges/:id', uploadChallenge.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
 
+  const currentChallenge = await db('challenges').where({ id: req.params.id }).first();
+  if (!req.file) icon = currentChallenge.icon;
+
+  // BILD VERARBEITUNG HINZUFÜGEN
+  if (req.file) {
+    icon = '/uploads/challenges/' + req.file.filename;
+  }
 
   await db('challenges').where({ id: req.params.id }).update({
     title: title.trim(),
@@ -345,6 +357,9 @@ app.get('/items/new', (req, res) => {
 
 app.post('/items', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;  // AUS req.body HOLEN!
+  const currentItem = await db('items').where({ id: req.params.id }).first();
+  if (!req.file) icon = currentItem.icon;
+  
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
     return res.redirect('/items/new');
@@ -370,12 +385,7 @@ app.get('/items/:id/edit', async (req, res) => {
 
 app.put('/items/:id', uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
-  if (req.file) icon = '/uploads/cateogries/' + req.file.filename;
-  await db('items').where({ id: req.params.id }).update({
-    title: title.trim(),
-    description: description.trim(),
-    icon: icon ? icon.trim() : null
-  });
+  if (req.file) icon = '/uploads/categories/' + req.file.filename;
   req.flash('success', 'Änderungen gespeichert.');
   res.redirect('/');
 });
