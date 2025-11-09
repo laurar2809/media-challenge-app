@@ -1,0 +1,82 @@
+<% pageTitle=title %>
+<h1 class="h4 mb-3">
+  <%= title %>
+</h1>
+<form action="<%= action %>" method="POST" id="challengeForm">
+  
+  <!-- Aufgabenpaket Auswahl -->
+  <div class="mb-3">
+    <label class="form-label">Aufgabenpaket *</label>
+    <select name="aufgabenpaket_id" class="form-control" required>
+      <option value="">Bitte wählen...</option>
+      <% aufgabenpakete.forEach(paket => { %>
+        <option value="<%= paket.id %>" 
+          <%= (Number(item.aufgabenpaket_id) === Number(paket.id)) ? 'selected' : '' %>>
+          <%= paket.title %> (<%= paket.kategorie %>)
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <!-- Team Name -->
+  <div class="mb-3">
+    <label class="form-label">Team Name *</label>
+    <input type="text" name="team_name" class="form-control" required 
+           placeholder="z.B. 'Die Fotografen' oder 'Max & Anna'"
+           value="<%= item.team_name || '' %>">
+  </div>
+
+  <!-- Team Beschreibung -->
+  <div class="mb-3">
+    <label class="form-label">Team Beschreibung</label>
+    <textarea name="team_beschreibung" class="form-control" rows="2" 
+              placeholder="Kurze Beschreibung des Teams"><%= item.team_beschreibung || '' %></textarea>
+  </div>
+
+  <!-- Schüler Auswahl (Mehrfachauswahl) -->
+  <!-- Schüler Auswahl als Checkbox-Liste -->
+<div class="mb-3">
+  <label class="form-label">Teammitglieder auswählen *</label>
+  <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+    <% schueler.forEach(s => { %>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="schueler_ids" 
+               value="<%= s.id %>" id="schueler_<%= s.id %>"
+               <%= (item.schueler_ids && item.schueler_ids.includes(s.id.toString())) ? 'checked' : '' %>>
+        <label class="form-check-label" for="schueler_<%= s.id %>">
+          <%= s.vorname %> <%= s.nachname %> 
+          <% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
+        </label>
+      </div>
+    <% }) %>
+  </div>
+  <div class="form-text">Wählen Sie ein oder mehrere Teammitglieder aus</div>
+</div>
+
+  <!-- Zusatzinfos -->
+  <div class="mb-3">
+    <label class="form-label">Challenge-Zusatzinformationen</label>
+    <textarea name="zusatzinfos" class="form-control" rows="3" 
+              placeholder="Spezielle Anweisungen oder Hinweise für diese Challenge"><%= item.zusatzinfos || '' %></textarea>
+  </div>
+
+  <!-- Abgabedatum -->
+  <div class="mb-3">
+    <label class="form-label">Abgabedatum</label>
+    <input type="date" name="abgabedatum" class="form-control" value="<%= item.abgabedatum || '' %>">
+  </div>
+
+  <button type="submit" class="btn btn-custom-safe">Challenge & Team erstellen</button>
+  <a href="/challenges" class="btn btn-outline-secondary">Abbrechen</a>
+</form>
+
+<script>
+  // Form Validation - Mindestens 1 Schüler ausgewählt
+  document.getElementById('challengeForm').addEventListener('submit', function(e) {
+    const selectedSchueler = Array.from(this.schueler_ids.selectedOptions).length;
+    if (selectedSchueler === 0) {
+      e.preventDefault();
+      alert('Bitte wählen Sie mindestens ein Teammitglied aus!');
+    }
+  });
+</script>

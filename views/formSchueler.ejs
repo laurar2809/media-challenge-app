@@ -15,13 +15,16 @@
   
   <div class="mb-3">
     <label class="form-label">Klasse</label>
-    <select name="klasse" class="form-control">
+    <select name="klasse_id" class="form-control">
       <option value="">Keine Klasse</option>
-      <option value="1bhels" <%= (item.klasse === '1BHELS') ? 'selected' : '' %>>1BHELS</option>
-      <option value="2bhels" <%= (item.klasse === '2BHELS') ? 'selected' : '' %>>2BHELS</option>
-      <option value="3bhels" <%= (item.klasse === '3BHELS') ? 'selected' : '' %>>3BHELS</option>
-      <option value="4bhels" <%= (item.klasse === '4BHELS') ? 'selected' : '' %>>4BHELS</option>
-      <option value="5bhels" <%= (item.klasse === '5BHELS') ? 'selected' : '' %>>5BHELS</option>
+      <% if (klassen && klassen.length > 0) { %>
+        <% klassen.forEach(klasse => { %>
+          <option value="<%= klasse.id %>" 
+            <%= (item.klasse_id == klasse.id) ? 'selected' : '' %>>
+            <%= klasse.name %>
+          </option>
+        <% }) %>
+      <% } %>
     </select>
   </div>
 
