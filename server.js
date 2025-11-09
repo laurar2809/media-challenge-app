@@ -96,28 +96,354 @@ app.get('/', async (req, res) => {
   res.render('index', { categories, isUrl, isUploadPath, activePage: 'kategorien' });
 });
 
-// ----- SCHUELER ROUTES -----
 
-// Schüler Übersicht
-app.get('/schueler', async (req, res) => {
+
+// ----- CHALLENGES ROUTES -----
+
+// Challenges Übersicht - KORRIGIERT
+app.get('/challenges', async (req, res) => {
   try {
+    const challenges = await db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id') // ← DIESER JOIN FEHLT!
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
+      .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+      .select(
+        'challenges.*',
+        'aufgabenpakete.title as aufgabenpaket_title', // ← HIERHER KOMMT DER TITEL
+        'aufgabenpakete.kategorie', // ← UND DIE KATEGORIE
+        'teams.name as team_name',
+        'teams.beschreibung as team_beschreibung',
+        db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
+      )
+      .groupBy('challenges.id')
+      .orderBy('challenges.created_at', 'desc');
+    
+    res.render('challenges', { 
+      challenges, 
+      activePage: 'challenges' 
+    });
+  } catch (error) {
+    console.error("Fehler beim Laden der challenges:", error);
+    res.render('challenges', { 
+      challenges: [], 
+      activePage: 'challenges' 
+    });
+  }
+});
+
+// Neues Challenge Formular
+app.get('/challenges/new', async (req, res) => {
+  try {
+    const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
+    const teams = await db('teams').select('*').orderBy('name', 'asc');
     const schueler = await db('schueler')
       .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
       .select('schueler.*', 'klassen.name as klasse_name')
       .orderBy('schueler.nachname', 'asc');
     
-    const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+    res.render('formChallenges', {
+      item: {},
+      aufgabenpakete,
+      teams,
+      schueler,
+      action: '/challenges',
+      title: 'Neue Challenge erstellen',
+      activePage: 'challenges'
+    });
+  } catch (error) {
+    console.error("Fehler:", error);
+    req.flash('error', 'Fehler beim Laden des Formulars.');
+    res.redirect('/challenges');
+  }
+});
+
+// Challenge speichern
+// Challenge speichern - MIT DYNAMISCHEM TEAM
+app.post('/challenges', async (req, res) => {
+  try {
+    const { aufgabenpaket_id, team_name, team_beschreibung, schueler_ids, zusatzinfos, abgabedatum } = req.body;
+    
+    // Validierung
+    if (!aufgabenpaket_id || !team_name || !schueler_ids) {
+      req.flash('error', 'Aufgabenpaket, Team Name und Teammitglieder sind erforderlich.');
+      return res.redirect('/challenges/new');
+    }
+    
+    // Hole das ausgewählte Aufgabenpaket
+    const aufgabenpaket = await db('aufgabenpakete').where({ id: aufgabenpaket_id }).first();
+    if (!aufgabenpaket) {
+      req.flash('error', 'Ausgewähltes Aufgabenpaket nicht gefunden.');
+      return res.redirect('/challenges/new');
+    }
+    
+    // Prüfe ob Schüler existieren
+    const schuelerArray = Array.isArray(schueler_ids) ? schueler_ids : [schueler_ids];
+    const schueler = await db('schueler').whereIn('id', schuelerArray);
+    if (schueler.length !== schuelerArray.length) {
+      req.flash('error', 'Ein oder mehrere ausgewählte Schüler wurden nicht gefunden.');
+      return res.redirect('/challenges/new');
+    }
+    
+    // TRANSACTION START - Alles oder nichts
+    const trx = await db.transaction();
+    
+    try {
+      // 1. Team erstellen
+      const [teamId] = await trx('teams').insert({
+        name: team_name,
+        beschreibung: team_beschreibung || null
+      });
+      
+      // 2. Schüler dem Team zuweisen (erster Schüler = Teamleiter)
+      const teamMitglieder = schuelerArray.map((schuelerId, index) => ({
+        team_id: teamId,
+        schueler_id: parseInt(schuelerId),
+        rolle: index === 0 ? 'teamleiter' : 'mitglied' // Erster Schüler = Teamleiter
+      }));
+      
+      await trx('team_mitglieder').insert(teamMitglieder);
+      
+      // 3. Challenge erstellen
+      await trx('challenges').insert({
+        title: aufgabenpaket.title,
+        beschreibung: aufgabenpaket.description,
+        kategorie: aufgabenpaket.kategorie,
+        icon: aufgabenpaket.icon,
+        zusatzinfos: zusatzinfos || null,
+        abgabedatum: abgabedatum || null,
+        team_id: teamId,
+        aufgabenpaket_id: aufgabenpaket_id, 
+        status: 'offen'
+      });
+      
+      // Alles erfolgreich - Commit
+      await trx.commit();
+      
+      const mitgliederNamen = schueler.map(s => `${s.vorname} ${s.nachname}`).join(', ');
+      req.flash('success', `Challenge erfolgreich erstellt! Team "${team_name}" mit ${mitgliederNamen}`);
+      res.redirect('/challenges');
+      
+    } catch (error) {
+      // Bei Fehler - Rollback
+      await trx.rollback();
+      throw error;
+    }
+    
+  } catch (error) {
+    console.error(' Fehler:', error);
+    req.flash('error', 'Fehler beim Erstellen: ' + error.message);
+    res.redirect('/challenges/new');
+  }
+});
+
+// Challenge löschen
+app.delete('/challenges/:id', async (req, res) => {
+  try {
+    const challengeId = parseInt(req.params.id);
+    
+    // TRANSACTION START - Alles oder nichts
+    const trx = await db.transaction();
+    
+    try {
+      // 1. Challenge finden (mit Team-ID)
+      const challenge = await trx('challenges').where({ id: challengeId }).first();
+      
+      if (!challenge) {
+        await trx.rollback();
+        req.flash('error', 'Challenge nicht gefunden.');
+        return res.redirect('/challenges');
+      }
+      
+      const teamId = challenge.team_id;
+      
+      // 2. Challenge löschen
+      await trx('challenges').where({ id: challengeId }).del();
+      
+      // 3. Team-Mitglieder löschen
+      await trx('team_mitglieder').where({ team_id: teamId }).del();
+      
+      // 4. Team löschen
+      await trx('teams').where({ id: teamId }).del();
+      
+      // Alles erfolgreich - Commit
+      await trx.commit();
+      
+      req.flash('success', 'Challenge und Team erfolgreich gelöscht.');
+      res.redirect('/challenges');
+      
+    } catch (error) {
+      // Bei Fehler - Rollback
+      await trx.rollback();
+      throw error;
+    }
+    
+  } catch (error) {
+    console.error(' Fehler beim Löschen:', error);
+    req.flash('error', 'Fehler beim Löschen: ' + error.message);
+    res.redirect('/challenges');
+  }
+});
+
+
+// Challenge bearbeiten Formular
+// Challenge bearbeiten Formular - KORRIGIERT
+app.get('/challenges/:id/edit', async (req, res) => {
+  try {
+    // 1. Challenge mit allen notwendigen Joins laden
+    const challenge = await db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .where('challenges.id', req.params.id)
+      .first();
+    
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+    
+    // 2. Team-Mitglieder mit ihren IDs laden
+    const teamMitglieder = await db('team_mitglieder')
+      .where({ team_id: challenge.team_id })
+      .select('schueler_id');
+    
+    const schuelerIds = teamMitglieder.map(m => m.schueler_id.toString()); // WICHTIG: als Strings
+    
+    // 3. Alle benötigten Daten für das Formular laden
+    const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
+    const schueler = await db('schueler')
+      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+      .select('schueler.*', 'klassen.name as klasse_name')
+      .orderBy('schueler.nachname', 'asc');
+    
+    // 4. ALLE Daten an das Template übergeben
+    res.render('formChallenges', {
+      item: {
+        // Challenge Daten
+        id: challenge.id,
+        aufgabenpaket_id: challenge.aufgabenpaket_id,
+        zusatzinfos: challenge.zusatzinfos,
+        abgabedatum: challenge.abgabedatum, // ← JETZT WIRD DAS DATUM GELADEN
+        status: challenge.status,
+        
+        // Team Daten
+        team_name: challenge.name, // aus teams Tabelle
+        team_beschreibung: challenge.beschreibung, // aus teams Tabelle
+        
+        // Schüler IDs als Array
+        schueler_ids: schuelerIds // ← JETZT WERDEN DIE SCHÜLER GELADEN
+      },
+      aufgabenpakete,
+      schueler,
+      action: `/challenges/${challenge.id}?_method=PUT`,
+      title: 'Challenge bearbeiten',
+      activePage: 'challenges'
+    });
+    
+  } catch (error) {
+    console.error("Fehler beim Laden der Challenge:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge.');
+    res.redirect('/challenges');
+  }
+});
+
+// Challenge aktualisieren - KORRIGIERT
+app.put('/challenges/:id', async (req, res) => {
+  try {
+    const { aufgabenpaket_id, team_name, team_beschreibung, schueler_ids, zusatzinfos, abgabedatum } = req.body;
+    
+    // Validierung
+    if (!aufgabenpaket_id || !team_name || !schueler_ids) {
+      req.flash('error', 'Aufgabenpaket, Team Name und Teammitglieder sind erforderlich.');
+      return res.redirect(`/challenges/${req.params.id}/edit`);
+    }
+    
+    // TRANSACTION START
+    const trx = await db.transaction();
+    
+    try {
+      // 1. Challenge finden
+      const challenge = await trx('challenges').where({ id: req.params.id }).first();
+      if (!challenge) {
+        await trx.rollback();
+        req.flash('error', 'Challenge nicht gefunden.');
+        return res.redirect('/challenges');
+      }
+      
+      // 2. Team aktualisieren
+      await trx('teams').where({ id: challenge.team_id }).update({
+        name: team_name,
+        beschreibung: team_beschreibung || null
+      });
+      
+      // 3. Alte Team-Mitglieder löschen
+      await trx('team_mitglieder').where({ team_id: challenge.team_id }).del();
+      
+      // 4. Neue Team-Mitglieder hinzufügen
+      const schuelerArray = Array.isArray(schueler_ids) ? schueler_ids : [schueler_ids];
+      const teamMitglieder = schuelerArray.map((schuelerId, index) => ({
+        team_id: challenge.team_id,
+        schueler_id: parseInt(schuelerId),
+        rolle: index === 0 ? 'teamleiter' : 'mitglied'
+      }));
+      
+      await trx('team_mitglieder').insert(teamMitglieder);
+      
+      // 5. Challenge aktualisieren (MIT DATUM)
+      await trx('challenges').where({ id: req.params.id }).update({
+        aufgabenpaket_id: aufgabenpaket_id,
+        zusatzinfos: zusatzinfos || null,
+        abgabedatum: abgabedatum || null, // ← DATUM WIRD AKTUALISIERT
+        status: challenge.status
+      });
+      
+      // Alles erfolgreich - Commit
+      await trx.commit();
+      
+      req.flash('success', 'Challenge erfolgreich aktualisiert.');
+      res.redirect('/challenges');
+      
+    } catch (error) {
+      // Bei Fehler - Rollback
+      await trx.rollback();
+      throw error;
+    }
+    
+  } catch (error) {
+    console.error('❌ Fehler:', error);
+    req.flash('error', 'Fehler beim Aktualisieren: ' + error.message);
+    res.redirect(`/challenges/${req.params.id}/edit`);
+  }
+});
+// Weitere Routes für Bearbeiten, Löschen, Details...
+// (Ähnlich wie bei Schüler/Aufgabenpakete)
+
+
+
+
+// ----- SCHUELER ROUTES -----
+
+// Schüler Übersicht
+// Schüler Übersicht - MIT JOIN für Klassen-Namen
+app.get('/schueler', async (req, res) => {
+  try {
+    const schueler = await db('schueler')
+      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+      .select(
+        'schueler.*', 
+        'klassen.name as klasse_name'  // Klassen-Name mitjoinen
+      )
+      .orderBy('schueler.nachname', 'asc');
     
     res.render('schueler', { 
       schueler, 
-      klassen,
       activePage: 'schueler' 
     });
   } catch (error) {
     console.error("Fehler beim Laden der Schüler:", error);
     res.render('schueler', { 
       schueler: [], 
-      klassen: [],
       activePage: 'schueler' 
     });
   }
@@ -154,62 +480,11 @@ app.post('/schueler', async (req, res) => {
   res.redirect('/schueler');
 });
 
-// ----- SCHUELER ROUTES -----
-
-// Schüler Übersicht
-app.get('/schueler', async (req, res) => {
-  try {
-    const schueler = await db('schueler')
-      .select('*')
-      .orderBy('klasse', 'asc')
-      .orderBy('nachname', 'asc');
-    
-    res.render('schueler', { 
-      schueler, 
-      activePage: 'schueler' 
-    });
-  } catch (error) {
-    console.error("Fehler beim Laden der Schüler:", error);
-    res.render('schueler', { 
-      schueler: [], 
-      activePage: 'schueler' 
-    });
-  }
-});
-
-// Neuer Schüler Formular
-app.get('/schueler/new', async (req, res) => {
-  res.render('formSchueler', {
-    item: {},
-    action: '/schueler',
-    title: 'Neuen Schüler anlegen',
-    activePage: 'schueler'
-  });
-});
-
-// Schüler speichern
-app.post('/schueler', async (req, res) => {
-  const { vorname, nachname, klasse } = req.body;
-  
-  if (!vorname || !nachname) {
-    req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
-    return res.redirect('/schueler/new');
-  }
-  
-  await db('schueler').insert({
-    vorname: vorname.trim(),
-    nachname: nachname.trim(),
-    klasse: klasse || null
-  });
-  
-  req.flash('success', 'Schüler erfolgreich angelegt.');
-  res.redirect('/schueler');
-});
-
 // Schüler bearbeiten Formular
 app.get('/schueler/:id/edit', async (req, res) => {
   try {
     const schueler = await db('schueler').where({ id: req.params.id }).first();
+    const klassen = await db('klassen').select('*').orderBy('name', 'asc');
     
     if (!schueler) {
       req.flash('error', 'Schüler nicht gefunden.');
@@ -218,6 +493,7 @@ app.get('/schueler/:id/edit', async (req, res) => {
     
     res.render('formSchueler', {
       item: schueler,
+      klassen,
       action: `/schueler/${schueler.id}?_method=PUT`,
       method: 'POST',
       title: 'Schüler bearbeiten',
@@ -232,12 +508,12 @@ app.get('/schueler/:id/edit', async (req, res) => {
 
 // Schüler aktualisieren
 app.put('/schueler/:id', async (req, res) => {
-  const { vorname, nachname, klasse } = req.body;
+  const { vorname, nachname, klasse_id } = req.body;
   
   await db('schueler').where({ id: req.params.id }).update({
     vorname: vorname.trim(),
     nachname: nachname.trim(),
-    klasse: klasse || null
+    klasse_id: klasse_id || null
   });
   
   req.flash('success', 'Änderungen gespeichert.');
@@ -250,6 +526,8 @@ app.delete('/schueler/:id', async (req, res) => {
   req.flash('success', 'Schüler erfolgreich gelöscht.');
   res.redirect('/schueler');
 });
+
+
 
 
 
@@ -565,167 +843,6 @@ app.delete('/categories/:id', async (req, res) => {
   res.redirect('/');
 });
 
-// ----- CHALLENGES ROUTES -----
-
-// Challenges Liste
-app.get('/challenges', async (req, res) => {
-  try {
-    const challenges = await db('challenges').select('*').orderBy('title', 'asc');
-    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-
-    res.render('challenges', {
-      challenges: challenges,
-      kategorien: kategorien,
-      activePage: 'challenges'
-    });
-  } catch (error) {
-    console.error("Fehler beim Laden der Challenges:", error);
-    res.render('challenges', {
-      challenges: [],
-      kategorien: [],
-      activePage: 'challenges'
-    });
-  }
-});
-
-// Neue Challenge erstellen
-app.get('/challenges/new', async (req, res) => {
-  const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-  res.render('formChallenges', {
-    item: {},
-    kategorien,
-    action: '/challenges',
-    title: 'Neue Challenge anlegen',
-    activePage: 'challenges'
-  });
-});
-
-// Challenge speichern
-app.post('/challenges', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
-  let { kategorie, description, icon, title } = req.body;
-
-  if (!kategorie || !description || !title) {
-    req.flash('error', 'Titel, Kategorie und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/challenges/new');
-  }
-
-  if (req.file) {
-    icon = '/uploads/aufgabenpakete/' + req.file.filename;
-  }
-
-  await db('challenges').insert({
-    title: title.trim(),
-    description: description.trim(),
-    kategorie: kategorie.trim(),
-    icon: icon ? icon.trim() : null
-  });
-
-  req.flash('success', 'Challenge erfolgreich angelegt.');
-  res.redirect('/challenges');
-});
-
-// Challenge bearbeiten
-app.get('/challenges/:id/edit', async (req, res) => {
-  try {
-    const challenge = await db('challenges').where({ id: req.params.id }).first();
-    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-
-    if (!challenge) {
-      req.flash('error', 'Challenge nicht gefunden.');
-      return res.redirect('/challenges');
-    }
-
-    res.render('formChallenges', {
-      item: challenge,
-      kategorien,
-      action: `/challenges/${challenge.id}?_method=PUT`,
-      method: 'POST',
-      title: 'Challenge bearbeiten',
-      activePage: 'challenges'
-    });
-  } catch (error) {
-    console.log("FEHLER:", error);
-    req.flash('error', 'Fehler beim Laden der Challenge.');
-    res.redirect('/challenges');
-  }
-});
-
-// Challenge updaten
-app.put('/challenges/:id', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
-  let { kategorie, description, icon, title } = req.body;
-
-  const currentChallenge = await db('challenges').where({ id: req.params.id }).first();
-  if (!req.file) icon = currentChallenge.icon;
-
-  if (req.file) {
-    icon = '/uploads/aufgabenpakete/' + req.file.filename;
-  }
-
-  await db('challenges').where({ id: req.params.id }).update({
-    title: title.trim(),
-    description: description.trim(),
-    kategorie: kategorie.trim(),
-    icon: icon ? icon.trim() : null
-  });
-
-  req.flash('success', 'Änderungen gespeichert.');
-  res.redirect('/challenges');
-});
-
-// Challenge löschen
-app.delete('/challenges/:id', async (req, res) => {
-  try {
-    const challengeId = parseInt(req.params.id);
-    await db('challenges').where({ id: challengeId }).del();
-    req.flash('success', 'Challenge erfolgreich gelöscht.');
-  } catch (error) {
-    console.error("FEHLER:", error);
-    req.flash('error', 'Datenbank-Fehler: ' + error.message);
-  }
-  res.redirect('/challenges');
-});
-
-// Challenge Filter
-app.get('/challenges/filter/:kategorie', async (req, res) => {
-  try {
-    const kategorie = req.params.kategorie;
-    const challenges = await db('challenges')
-      .where({ kategorie: kategorie })
-      .orderBy('title', 'asc');
-    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-
-    res.render('challenges', {
-      challenges: challenges,
-      kategorien: kategorien,
-      activeKategorie: kategorie,
-      activePage: 'challenges'
-    });
-  } catch (error) {
-    console.error("Fehler beim Filtern:", error);
-    req.flash('error', 'Fehler beim Filtern der Challenges');
-    res.redirect('/challenges');
-  }
-});
-
-// Challenge Search API
-app.get('/api/challenges/search', async (req, res) => {
-  try {
-    const searchTerm = req.query.q;
-    if (!searchTerm || searchTerm.length < 2) return res.json([]);
-
-    const challenges = await db('challenges')
-      .where('title', 'like', `%${searchTerm}%`)
-      .orWhere('description', 'like', `%${searchTerm}%`)
-      .orWhere('kategorie', 'like', `%${searchTerm}%`)
-      .select('*')
-      .limit(10);
-
-    res.json(challenges);
-  } catch (error) {
-    console.error("Search error:", error);
-    res.status(500).json({ error: 'Search failed' });
-  }
-});
 
 // ----- REST API -----
 app.get('/api/categories', async (req, res) => {

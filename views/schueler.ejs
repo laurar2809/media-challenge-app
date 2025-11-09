@@ -32,7 +32,7 @@
               <%= schueler.nachname %>
             </td>
             <td class="text-body-secondary">
-              <%= schueler.klasse || 'Keine Klasse' %>
+                <%= schueler.klasse_name || 'Keine Klasse' %>
             </td>
             <td class="text-end" style="white-space: nowrap;">
               <a href="/schueler/<%= schueler.id %>/edit" class="btn btn-outline-secondary btn-custom-edit">Bearbeiten</a>
