@@ -52,6 +52,7 @@
 </div>
 
 <div class="table-responsive">
+
   <!-- Card-Container -->
   <div class="row" id="challengesCardContainer">
     <% if (challenges && challenges.length === 0) { %>
@@ -77,15 +78,12 @@
             data-kategorie="<%= (challenge.kategorie || '').toLowerCase() %>"
             data-teammitglieder="<%= (challenge.team_mitglieder_names || '').toLowerCase() %>">
           <div class="card h-100 shadow-sm">
-            <div class="card-header bg-light">
-              <h6 class="card-title mb-0 fw-medium"><%= challenge.aufgabenpaket_title %></h6>
-            </div>
             <div class="card-body">
               <!-- Team/Schüler Info -->
               <div class="mb-3">
                 <strong class="d-block">Team/Schüler:</strong>
                 <% if (challenge.team_name) { %>
-                  <div class="fw-medium text"><%= challenge.team_name %></div>
+                  <div class="fw-medium custom-team-color"><%= challenge.team_name %></div>
                   <small class="text-muted">
                     <%= challenge.team_mitglieder_names || 'Keine Mitglieder' %>
                   </small>
@@ -157,6 +155,7 @@
   const searchBadge = document.getElementById('searchBadge');
   const kategorienFilter = document.getElementById('kategorienFilter');
   const challengeCards = document.querySelectorAll('.challenge-card');
+
 
   let searchTimeout;
 
