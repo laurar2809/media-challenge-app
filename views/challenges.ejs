@@ -12,7 +12,6 @@
         <th>Aufgabenpaket</th>
         <th>Team/Schüler</th>
         <th>Kategorie</th>
-        <th>Status</th>
         <th>Abgabedatum</th>
         <th class="text-end">Aktionen</th>
       </tr>
@@ -42,16 +41,6 @@
             </td>
             <td class="text-body-secondary">
               <%= challenge.kategorie %>
-            </td>
-            <td>
-              <span class="badge 
-                <%= challenge.status === 'offen' ? 'bg-secondary' : '' %>
-                <%= challenge.status === 'in_arbeit' ? 'bg-info' : '' %>
-                <%= challenge.status === 'abgeschlossen' ? 'bg-success' : '' %>
-                <%= challenge.status === 'bewertet' ? 'bg-primary' : '' %>
-              ">
-                <%= challenge.status ? challenge.status.replace('_', ' ') : 'offen' %>
-              </span>
             </td>
             <td class="text-body-secondary">
               <%= challenge.abgabedatum ? new Date(challenge.abgabedatum).toLocaleDateString('de-DE') : '-' %>
