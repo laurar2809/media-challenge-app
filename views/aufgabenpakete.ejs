@@ -36,6 +36,11 @@
              autocomplete="off">
     </div>
   </div>
+
+
+  <div class="table-responsive">
+    <table class="table table-hover table align-middle m-0 table-light">
+      <thead class="table-light">
 </div>
 
 <!-- Such-Badge -->
@@ -69,6 +74,51 @@
             <% } else { %>
               Noch keine Aufgabenpakete vorhanden
             <% } %>
+
+              <% aufgabenpakete.forEach(aufgabenpaket=> { %>
+                <tr class="aufgabenpaket-row" data-id="<%= aufgabenpaket.id %>">
+                  <td class="text-start">
+                    <%= aufgabenpaket.kategorie %>
+                  </td>
+                  <td class="fw-medium">
+                    <%= aufgabenpaket.title %>
+                  </td>
+                  <td class="text-body-secondary">
+                    <%= aufgabenpaket.description %>
+                  </td>
+                  <td class="text-end" style="white-space: nowrap;">
+                    <a href="/aufgabenpakete/<%= aufgabenpaket.id %>"
+                      class="btn btn-outline-primary btn-custom-details btn btn-sm">Details</a>
+                    <a href="/aufgabenpakete/<%= aufgabenpaket.id %>/edit"
+                      class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
+                    <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm" data-bs-toggle="modal"
+                      data-bs-target="#confirmDeleteModal" data-id="<%= aufgabenpaket.id %>">Löschen</button>
+                  </td>
+                </tr>
+                <% }) %>
+                  <% } %>
+      </tbody>
+
+    </table>
+
+    <!-- Pop Up Löschen Fenster -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header custom-delete-header">
+            <h5 class="modal-title">Löschen bestätigen</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bist du sicher, dass du diesen Datensatz löschen möchtest?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <form id="deleteConfirmForm" method="POST">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+            </form>
+          </div>
           </td>
         </tr>
       <% } %>
