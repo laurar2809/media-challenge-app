@@ -59,7 +59,7 @@
 
 
 <div class="table-responsive">
-  <table class="table table-hover table align-middle m-0">
+  <table class="table table-hover table align-middle m-0 table-light">
     <thead class="table-light">
       <tr>
         <th>Aufgabenpaket</th>
@@ -99,9 +99,9 @@
               <%= challenge.abgabedatum ? new Date(challenge.abgabedatum).toLocaleDateString('de-DE') : '-' %>
             </td>
             <td class="text-end" style="white-space: nowrap;">
-              <a href="/challenges/<%= challenge.id %>" class="btn btn-outline-primary btn-sm">Details</a>
-              <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
-              <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+              <a href="/challenges/<%= challenge.id %>" class="btn btn-outline-primary btn btn-sm">Details</a>
+              <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-outline-secondary btn btn-sm">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn btn-sm" data-bs-toggle="modal"
                 data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
             </td>
           </tr>
