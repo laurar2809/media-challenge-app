@@ -951,7 +951,7 @@ app.delete('/aufgabenpakete/:id', async (req, res) => {
     }
 
     // 4. LÖSCHEN versuchen
-    const deleteResult = await db('aufgabenpakete').where({ id: aufgabepaketId }).del();
+    const deleteResult = await db('aufgabenpakete').where({ id: aufgabenpaketId }).del();
 
     // 5. ALLE aufgabenpakete anzeigen (nachher)
     const allaufgabenpaketeAfter = await db('aufgabenpakete').select('*');
