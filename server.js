@@ -102,12 +102,30 @@ app.get('/', async (req, res) => {
 
 // Challenges Übersicht - KORRIGIERT
 // Vereinfachte Version für SQLite und MySQL
-// Challenges Übersicht mit Filter-Option
+// ----- CHALLENGES ROUTES MIT LIVE-FILTERING -----
+
+// Challenges Übersicht mit Filterung
 app.get('/challenges', async (req, res) => {
   try {
+    const { kategorie, search } = req.query;
+    
     let query = db('challenges')
       .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
       .leftJoin('teams', 'challenges.team_id', 'teams.id');
+
+    // Filter nach Kategorie
+    if (kategorie && kategorie !== 'alle') {
+      query = query.where('aufgabenpakete.kategorie', kategorie);
+    }
+
+    // Suche nach Teams/Aufgabenpaketen
+    if (search && search.length >= 2) {
+      query = query.where(function() {
+        this.where('aufgabenpakete.title', 'like', `%${search}%`)
+             .orWhere('teams.name', 'like', `%${search}%`)
+             .orWhere('aufgabenpakete.kategorie', 'like', `%${search}%`);
+      });
+    }
 
     // Kategorien für Filter-Dropdown
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
@@ -160,6 +178,8 @@ app.get('/challenges', async (req, res) => {
     res.render('challenges', { 
       challenges, 
       kategorien,
+      activeKategorie: kategorie || 'alle',
+      searchTerm: search || '',
       activePage: 'challenges' 
     });
     
@@ -168,6 +188,8 @@ app.get('/challenges', async (req, res) => {
     res.render('challenges', { 
       challenges: [], 
       kategorien: [],
+      activeKategorie: 'alle',
+      searchTerm: '',
       activePage: 'challenges' 
     });
   }
@@ -365,7 +387,6 @@ app.post('/challenges', async (req, res) => {
         abgabedatum: abgabedatum || null,
         team_id: teamId,
         aufgabenpaket_id: aufgabenpaket_id, 
-        status: 'offen'
       });
       
       // Alles erfolgreich - Commit
@@ -475,7 +496,7 @@ app.get('/challenges/:id/edit', async (req, res) => {
         aufgabenpaket_id: challenge.aufgabenpaket_id,
         zusatzinfos: challenge.zusatzinfos,
         abgabedatum: challenge.abgabedatum, // ← JETZT WIRD DAS DATUM GELADEN
-        status: challenge.status,
+      
         
         // Team Daten
         team_name: challenge.name, // aus teams Tabelle
@@ -545,7 +566,7 @@ app.put('/challenges/:id', async (req, res) => {
         aufgabenpaket_id: aufgabenpaket_id,
         zusatzinfos: zusatzinfos || null,
         abgabedatum: abgabedatum || null, // ← DATUM WIRD AKTUALISIERT
-        status: challenge.status
+      
       });
       
       // Alles erfolgreich - Commit
@@ -561,7 +582,7 @@ app.put('/challenges/:id', async (req, res) => {
     }
     
   } catch (error) {
-    console.error('❌ Fehler:', error);
+    console.error(' Fehler:', error);
     req.flash('error', 'Fehler beim Aktualisieren: ' + error.message);
     res.redirect(`/challenges/${req.params.id}/edit`);
   }
@@ -576,26 +597,83 @@ app.put('/challenges/:id', async (req, res) => {
 
 // Schüler Übersicht
 // Schüler Übersicht - MIT JOIN für Klassen-Namen
+// Schüler Übersicht mit Filterung
 app.get('/schueler', async (req, res) => {
   try {
-    const schueler = await db('schueler')
+    const { klasse, search } = req.query;
+    
+    let query = db('schueler')
       .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
       .select(
         'schueler.*', 
-        'klassen.name as klasse_name'  // Klassen-Name mitjoinen
-      )
-      .orderBy('schueler.nachname', 'asc');
+        'klassen.name as klasse_name'
+      );
+
+    // Filter nach Klasse
+    if (klasse && klasse !== 'alle') {
+      query = query.where('klassen.name', klasse);
+    }
+
+    // Suche nach Namen
+    if (search && search.length >= 2) {
+      query = query.where(function() {
+        this.where('schueler.vorname', 'like', `%${search}%`)
+             .orWhere('schueler.nachname', 'like', `%${search}%`)
+             .orWhere('klassen.name', 'like', `%${search}%`);
+      });
+    }
+
+    const schueler = await query.orderBy('schueler.nachname', 'asc');
     
+    // Alle Klassen für Filter-Dropdown
+    const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+
     res.render('schueler', { 
       schueler, 
+      klassen,
+      activeFilter: klasse || 'alle',
+      searchTerm: search || '',
       activePage: 'schueler' 
     });
   } catch (error) {
     console.error("Fehler beim Laden der Schüler:", error);
     res.render('schueler', { 
       schueler: [], 
+      klassen: [],
+      activeFilter: 'alle',
+      searchTerm: '',
       activePage: 'schueler' 
     });
+  }
+});
+
+
+// Schüler Search API
+app.get('/api/schueler/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+    console.log(' Schüler-Suche:', searchTerm);
+
+    if (!searchTerm || searchTerm.length < 2) {
+      return res.json([]);
+    }
+
+    const schueler = await db('schueler')
+      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+      .where('schueler.vorname', 'like', `%${searchTerm}%`)
+      .orWhere('schueler.nachname', 'like', `%${searchTerm}%`)
+      .orWhere('klassen.name', 'like', `%${searchTerm}%`)
+      .select(
+        'schueler.*',
+        'klassen.name as klasse_name'
+      )
+      .limit(10);
+
+    res.json(schueler);
+
+  } catch (error) {
+    console.error("Schüler Search error:", error);
+    res.status(500).json({ error: 'Search failed' });
   }
 });
 
@@ -682,21 +760,46 @@ app.delete('/schueler/:id', async (req, res) => {
 
 
 // Datensatz aus Datenbank
+// ----- AUFGABENPAKETE ROUTES MIT LIVE-FILTERING -----
+
+// Aufgabenpakete Übersicht mit Filterung
 app.get('/aufgabenpakete', async (req, res) => {
   try {
-    const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
+    const { kategorie, search } = req.query;
+    
+    let query = db('aufgabenpakete').select('*');
+
+    // Filter nach Kategorie
+    if (kategorie && kategorie !== 'alle') {
+      query = query.where('kategorie', kategorie);
+    }
+
+    // Suche nach Titel/Beschreibung
+    if (search && search.length >= 2) {
+      query = query.where(function() {
+        this.where('title', 'like', `%${search}%`)
+             .orWhere('description', 'like', `%${search}%`)
+             .orWhere('kategorie', 'like', `%${search}%`);
+      });
+    }
+
+    const aufgabenpakete = await query.orderBy('title', 'asc');
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
     res.render('aufgabenpakete', {
       aufgabenpakete: aufgabenpakete,
       kategorien: kategorien,
+      activeKategorie: kategorie || 'alle',
+      searchTerm: search || '',
       activePage: 'aufgabenpakete'
     });
   } catch (error) {
     console.error("Fehler beim Laden der aufgabenpakete:", error);
     res.render('aufgabenpakete', {
-      aufgabenpakete: [],  //Leere Array falls Fehler
+      aufgabenpakete: [],
       kategorien: [],
+      activeKategorie: 'alle',
+      searchTerm: '',
       activePage: 'aufgabenpakete'
     });
   }

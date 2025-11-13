@@ -1,86 +1,78 @@
 <% pageTitle="Aufgabenpakete" %>
 
-  <div class="d-flex align-categories-center justify-content-between mb-3">
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 m-0">Aufgabenpakete</h2>
+  <a href="/aufgabenpakete/new" class="btn btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
+</div>
 
-    <div class="d-flex align-categories-center">
-      <h2 class="h4 m-0">Aufgabenpakete</h2>
-
-
-      <div class="d-flex align-categories-center position-absolute start-50 translate-middle-x">
-        <!-- Filter Dropdown -->
-        <div class="dropdown">
-          <button class="btn btn-outline-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown">
-            <% if (locals.activeKategorie) { %>
-              Kategorie: <%= locals.activeKategorie %>
-                <% } else { %>
-                  Alle Kategorien
-                  <% } %>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/aufgabenpakete">Alle Kategorien</a></li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <!-- KATEGORIEN LISTE - VEREINFACHT -->
-            <% if (locals.kategorien && locals.kategorien.length> 0) { %>
-              <% locals.kategorien.forEach(kat=> { %>
-                <li>
-                  <a class="dropdown-item <%= locals.activeKategorie === kat.title ? 'active' : '' %>"
-                    href="/aufgabenpakete/filter/<%= encodeURIComponent(kat.title) %>">
-                    <%= kat.title %>
-                  </a>
-                </li>
-                <% }) %>
-                  <% } else { %>
-                    <li><a class="dropdown-item text-muted" href="#">Keine Kategorien vorhanden</a></li>
-                    <% } %>
-          </ul>
-        </div>
-
-        <!-- DISKRETE SUCHLEISTE - wird nur bei Eingabe sichtbar -->
-        <div class="position-relative ms-3" id="searchContainer">
-          <input type="text" id="aufgabenpaketeSearch" class="form-control" placeholder="🔍Suchen..." autocomplete="off">
-
-          <!-- Autocomplete Dropdown -->
-          <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
-        </div>
-
-      </div>
+<!-- FILTER UND SUCHLEISTE -->
+<div class="row mb-4">
+  <div class="col-md-6">
+    <!-- Kategorien Filter -->
+    <div class="input-group">
+      <span class="input-group-text">Kategorie:</span>
+      <select class="form-select" id="kategorienFilter">
+        <option value="alle" <%= activeKategorie === 'alle' ? 'selected' : '' %>>Alle Kategorien</option>
+        <% if (kategorien && kategorien.length > 0) { %>
+          <% kategorien.forEach(kat => { %>
+            <option value="<%= kat.title %>" 
+                    <%= activeKategorie === kat.title ? 'selected' : '' %>>
+              <%= kat.title %>
+            </option>
+          <% }) %>
+        <% } %>
+      </select>
     </div>
-
-
-
-    <a href="/aufgabenpakete/new" class="btn btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
   </div>
-
-  <!-- Such-Badge (unsichtbar bis zur Suche) -->
-  <div id="searchBadge" class="mb-2" style="display: none;">
-    <span class="badge bg-primary d-inline-flex align-categories-center">
-      Suchergebnisse für: <span id="searchTermText" class="ms-1"></span>
-      <a href="#" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
-    </span>
+  
+  <div class="col-md-6">
+    <!-- Suchleiste -->
+    <div class="position-relative" id="searchContainer">
+      <input type="text" 
+             id="aufgabenpaketeSearch" 
+             class="form-control" 
+             placeholder="🔍 Aufgabenpakete suchen..." 
+             value="<%= searchTerm %>"
+             autocomplete="off">
+    </div>
   </div>
 
 
   <div class="table-responsive">
     <table class="table table-hover table align-middle m-0 table-light">
       <thead class="table-light">
-        <tr>
-          <th class="text-start">Kategorie</th>
-          <th>Name</th>
-          <th>Beschreibung</th>
-          <th class="text-end" style="min-width: 200px;">Aktionen</th>
-        </tr>
-      </thead>
+</div>
 
-      <!--Beispiel Datensatz (wird nach implementierung der Datenbank entfernt)-->
-      <tbody id="challengesTableBody">
-        <%if(locals.aufgabenpakete){%>
-          <% if (aufgabenpakete.length===0) { %>
-            <tr>
-              <td colspan="4" class="text-center py-4 text-muted">Noch keine Challenges</td>
-            </tr>
+<!-- Such-Badge -->
+<div id="searchBadge" class="mb-2" 
+  <% if (!searchTerm) { %>style="display: none;"<% } %>
+>
+  <span class="badge bg-primary d-inline-flex align-items-center">
+    Suchergebnisse für: <span id="searchTermText" class="ms-1">
+    <%= searchTerm %>
+    </span>
+    <a href="/aufgabenpakete" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
+  </span>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table align-middle m-0">
+    <thead class="table-light">
+      <tr>
+        <th class="text-start">Kategorie</th>
+        <th>Name</th>
+        <th>Beschreibung</th>
+        <th class="text-end" style="min-width: 200px;">Aktionen</th>
+      </tr>
+    </thead>
+    <tbody id="aufgabenpaketeTableBody">
+      <% if (aufgabenpakete.length === 0) { %>
+        <tr>
+          <td colspan="4" class="text-center py-4 text-muted">
+            <% if (searchTerm || activeKategorie !== 'alle') { %>
+              Keine Aufgabenpakete gefunden für die ausgewählten Filter
+            <% } else { %>
+              Noch keine Aufgabenpakete vorhanden
             <% } %>
 
               <% aufgabenpakete.forEach(aufgabenpaket=> { %>
@@ -127,117 +119,166 @@
               <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
             </form>
           </div>
+          </td>
+        </tr>
+      <% } %>
+
+      <% if (aufgabenpakete.length > 0) { %>
+        <% aufgabenpakete.forEach(paket => { %>
+          <tr class="aufgabenpaket-row" 
+              data-id="<%= paket.id %>"
+              data-title="<%= paket.title.toLowerCase() %>"
+              data-description="<%= paket.description.toLowerCase() %>"
+              data-kategorie="<%= paket.kategorie.toLowerCase() %>">
+            <td class="text-start">
+              <%= paket.kategorie %>
+            </td>
+            <td class="fw-medium">
+              <%= paket.title %>
+            </td>
+            <td class="text-body-secondary">
+              <%= paket.description %>
+            </td>
+            <td class="text-end" style="white-space: nowrap;">
+              <a href="/aufgabenpakete/<%= paket.id %>"
+                class="btn btn-outline-primary btn-custom-details">Details</a>
+              <a href="/aufgabenpakete/<%= paket.id %>/edit"
+                class="btn btn-outline-secondary btn-custom-edit">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn-custom-delete" data-bs-toggle="modal"
+                data-bs-target="#confirmDeleteModal" data-id="<%= paket.id %>">Löschen</button>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+
+  <!-- Pop Up Löschen Fenster -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header custom-delete-header">
+          <h5 class="modal-title">Löschen bestätigen</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Bist du sicher, dass du diesen Datensatz löschen möchtest?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+          <form id="deleteConfirmForm" method="POST">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+          </form>
         </div>
       </div>
     </div>
-
   </div>
+</div>
 
-  <script>
-    // Suchfunktionalität
-    const searchContainer = document.getElementById('searchContainer');
-    const searchInput = document.getElementById('challengeSearch');
-    const searchResults = document.getElementById('searchResults');
-    const searchTermText = document.getElementById('searchTermText');
-    const clearSearch = document.getElementById('clearSearch');
-    const challengeRows = document.querySelectorAll('.challenge-row');
+<script>
+  // Suchfunktionalität für Aufgabenpakete - MIT LIVE-FILTERING
+  const searchContainer = document.getElementById('searchContainer');
+  const searchInput = document.getElementById('aufgabenpaketeSearch');
+  const searchTermText = document.getElementById('searchTermText');
+  const clearSearch = document.getElementById('clearSearch');
+  const searchBadge = document.getElementById('searchBadge');
+  const kategorienFilter = document.getElementById('kategorienFilter');
+  const aufgabenpaketeRows = document.querySelectorAll('.aufgabenpaket-row');
 
-    let searchTimeout;
+  let searchTimeout;
 
-    // Suche bei Eingabe
-    searchInput.addEventListener('input', function () {
-      clearTimeout(searchTimeout);
-      const query = this.value.trim();
+  // Filter bei Änderung anwenden
+  kategorienFilter.addEventListener('change', function() {
+    applyFilters();
+  });
 
-      if (query.length < 2) {
-        searchResults.style.display = 'none';
-        return;
-      }
+  // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim().toLowerCase();
 
-      searchTimeout = setTimeout(() => {
-        performSearch(query);
-      }, 300);
-    });
-
-    // API-Suche für Autocomplete
-    async function performSearch(query) {
-      try {
-        const response = await fetch(`/api/challenges/search?q=${encodeURIComponent(query)}`);
-        const challenges = await response.json();
-
-        displayAutocompleteResults(challenges, query);
-      } catch (error) {
-        console.error('Search error:', error);
-      }
-    }
-
-    // Autocomplete Ergebnisse anzeigen
-    function displayAutocompleteResults(challenges, query) {
-      if (challenges.length === 0) {
-        searchResults.innerHTML = '<div class="dropdown-item text-muted">Keine Ergebnisse</div>';
+    // Sofortige Filterung anwenden
+    searchTimeout = setTimeout(() => {
+      applyFilters();
+      
+      // Zeige Such-Badge nur bei Suchbegriff
+      if (query.length >= 2) {
+        searchTermText.textContent = query;
+        searchBadge.style.display = 'flex';
       } else {
-        searchResults.innerHTML = challenges.map(challenge => `
-        <a class="dropdown-item d-flex justify-content-between align-categories-center search-result" 
-           href="#" 
-           data-challenge-id="${challenge.id}">
-          <div>
-            <div class="fw-medium">${challenge.title}</div>
-            <small class="text-muted">${challenge.kategorie}</small>
-          </div>
-          <small class="text-body-secondary">→</small>
-        </a>
-      `).join('');
-
-        // Event Listener für Suchergebnisse
-        document.querySelectorAll('.search-result').forEach(item => {
-          item.addEventListener('click', function (e) {
-            e.preventDefault();
-            const challengeId = this.getAttribute('data-challenge-id');
-
-            // ALLE Challenges verstecken
-            challengeRows.forEach(row => {
-              row.style.display = 'none';
-            });
-
-            // NUR die ausgewählte Challenge anzeigen
-            // NUR die ausgewählte Challenge anzeigen
-            const selectedRow = document.querySelector(`[data-id="${challengeId}"]`);
-            if (selectedRow) {
-              selectedRow.style.display = '';
-            }
-          });
-        });
+        searchBadge.style.display = 'none';
       }
+    }, 300);
+  });
 
-      searchResults.style.display = 'block';
-    }
+  // Filter anwenden - LIVE-FILTERING
+  function applyFilters() {
+    const kategorieValue = kategorienFilter.value.toLowerCase();
+    const searchValue = searchInput.value.trim().toLowerCase();
+    
+    let visibleCount = 0;
 
-    // Search beenden
-    clearSearch.addEventListener('click', function (e) {
-      e.preventDefault();
-      // Alle Challenges wieder anzeigen
-      challengeRows.forEach(row => {
+    aufgabenpaketeRows.forEach(row => {
+      const title = row.getAttribute('data-title');
+      const description = row.getAttribute('data-description');
+      const kategorie = row.getAttribute('data-kategorie');
+      
+      const matchesKategorie = kategorieValue === 'alle' || kategorie === kategorieValue;
+      const matchesSearch = !searchValue || 
+                           title.includes(searchValue) || 
+                           description.includes(searchValue) || 
+                           kategorie.includes(searchValue);
+      
+      if (matchesKategorie && matchesSearch) {
         row.style.display = '';
-      });
-    });
-
-    // Klick außerhalb schließt Autocomplete
-    document.addEventListener('click', function (e) {
-      if (!searchContainer.contains(e.target)) {
-        searchResults.style.display = 'none';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
       }
     });
 
+    // Zeige "Keine Ergebnisse" wenn nötig
+    const tbody = document.getElementById('aufgabenpaketeTableBody');
+    let noResultsRow = tbody.querySelector('.no-results-row');
+    
+    if (visibleCount === 0) {
+      if (!noResultsRow) {
+        noResultsRow = document.createElement('tr');
+        noResultsRow.className = 'no-results-row';
+        noResultsRow.innerHTML = `
+          <td colspan="4" class="text-center py-4 text-muted">
+            Keine Aufgabenpakete gefunden für die ausgewählten Filter
+          </td>
+        `;
+        tbody.appendChild(noResultsRow);
+      }
+      noResultsRow.style.display = '';
+    } else if (noResultsRow) {
+      noResultsRow.style.display = 'none';
+    }
+  }
 
+  // Search beenden
+  clearSearch.addEventListener('click', function(e) {
+    e.preventDefault();
+    searchInput.value = '';
+    searchBadge.style.display = 'none';
+    applyFilters();
+  });
 
-    // Eventlistener für modales Fenster beim Delete
-    const deleteModal = document.getElementById('confirmDeleteModal');
-    const deleteForm = document.getElementById('deleteConfirmForm');
+  // Eventlistener für modales Fenster beim Delete
+  const deleteModal = document.getElementById('confirmDeleteModal');
+  const deleteForm = document.getElementById('deleteConfirmForm');
 
-    deleteModal.addEventListener('show.bs.modal', event => {
-      const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
-      const itemId = button.getAttribute('data-id');
-      // Action auf die richtige ID setzen
-      deleteForm.action = `/challenges/${itemId}?_method=DELETE`;
-    });
-  </script>
+  deleteModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget;
+    const itemId = button.getAttribute('data-id');
+    deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
+  });
+
+  // Initial Filter anwenden falls Suchbegriff vorhanden
+  if (searchInput.value) {
+    applyFilters();
+  }
+</script>
