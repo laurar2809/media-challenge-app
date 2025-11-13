@@ -37,7 +37,6 @@
     </div>
   </div>
 </div>
-</div> <!-- Hier schließen wir die row korrekt -->
 
 <!-- Such-Badge -->
 <div id="searchBadge" class="mb-2" <% if (!searchTerm) { %>style="display: none;"<% } %>>
@@ -46,7 +45,6 @@
     <a href="/aufgabenpakete" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
   </span>
 </div>
-
 
 <!-- CARDS LAYOUT - NUR DATENSÄTZE -->
 <div class="row" id="aufgabenpaketeCardsContainer">
@@ -106,30 +104,12 @@
             </div>
           </div>
         </div>
-
-<!-- Pop Up Löschen Fenster -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header custom-delete-header">
-        <h5 class="modal-title">Löschen bestätigen</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Bist du sicher, dass du diesen Datensatz löschen möchtest?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-        <form id="deleteConfirmForm" method="POST">
-          <input type="hidden" name="_method" value="DELETE">
-          <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
-        </form>
-      </div>
+      </div> <!-- HIER schließt die col-div -->
     <% }) %>
   <% } %>
-</div>
+</div> <!-- HIER schließt die row -->
 
-<!-- Pop Up Löschen Fenster -->
+<!-- Pop Up Löschen Fenster - NUR EINMAL AUSSERHALB DER LOOP -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -151,16 +131,14 @@
   </div>
 </div>
 
-<!-- JavaScript bleibt gleich -->
 <script>
   // Suchfunktionalität für Aufgabenpakete - MIT LIVE-FILTERING
-  const searchContainer = document.getElementById('searchContainer');
   const searchInput = document.getElementById('aufgabenpaketeSearch');
   const searchTermText = document.getElementById('searchTermText');
   const clearSearch = document.getElementById('clearSearch');
   const searchBadge = document.getElementById('searchBadge');
   const kategorienFilter = document.getElementById('kategorienFilter');
-  const aufgabenpaketeRows = document.querySelectorAll('.aufgabenpaket-card');
+  const aufgabenpaketeCards = document.querySelectorAll('.aufgabenpaket-card');
 
   let searchTimeout;
 
@@ -195,10 +173,10 @@
     
     let visibleCount = 0;
 
-    aufgabenpaketeRows.forEach(row => {
-      const title = row.getAttribute('data-title');
-      const description = row.getAttribute('data-description');
-      const kategorie = row.getAttribute('data-kategorie');
+    aufgabenpaketeCards.forEach(card => {
+      const title = card.getAttribute('data-title');
+      const description = card.getAttribute('data-description');
+      const kategorie = card.getAttribute('data-kategorie');
       
       const matchesKategorie = kategorieValue === 'alle' || kategorie === kategorieValue;
       const matchesSearch = !searchValue || 
@@ -207,31 +185,31 @@
                            kategorie.includes(searchValue);
       
       if (matchesKategorie && matchesSearch) {
-        row.style.display = '';
+        card.style.display = 'block';
         visibleCount++;
       } else {
-        row.style.display = 'none';
+        card.style.display = 'none';
       }
     });
 
     // Zeige "Keine Ergebnisse" wenn nötig
-    const tbody = document.getElementById('aufgabenpaketeTableBody');
-    let noResultsRow = tbody.querySelector('.no-results-row');
+    const container = document.getElementById('aufgabenpaketeCardsContainer');
+    let noResultsDiv = container.querySelector('.no-results-message');
     
     if (visibleCount === 0) {
-      if (!noResultsRow) {
-        noResultsRow = document.createElement('tr');
-        noResultsRow.className = 'no-results-row';
-        noResultsRow.innerHTML = `
-          <td colspan="4" class="text-center py-4 text-muted">
+      if (!noResultsDiv) {
+        noResultsDiv = document.createElement('div');
+        noResultsDiv.className = 'col-12 no-results-message';
+        noResultsDiv.innerHTML = `
+          <div class="text-center py-4 text-muted">
             Keine Aufgabenpakete gefunden für die ausgewählten Filter
-          </td>
+          </div>
         `;
-        tbody.appendChild(noResultsRow);
+        container.appendChild(noResultsDiv);
       }
-      noResultsRow.style.display = '';
-    } else if (noResultsRow) {
-      noResultsRow.style.display = 'none';
+      noResultsDiv.style.display = 'block';
+    } else if (noResultsDiv) {
+      noResultsDiv.style.display = 'none';
     }
   }
 
@@ -257,5 +235,4 @@
   if (searchInput.value) {
     applyFilters();
   }
-  // Dein JavaScript-Code hier...
 </script>
