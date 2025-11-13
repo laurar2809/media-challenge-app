@@ -421,13 +421,13 @@ app.post('/challenges', async (req, res) => {
     } catch (error) {
       // Bei Fehler - Rollback
       await trx.rollback();
-      console.error('❌ Datenbank-Fehler:', error);
+      console.error(' Datenbank-Fehler:', error);
       req.flash('error', 'Datenbank-Fehler: ' + error.message);
       res.redirect('/challenges/new');
     }
     
   } catch (error) {
-    console.error('❌ Allgemeiner Fehler:', error);
+    console.error(' Allgemeiner Fehler:', error);
     req.flash('error', 'Fehler beim Erstellen: ' + error.message);
     res.redirect('/challenges/new');
   }
