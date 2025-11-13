@@ -120,3 +120,8 @@ table td, table th { vertical-align: middle; }
   background-color: transparent !important;
   color: inherit !important;
 }
+
+/*Schriften*/
+.custom-team-color {
+  color: #0082ba;
+}
