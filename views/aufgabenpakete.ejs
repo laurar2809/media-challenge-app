@@ -37,6 +37,7 @@
     </div>
   </div>
 </div>
+</div> <!-- Hier schließen wir die row korrekt -->
 
 <!-- Such-Badge -->
 <div id="searchBadge" class="mb-2" <% if (!searchTerm) { %>style="display: none;"<% } %>>
@@ -106,6 +107,75 @@
             </div>
           </div>
         </div>
+<div class="table-responsive">
+  <table class="table table-hover table align-middle m-0">
+    <thead class="table-light">
+      <tr>
+        <th class="text-start">Kategorie</th>
+        <th>Name</th>
+        <th>Beschreibung</th>
+        <th class="text-end" style="min-width: 200px;">Aktionen</th>
+      </tr>
+    </thead>
+    <tbody id="aufgabenpaketeTableBody">
+      <% if (aufgabenpakete.length === 0) { %>
+        <tr>
+          <td colspan="4" class="text-center py-4 text-muted">
+            <% if (searchTerm || activeKategorie !== 'alle') { %>
+              Keine Aufgabenpakete gefunden für die ausgewählten Filter
+            <% } else { %>
+              Noch keine Aufgabenpakete vorhanden
+            <% } %>
+          </td>
+        </tr>
+      <% } else { %>
+        <% aufgabenpakete.forEach(paket => { %>
+          <tr class="aufgabenpaket-row" 
+              data-id="<%= paket.id %>"
+              data-title="<%= paket.title.toLowerCase() %>"
+              data-description="<%= paket.description.toLowerCase() %>"
+              data-kategorie="<%= paket.kategorie.toLowerCase() %>">
+            <td class="text-start">
+              <%= paket.kategorie %>
+            </td>
+            <td class="fw-medium">
+              <%= paket.title %>
+            </td>
+            <td class="text-body-secondary">
+              <%= paket.description %>
+            </td>
+            <td class="text-end" style="white-space: nowrap;">
+              <a href="/aufgabenpakete/<%= paket.id %>"
+                class="btn btn-outline-primary btn-custom-details btn-sm">Details</a>
+              <a href="/aufgabenpakete/<%= paket.id %>/edit"
+                class="btn btn-outline-secondary btn-custom-edit btn-sm">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn-custom-delete btn-sm" data-bs-toggle="modal"
+                data-bs-target="#confirmDeleteModal" data-id="<%= paket.id %>">Löschen</button>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Pop Up Löschen Fenster -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header custom-delete-header">
+        <h5 class="modal-title">Löschen bestätigen</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Bist du sicher, dass du diesen Datensatz löschen möchtest?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+        <form id="deleteConfirmForm" method="POST">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+        </form>
       </div>
     <% }) %>
   <% } %>
@@ -133,6 +203,7 @@
   </div>
 </div>
 
+<!-- JavaScript bleibt gleich -->
 <script>
   // Suchfunktionalität für Aufgabenpakete - MIT LIVE-FILTERING
   const searchContainer = document.getElementById('searchContainer');
@@ -238,4 +309,5 @@
   if (searchInput.value) {
     applyFilters();
   }
+  // Dein JavaScript-Code hier...
 </script>
