@@ -18,76 +18,90 @@
     </select>
   </div>
 
-  <!-- Team Name -->
-  <div class="mb-3">
-    <label class="form-label">Team Name *</label>
-  </div>
-
-  <!-- Team Beschreibung -->
-  <div class="mb-3">
-    <label class="form-label">Team Beschreibung</label>
-    <textarea name="team_beschreibung" class="form-control" rows="2" 
-              placeholder="Kurze Beschreibung des Teams"><%= item.team_beschreibung || '' %></textarea>
-  </div>
-
-  <!-- Schüler Auswahl (Mehrfachauswahl) -->
-  <!-- Schüler Auswahl als Checkbox-Liste -->
-<!-- Filter Section oben nach dem <h1> einfügen -->
-<div class="filter-section mb-4 p-3 border rounded bg-light">
-  <div class="row g-2">
-    <div class="col-md-6">
-      <label class="form-label small">Nach Namen filtern</label>
-      <input type="text" class="form-control form-control-sm" id="nameFilter" placeholder="Namen suchen...">
+ <!-- TEAM MANAGEMENT SECTION -->
+  <div class="mb-4 p-3 border rounded bg-light">
+    <h5 class="mb-3">Team Management</h5>
+    
+    <!-- Filter für verfügbare Schüler -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-6">
+        <label class="form-label small">Nach Namen filtern</label>
+        <input type="text" class="form-control form-control-sm" id="nameFilter" placeholder="Namen suchen...">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small">Nach Klasse filtern</label>
+        <select class="form-select form-select-sm" id="classFilter">
+          <option value="">Alle Klassen</option>
+          <% const klassen = [...new Set(schueler.map(s => s.klasse_name).filter(Boolean))]; %>
+          <% klassen.forEach(klasse => { %>
+            <option value="<%= klasse %>"><%= klasse %></option>
+          <% }) %>
+        </select>
+      </div>
     </div>
-    <div class="col-md-6">
-      <label class="form-label small">Nach Klasse filtern</label>
-      <select class="form-select form-select-sm" id="classFilter">
-        <option value="">Alle Klassen</option>
-        <% const klassen = [...new Set(schueler.map(s => s.klasse_name).filter(Boolean))]; %>
-        <% klassen.forEach(klasse => { %>
-          <option value="<%= klasse %>"><%= klasse %></option>
+
+    <!-- Verfügbare Schüler -->
+    <div class="mb-3">
+      <label class="form-label">Verfügbare Teammitglieder</label>
+      <div class="d-flex flex-wrap gap-2" id="availableMembers">
+        <% schueler.forEach(s => { %>
+          <div class="btn btn-outline-primary btn-sm drag-item available-member" 
+               data-id="<%= s.id %>" 
+               data-klasse="<%= s.klasse_name %>" 
+               draggable="true"
+               data-vorname="<%= s.vorname %>"
+               data-nachname="<%= s.nachname %>">
+            <%= s.vorname %> <%= s.nachname %><% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
+          </div>
         <% }) %>
-      </select>
-    </div>
-  </div>
-
-  <div class="mb-3">
-  <label class="form-label">Verfügbare Teammitglieder</label>
-  <div class="d-flex flex-wrap gap-2" id="availableMembers">
-    <% schueler.forEach(s => { %>
-      <div class="btn btn-outline-primary btn-sm drag-item" 
-           data-id="<%= s.id %>" data-klasse="<%= s.klasse_name %>" draggable="true">
-        <%= s.vorname %> <%= s.nachname %><% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
       </div>
-    <% }) %>
-  </div>
-</div>
-  
-<div class="mb-3">
-  <label class="form-label">Teams</label>
-  
+    </div>
 
-  <div id="teamsContainer">
-    <div class="team-card card mb-2" data-team-id="1">
-      <div class="card-body p-2">
-        <div class="drag-area border rounded p-3 mb-3" id="teamDropZone" 
-        style="min-height: 100px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px;">
-        <p class="text-muted text-center mb-0 w-100">Ziehen Sie Teammitglieder hierher (für schnelles Testen)</p>
+    <!-- Aktuelle Teams -->
+    <div class="mb-3">
+      <label class="form-label">Aktuelle Teams</label>
+      <div id="teamsContainer">
+        <!-- Teams werden hier dynamisch hinzugefügt -->
+      </div>
+    </div>
+
+    <!-- Team Erstellen Bereich -->
+    <div class="mb-3">
+      <label class="form-label">Neues Team erstellen</label>
+      <div class="card">
+        <div class="card-body">
+          <!-- Team Name -->
+          <div class="mb-3">
+            <label class="form-label small">Team Name *</label>
+            <input type="text" class="form-control form-control-sm" id="newTeamName" placeholder="Team Name eingeben...">
+          </div>
+          
+          <!-- Team Beschreibung -->
+          <div class="mb-3">
+            <label class="form-label small">Team Beschreibung</label>
+            <textarea class="form-control form-control-sm" id="newTeamDescription" rows="2" placeholder="Optionale Beschreibung..."></textarea>
+          </div>
+          
+          <!-- Drop Zone für Team Mitglieder -->
+          <div class="mb-3">
+            <label class="form-label small">Teammitglieder auswählen</label>
+            <div class="drag-area border rounded p-3" id="teamDropZone" 
+                 style="min-height: 100px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px;">
+              <p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>
+            </div>
+          </div>
+          
+          <!-- Team erstellen Button -->
+          <button type="button" class="btn btn-success btn-sm" id="createTeamBtn">
+            <i class="fas fa-plus"></i> Team erstellen
+          </button>
         </div>
-        <input type="hidden" name="teams[]" value="">
       </div>
     </div>
   </div>
-</div>
 
-<button type="button" class="btn btn-success btn-sm mb-2" id="addTeamBtn">
-  <i class="fas fa-plus"></i> Team hinzufügen
-</button>
-  
-  <!-- Verstecktes Input für Formular -->
-  <input type="hidden" name="schueler_ids" id="selectedSchuelerIds" value="<%= item.schueler_ids ? item.schueler_ids.join(',') : '' %>">
-  
-</div>
+  <!-- Versteckte Inputs für Formular -->
+  <input type="hidden" name="teams_data" id="teamsData" value="">
 
   <!-- Zusatzinfos -->
   <div class="mb-3">
@@ -107,20 +121,25 @@
 </form>
 
 <script>
-
-  const teamsContainer = document.getElementById('teamsContainer');
-  const addTeamBtn = document.getElementById('addTeamBtn');
-  let teamCounter = 1;
-
-  // Drag & Drop und Filter Funktionalität
-
+document.addEventListener('DOMContentLoaded', function() {
   const availableMembers = document.getElementById('availableMembers');
   const teamDropZone = document.getElementById('teamDropZone');
-  const selectedSchuelerIds = document.getElementById('selectedSchuelerIds');
+  const teamsContainer = document.getElementById('teamsContainer');
+  const createTeamBtn = document.getElementById('createTeamBtn');
+  const teamsDataInput = document.getElementById('teamsData');
+  const newTeamName = document.getElementById('newTeamName');
+  const newTeamDescription = document.getElementById('newTeamDescription');
+  const nameFilter = document.getElementById('nameFilter');
+  const classFilter = document.getElementById('classFilter');
+  
+  let teams = [];
+  let teamCounter = 1;
 
-  // Drag & Drop
+  // Drag & Drop Funktionen
   availableMembers.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('text/plain', e.target.dataset.id);
+    if (e.target.classList.contains('drag-item')) {
+      e.dataTransfer.setData('text/plain', e.target.dataset.id);
+    }
   });
 
   teamDropZone.addEventListener('dragover', e => e.preventDefault());
@@ -129,158 +148,175 @@
     e.preventDefault();
     const memberId = e.dataTransfer.getData('text/plain');
     const member = availableMembers.querySelector(`[data-id="${memberId}"]`);
-    member && addToTeam(member);
+    if (member) {
+      addMemberToDropZone(member);
+    }
   });
 
-  // Klick zum Hinzufügen
+  // Klick zum Hinzufügen in DropZone
   availableMembers.addEventListener('click', e => {
-    e.target.classList.contains('drag-item') && addToTeam(e.target);
+    if (e.target.classList.contains('drag-item')) {
+      addMemberToDropZone(e.target);
+    }
   });
 
-  function addToTeam(memberElement) {
+  // Mitglied zur DropZone hinzufügen
+  function addMemberToDropZone(memberElement) {
     const memberId = memberElement.dataset.id;
+    
+    // Prüfen ob Mitglied bereits in DropZone
     if (!teamDropZone.querySelector(`[data-id="${memberId}"]`)) {
       const teamMember = memberElement.cloneNode(true);
-      teamMember.classList.replace('btn-outline-primary', 'bg-primary', 'text-white');
+      teamMember.classList.remove('btn-outline-primary');
+      teamMember.classList.add('bg-primary', 'text-white');
       
       const removeBtn = document.createElement('span');
-      removeBtn.innerHTML = '×';
-      removeBtn.onclick = () => removeFromTeam(memberId);
+      removeBtn.innerHTML = ' ×';
+      removeBtn.style.cursor = 'pointer';
+      removeBtn.style.marginLeft = '5px';
+      removeBtn.onclick = function() {
+        teamMember.remove();
+        updatePlaceholder();
+      };
+      
       teamMember.appendChild(removeBtn);
       
+      // Platzhalter entfernen
+      const placeholder = teamDropZone.querySelector('p');
+      if (placeholder) placeholder.remove();
+      
       teamDropZone.appendChild(teamMember);
-      updateSelectedIds();
     }
   }
 
-  function removeFromTeam(memberId) {
-    teamDropZone.querySelector(`[data-id="${memberId}"]`)?.remove();
-    updateSelectedIds();
-  }
-
-  function updateSelectedIds() {
-    const selectedIds = [...teamDropZone.querySelectorAll('.drag-item')].map(item => item.dataset.id);
-    selectedSchuelerIds.value = selectedIds.join(',');
-  }
-
-  function createTeamCard(teamId, databaseTeamId) {
-  const teamCard = document.createElement('div');
-  teamCard.className = 'team-card card mb-2';
-  teamCard.dataset.teamId = teamId;
-  
-  teamCard.innerHTML = `
-  <div class="card-body p-2">
-    <h6 class="card-title">Team ${teamId}</h6>
-    <div class="team-drop-zone border rounded p-2" 
-         style="min-height: 60px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; gap: 5px;">
-      <p class="text-muted text-center mb-0 w-100 small">Teammitglieder hierher ziehen</p>
-    </div>
-    <input type="hidden" name="teams[]" value="${databaseTeamId}">
-  </div>
-`;
-
-  const dropZone = teamCard.querySelector('.team-drop-zone');
-  setupTeamDropZone(dropZone);
-
-  return teamCard;
-}
-
-  addTeamBtn.addEventListener('click', function() {
-  // ERSTMAL OHNE BACKEND TESTEN
-  teamCounter++;
-  const teamCard = createTeamCard(teamCounter, 'temp-' + teamCounter);
-  teamsContainer.appendChild(teamCard);
-  updateTeamInputs();
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-
-
-function setupTeamDropZone(dropZone) {
-  dropZone.addEventListener('dragover', e => e.preventDefault());
-  
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    const memberId = e.dataTransfer.getData('text/plain');
-    const member = availableMembers.querySelector(`[data-id="${memberId}"]`);
-    if (member && !isMemberInAnyTeam(memberId)) {
-      addMemberToTeam(member, dropZone);
-      updateTeamInputs();
+  // Platzhalter aktualisieren
+  function updatePlaceholder() {
+    if (teamDropZone.children.length === 0) {
+      const placeholder = document.createElement('p');
+      placeholder.className = 'text-muted text-center mb-0 w-100';
+      placeholder.textContent = 'Schüler hierher ziehen oder klicken';
+      teamDropZone.appendChild(placeholder);
     }
-  });
-}
+  }
 
-function addMemberToTeam(memberElement, dropZone) {
-  const memberId = memberElement.dataset.id;
-  
-  const teamMember = document.createElement('span');
-  teamMember.className = 'badge bg-primary team-member-tag';
-  teamMember.dataset.id = memberId;
-  teamMember.textContent = memberElement.textContent.replace(' ×', '');
-  
-  const removeBtn = document.createElement('span');
-  removeBtn.innerHTML = ' ×';
-  removeBtn.style.cursor = 'pointer';
-  removeBtn.onclick = function() {
-    teamMember.remove();
-    updateTeamInputs();
-  };
-  
-  teamMember.appendChild(removeBtn);
-  
-  const placeholder = dropZone.querySelector('p');
-  if (placeholder) placeholder.remove();
-  
-  dropZone.appendChild(teamMember);
-}
-
-function isMemberInAnyTeam(memberId) {
-  const allTeamMembers = document.querySelectorAll('.team-member-tag');
-  return Array.from(allTeamMembers).some(member => member.dataset.id === memberId);
-}
-
-function updateTeamInputs() {
-  const teamCards = document.querySelectorAll('.team-card');
-  
-  teamCards.forEach((card, index) => {
-    const dropZone = card.querySelector('.team-drop-zone');
-    const hiddenInput = card.querySelector('input[name="teams[]"]');
+  // Team erstellen
+  createTeamBtn.addEventListener('click', function() {
+    const teamName = newTeamName.value.trim();
+    const teamDescription = newTeamDescription.value.trim();
     
-    const members = Array.from(dropZone.querySelectorAll('.team-member-tag'))
-      .map(member => member.dataset.id);
+    // Validierung
+    if (!teamName) {
+      alert('Bitte geben Sie einen Team Namen ein!');
+      return;
+    }
     
-    const teamData = {
-      name: `Team ${index + 1}`,
-      members: members
+    const members = Array.from(teamDropZone.querySelectorAll('.drag-item'));
+    if (members.length === 0) {
+      alert('Bitte fügen Sie mindestens ein Teammitglied hinzu!');
+      return;
+    }
+    
+    // Team erstellen
+    const team = {
+      id: 'team-' + teamCounter++,
+      name: teamName,
+      beschreibung: teamDescription,
+      mitglieder: members.map(member => ({
+        id: parseInt(member.dataset.id),
+        vorname: member.dataset.vorname,
+        nachname: member.dataset.nachname,
+        klasse: member.dataset.klasse
+      }))
     };
     
-    hiddenInput.value = JSON.stringify(teamData);
+    teams.push(team);
+    renderTeams();
+    clearTeamForm();
+    updateTeamsData();
   });
 
-}
-
-  // Filter
-  function filterMembers() {
-    const nameValue = document.getElementById('nameFilter')?.value.toLowerCase() || '';
-    const classValue = document.getElementById('classFilter')?.value || '';
+  // Teams anzeigen
+  function renderTeams() {
+    teamsContainer.innerHTML = '';
     
-    availableMembers.querySelectorAll('.drag-item').forEach(item => {
-      const text = item.textContent.toLowerCase();
-      const klasse = item.dataset.klasse?.toLowerCase() || '';
-      const show = text.includes(nameValue) && (!classValue || klasse === classValue.toLowerCase());
-      item.style.display = show ? 'block' : 'none';
+    teams.forEach((team, index) => {
+      const teamCard = document.createElement('div');
+      teamCard.className = 'card mb-2';
+      teamCard.innerHTML = `
+        <div class="card-body p-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="card-title mb-0">${team.name}</h6>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-team" data-index="${index}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+          ${team.beschreibung ? `<p class="small text-muted mb-1">${team.beschreibung}</p>` : ''}
+          <div class="mt-1">
+            ${team.mitglieder.map(m => 
+              `<span class="badge bg-secondary me-1">${m.vorname} ${m.nachname}</span>`
+            ).join('')}
+          </div>
+        </div>
+      `;
+      teamsContainer.appendChild(teamCard);
+    });
+
+    // Event Listener für Remove Buttons
+    teamsContainer.querySelectorAll('.remove-team').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const index = parseInt(this.dataset.index);
+        teams.splice(index, 1);
+        renderTeams();
+        updateTeamsData();
+      });
     });
   }
 
-  document.getElementById('nameFilter')?.addEventListener('input', filterMembers);
-  document.getElementById('classFilter')?.addEventListener('change', filterMembers);
+  // Team Formular zurücksetzen
+  function clearTeamForm() {
+    newTeamName.value = '';
+    newTeamDescription.value = '';
+    teamDropZone.innerHTML = '<p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>';
+  }
 
-  // Initialisierung
-  const initialIds = selectedSchuelerIds.value.split(',').filter(id => id);
-  initialIds.forEach(id => {
-    addToTeam(availableMembers.querySelector(`[data-id="${id}"]`));
+  // Teams Daten für Formular aktualisieren
+  function updateTeamsData() {
+    teamsDataInput.value = JSON.stringify(teams);
+  }
+
+  // Filter Funktionen
+  function filterMembers() {
+    const nameValue = nameFilter.value.toLowerCase();
+    const classValue = classFilter.value.toLowerCase();
+    
+    availableMembers.querySelectorAll('.available-member').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      const klasse = item.dataset.klasse?.toLowerCase() || '';
+      const show = text.includes(nameValue) && 
+                  (!classValue || klasse.includes(classValue));
+      item.style.display = show ? 'inline-block' : 'none';
+    });
+  }
+
+  // Event Listener für Filter
+  if (nameFilter) {
+    nameFilter.addEventListener('input', filterMembers);
+  }
+  
+  if (classFilter) {
+    classFilter.addEventListener('change', filterMembers);
+  }
+
+  // Formular Submit validieren
+  document.getElementById('challengeForm').addEventListener('submit', function(e) {
+    if (teams.length === 0) {
+      e.preventDefault();
+      alert('Bitte erstellen Sie mindestens ein Team für diese Challenge!');
+      return;
+    }
   });
 
-}); // <-- HIER schließt DOMContentLoaded
-
+  // Initialisierung
+  updatePlaceholder();
+});
 </script>
