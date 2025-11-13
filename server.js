@@ -101,37 +101,187 @@ app.get('/', async (req, res) => {
 // ----- CHALLENGES ROUTES -----
 
 // Challenges Übersicht - KORRIGIERT
+// Vereinfachte Version für SQLite und MySQL
+// Challenges Übersicht mit Filter-Option
 app.get('/challenges', async (req, res) => {
   try {
-    const challenges = await db('challenges')
-      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id') // ← DIESER JOIN FEHLT!
-      .leftJoin('teams', 'challenges.team_id', 'teams.id')
-      .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
-      .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
-      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
-      .select(
-        'challenges.*',
-        'aufgabenpakete.title as aufgabenpaket_title', // ← HIERHER KOMMT DER TITEL
-        'aufgabenpakete.kategorie', // ← UND DIE KATEGORIE
-        'teams.name as team_name',
-        'teams.beschreibung as team_beschreibung',
-        db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
-      )
-      .groupBy('challenges.id')
-      .orderBy('challenges.created_at', 'desc');
+    let query = db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id');
+
+    // Kategorien für Filter-Dropdown
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+
+    let challenges;
+    const dbClient = process.env.DB_CLIENT || 'sqlite';
+    
+    if (dbClient === 'sqlite') {
+      // SQLITE VERSION
+      challenges = await query
+        .select(
+          'challenges.*',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.kategorie',
+          'teams.name as team_name',
+          'teams.beschreibung as team_beschreibung'
+        )
+        .orderBy('challenges.created_at', 'desc');
+      
+      // Team-Mitglieder separat abfragen
+      for (let challenge of challenges) {
+        if (challenge.team_id) {
+          const mitglieder = await db('team_mitglieder')
+            .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+            .where('team_mitglieder.team_id', challenge.team_id)
+            .select('schueler.vorname', 'schueler.nachname');
+          
+          challenge.team_mitglieder_names = mitglieder
+            .map(m => `${m.vorname} ${m.nachname}`)
+            .join(', ');
+        }
+      }
+    } else {
+      // MYSQL VERSION
+      challenges = await query
+        .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
+        .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+        .select(
+          'challenges.*',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.kategorie',
+          'teams.name as team_name',
+          'teams.beschreibung as team_beschreibung',
+          db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
+        )
+        .groupBy('challenges.id')
+        .orderBy('challenges.created_at', 'desc');
+    }
     
     res.render('challenges', { 
       challenges, 
+      kategorien,
       activePage: 'challenges' 
     });
+    
   } catch (error) {
     console.error("Fehler beim Laden der challenges:", error);
     res.render('challenges', { 
       challenges: [], 
+      kategorien: [],
       activePage: 'challenges' 
     });
   }
 });
+
+
+// Challenges nach Kategorie filtern
+app.get('/challenges/filter/:kategorie', async (req, res) => {
+  try {
+    const kategorie = req.params.kategorie;
+    
+    let query = db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .where('aufgabenpakete.kategorie', kategorie);
+
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+
+    let challenges;
+    const dbClient = process.env.DB_CLIENT || 'sqlite';
+    
+    if (dbClient === 'sqlite') {
+      // SQLITE VERSION
+      challenges = await query
+        .select(
+          'challenges.*',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.kategorie',
+          'teams.name as team_name',
+          'teams.beschreibung as team_beschreibung'
+        )
+        .orderBy('challenges.created_at', 'desc');
+      
+      // Team-Mitglieder separat abfragen
+      for (let challenge of challenges) {
+        if (challenge.team_id) {
+          const mitglieder = await db('team_mitglieder')
+            .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+            .where('team_mitglieder.team_id', challenge.team_id)
+            .select('schueler.vorname', 'schueler.nachname');
+          
+          challenge.team_mitglieder_names = mitglieder
+            .map(m => `${m.vorname} ${m.nachname}`)
+            .join(', ');
+        }
+      }
+    } else {
+      // MYSQL VERSION
+      challenges = await query
+        .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
+        .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+        .select(
+          'challenges.*',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.kategorie',
+          'teams.name as team_name',
+          'teams.beschreibung as team_beschreibung',
+          db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
+        )
+        .groupBy('challenges.id')
+        .orderBy('challenges.created_at', 'desc');
+    }
+    
+    res.render('challenges', { 
+      challenges, 
+      kategorien,
+      activeKategorie: kategorie,
+      activePage: 'challenges' 
+    });
+    
+  } catch (error) {
+    console.error("Fehler beim Filtern der challenges:", error);
+    req.flash('error', 'Fehler beim Filtern der Challenges');
+    res.redirect('/challenges');
+  }
+});
+
+
+// Challenges Search API - MIT DEBUG
+app.get('/api/challenges/search', async (req, res) => {
+  try {
+    const searchTerm = req.query.q;
+    console.log('🔍 API Search aufgerufen mit:', searchTerm);
+
+    if (!searchTerm || searchTerm.length < 2) {
+      console.log('❌ Search term zu kurz');
+      return res.json([]);
+    }
+
+    const challenges = await db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .where('aufgabenpakete.title', 'like', `%${searchTerm}%`)
+      .orWhere('teams.name', 'like', `%${searchTerm}%`)
+      .orWhere('aufgabenpakete.kategorie', 'like', `%${searchTerm}%`)
+      .select(
+        'challenges.*',
+        'aufgabenpakete.title as aufgabenpaket_title',
+        'aufgabenpakete.kategorie',
+        'teams.name as team_name'
+      )
+      .limit(10);
+
+    console.log('📊 Search Ergebnisse:', challenges.length, 'Challenges gefunden');
+    console.log('📋 Ergebnisse:', challenges);
+
+    res.json(challenges);
+
+  } catch (error) {
+    console.error("❌ Search error:", error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
 
 // Neues Challenge Formular
 app.get('/challenges/new', async (req, res) => {
