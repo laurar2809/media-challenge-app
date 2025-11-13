@@ -101,29 +101,48 @@ app.get('/', async (req, res) => {
 // ----- CHALLENGES ROUTES -----
 
 // Challenges Übersicht - KORRIGIERT
+// Vereinfachte Version für SQLite und MySQL
 app.get('/challenges', async (req, res) => {
   try {
+    // Basis-Challenges laden
     const challenges = await db('challenges')
-      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id') // ← DIESER JOIN FEHLT!
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
       .leftJoin('teams', 'challenges.team_id', 'teams.id')
-      .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
-      .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
-      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
       .select(
         'challenges.*',
-        'aufgabenpakete.title as aufgabenpaket_title', // ← HIERHER KOMMT DER TITEL
-        'aufgabenpakete.kategorie', // ← UND DIE KATEGORIE
+        'aufgabenpakete.title as aufgabenpaket_title',
+        'aufgabenpakete.kategorie',
         'teams.name as team_name',
-        'teams.beschreibung as team_beschreibung',
-        db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
+        'teams.beschreibung as team_beschreibung'
       )
-      .groupBy('challenges.id')
       .orderBy('challenges.created_at', 'desc');
+    
+    // Für jede Challenge die Team-Mitglieder laden
+    for (let challenge of challenges) {
+      if (challenge.team_id) {
+        const mitglieder = await db('team_mitglieder')
+          .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+          .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+          .where('team_mitglieder.team_id', challenge.team_id)
+          .select(
+            'schueler.vorname', 
+            'schueler.nachname',
+            'klassen.name as klasse_name'
+          );
+        
+        challenge.team_mitglieder_names = mitglieder
+          .map(m => `${m.vorname} ${m.nachname}${m.klasse_name ? ` (${m.klasse_name})` : ''}`)
+          .join(', ');
+      } else {
+        challenge.team_mitglieder_names = 'Keine Mitglieder';
+      }
+    }
     
     res.render('challenges', { 
       challenges, 
       activePage: 'challenges' 
     });
+    
   } catch (error) {
     console.error("Fehler beim Laden der challenges:", error);
     res.render('challenges', { 
