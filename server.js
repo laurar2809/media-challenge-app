@@ -107,11 +107,17 @@ app.get('/', async (req, res) => {
 // Challenges Übersicht mit Filterung
 app.get('/challenges', async (req, res) => {
   try {
-    const { kategorie, search } = req.query;
+    const { kategorie, search, schuljahr } = req.query;
     
     let query = db('challenges')
+      .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
       .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
       .leftJoin('teams', 'challenges.team_id', 'teams.id');
+
+      // Schuljahr Filter
+    if (schuljahr && schuljahr !== 'alle') {
+      query = query.where('schuljahre.name', schuljahr);
+    }
 
     // Filter nach Kategorie
     if (kategorie && kategorie !== 'alle') {
@@ -130,6 +136,8 @@ app.get('/challenges', async (req, res) => {
     // Kategorien für Filter-Dropdown
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
+    // Schuljahre für Filter-Dropdown
+    const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
     let challenges;
     const dbClient = process.env.DB_CLIENT || 'sqlite';
     
@@ -141,6 +149,7 @@ app.get('/challenges', async (req, res) => {
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
           'teams.name as team_name',
+          'schuljahre.name as schuljahr_name'
         )
         .orderBy('challenges.created_at', 'desc');
       
@@ -167,6 +176,7 @@ app.get('/challenges', async (req, res) => {
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
           'teams.name as team_name',
+          'schuljahre.name as schuljahr_name',
           db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
         )
         .groupBy('challenges.id')
@@ -177,6 +187,7 @@ app.get('/challenges', async (req, res) => {
       challenges, 
       kategorien,
       activeKategorie: kategorie || 'alle',
+      activeSchuljahr: schuljahr || 'alle',
       searchTerm: search || '',
       activePage: 'challenges' 
     });
@@ -268,10 +279,10 @@ app.get('/challenges/filter/:kategorie', async (req, res) => {
 app.get('/api/challenges/search', async (req, res) => {
   try {
     const searchTerm = req.query.q;
-    console.log('🔍 API Search aufgerufen mit:', searchTerm);
+    console.log(' API Search aufgerufen mit:', searchTerm);
 
     if (!searchTerm || searchTerm.length < 2) {
-      console.log('❌ Search term zu kurz');
+      console.log(' Search term zu kurz');
       return res.json([]);
     }
 
@@ -289,13 +300,13 @@ app.get('/api/challenges/search', async (req, res) => {
       )
       .limit(10);
 
-    console.log('📊 Search Ergebnisse:', challenges.length, 'Challenges gefunden');
-    console.log('📋 Ergebnisse:', challenges);
+    console.log(' Search Ergebnisse:', challenges.length, 'Challenges gefunden');
+    console.log(' Ergebnisse:', challenges);
 
     res.json(challenges);
 
   } catch (error) {
-    console.error("❌ Search error:", error);
+    console.error(" Search error:", error);
     res.status(500).json({ error: 'Search failed' });
   }
 });
@@ -310,12 +321,13 @@ app.get('/challenges/new', async (req, res) => {
       .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
       .select('schueler.*', 'klassen.name as klasse_name')
       .orderBy('schueler.nachname', 'asc');
-    
+    const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
     res.render('formChallenges', {
       item: {},
       aufgabenpakete,
       teams,
       schueler,
+      schuljahre,
       action: '/challenges',
       title: 'Neue Challenge erstellen',
       activePage: 'challenges'
@@ -700,9 +712,11 @@ app.get('/api/schueler/search', async (req, res) => {
 // Neuer Schüler Formular
 app.get('/schueler/new', async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+  const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
   res.render('formSchueler', {
     item: {},
     klassen,
+    schuljahre,
     action: '/schueler',
     title: 'Neuen Schüler anlegen',
     activePage: 'schueler'
@@ -711,17 +725,18 @@ app.get('/schueler/new', async (req, res) => {
 
 // Schüler speichern
 app.post('/schueler', async (req, res) => {
-  const { vorname, nachname, klasse_id } = req.body;
+  const { vorname, nachname, klasse_id, schuljahr_id } = req.body;
   
-  if (!vorname || !nachname) {
-    req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
+  if (!vorname || !nachname || !schuljahr_id) {
+    req.flash('error', 'Vorname, Nachname und Schuljahr sind Pflichtfelder.');
     return res.redirect('/schueler/new');
   }
   
   await db('schueler').insert({
     vorname: vorname.trim(),
     nachname: nachname.trim(),
-    klasse_id: klasse_id || null
+    klasse_id: klasse_id || null,
+    schuljahr_id: schuljahr_id
   });
   
   req.flash('success', 'Schüler erfolgreich angelegt.');
@@ -733,7 +748,8 @@ app.get('/schueler/:id/edit', async (req, res) => {
   try {
     const schueler = await db('schueler').where({ id: req.params.id }).first();
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
-    
+     const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
+
     if (!schueler) {
       req.flash('error', 'Schüler nicht gefunden.');
       return res.redirect('/schueler');
@@ -742,6 +758,7 @@ app.get('/schueler/:id/edit', async (req, res) => {
     res.render('formSchueler', {
       item: schueler,
       klassen,
+      schuljahre,
       action: `/schueler/${schueler.id}?_method=PUT`,
       method: 'POST',
       title: 'Schüler bearbeiten',
@@ -754,18 +771,30 @@ app.get('/schueler/:id/edit', async (req, res) => {
   }
 });
 
-// Schüler aktualisieren
+// Schüler aktualisieren - MIT SCHULJAHR
 app.put('/schueler/:id', async (req, res) => {
-  const { vorname, nachname, klasse_id } = req.body;
+  const { vorname, nachname, klasse_id, schuljahr_id } = req.body;
   
-  await db('schueler').where({ id: req.params.id }).update({
-    vorname: vorname.trim(),
-    nachname: nachname.trim(),
-    klasse_id: klasse_id || null
-  });
+  if (!vorname || !nachname || !schuljahr_id) {
+    req.flash('error', 'Vorname, Nachname und Schuljahr sind Pflichtfelder.');
+    return res.redirect(`/schueler/${req.params.id}/edit`);
+  }
   
-  req.flash('success', 'Änderungen gespeichert.');
-  res.redirect('/schueler');
+  try {
+    await db('schueler').where({ id: req.params.id }).update({
+      vorname: vorname.trim(),
+      nachname: nachname.trim(),
+      klasse_id: klasse_id || null,
+      schuljahr_id: schuljahr_id  // ← NEU
+    });
+    
+    req.flash('success', 'Änderungen gespeichert.');
+    res.redirect('/schueler');
+  } catch (error) {
+    console.error("Fehler beim Aktualisieren des Schülers:", error);
+    req.flash('error', 'Fehler beim Aktualisieren des Schülers.');
+    res.redirect(`/schueler/${req.params.id}/edit`);
+  }
 });
 
 // Schüler löschen
@@ -951,7 +980,7 @@ app.delete('/aufgabenpakete/:id', async (req, res) => {
     }
 
     // 4. LÖSCHEN versuchen
-    const deleteResult = await db('aufgabenpakete').where({ id: aufgabepaketId }).del();
+    const deleteResult = await db('aufgabenpakete').where({ id: aufgabenpaketId }).del();
 
     // 5. ALLE aufgabenpakete anzeigen (nachher)
     const allaufgabenpaketeAfter = await db('aufgabenpakete').select('*');
