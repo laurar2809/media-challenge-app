@@ -33,6 +33,14 @@ table td, table th { vertical-align: middle; }
   align-items: center;
 }
 
+.dropdown .fixed-width {
+  min-width: 200px; /* oder was passenderes */
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .center-filters {
   position: absolute;
     left: 50%;

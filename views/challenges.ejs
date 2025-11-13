@@ -2,6 +2,7 @@
 
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h2 class="h4 m-0">Challenges</h2>
+
   <a href="/challenges/new" class="btn btn-custom-newCategorieChallenge">+ Neue Challenge</a>
 </div>
 
@@ -34,6 +35,51 @@
              placeholder="🔍 Teams, Aufgabenpakete suchen..." 
              value="<%= searchTerm %>"
              autocomplete="off">
+
+   
+  <a href="/challenges/new" class="btn btn-custom-newCategorieChallenge">+ Neue Challenge</a>
+
+
+  <div class="d-flex align-items-center position-absolute start-50 translate-middle-x">
+      <!-- Filter Dropdown -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown">
+          <% if (locals.activeKategorie) { %>
+            Kategorie: <%= locals.activeKategorie %>
+          <% } else { %>
+            Alle Kategorien
+          <% } %>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="/challenges">Alle Kategorien</a></li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+        <!-- KATEGORIEN LISTE -->
+          <% if (locals.kategorien && locals.kategorien.length > 0) { %>
+            <% locals.kategorien.forEach(kat => { %>
+              <li>
+                <a class="dropdown-item <%= locals.activeKategorie === kat.title ? 'active' : '' %>"
+                  href="/challenges/filter/<%= encodeURIComponent(kat.title) %>">
+                  <%= kat.title %>
+                </a>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li><a class="dropdown-item text-muted" href="#">Keine Kategorien vorhanden</a></li>
+          <% } %>
+        </ul>
+      </div>
+      
+
+      <!-- SUCHLEISTE MIT AUTOCOMPLETE -->
+      <div class="position-relative ms-3" id="searchContainer">
+        <input type="text" id="challengeSearch" class="form-control" placeholder="🔍 Teams, Aufgabenpakete suchen..." autocomplete="off">
+        <!-- Autocomplete Dropdown -->
+        <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
+      </div>
+
     </div>
   </div>
 </div>

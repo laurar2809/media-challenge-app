@@ -21,9 +21,6 @@
   <!-- Team Name -->
   <div class="mb-3">
     <label class="form-label">Team Name *</label>
-    <input type="text" name="team_name" class="form-control" required 
-           placeholder="z.B. 'Die Fotografen' oder 'Max & Anna'"
-           value="<%= item.team_name || '' %>">
   </div>
 
   <!-- Team Beschreibung -->
@@ -53,26 +50,39 @@
       </select>
     </div>
   </div>
+
+  <div class="mb-3">
+  <label class="form-label">Verfügbare Teammitglieder</label>
+  <div class="d-flex flex-wrap gap-2" id="availableMembers">
+    <% schueler.forEach(s => { %>
+      <div class="btn btn-outline-primary btn-sm drag-item" 
+           data-id="<%= s.id %>" data-klasse="<%= s.klasse_name %>" draggable="true">
+        <%= s.vorname %> <%= s.nachname %><% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
+      </div>
+    <% }) %>
+  </div>
+</div>
   
 <div class="mb-3">
-  <label class="form-label">Teammitglieder auswählen *</label>
-    <!-- Verfügbare Schüler -->
-  <div class="mb-2">
-    <small class="text-muted">Verfügbare Teammitglieder:</small>
-    <div class="d-flex flex-wrap gap-2 mt-1" id="availableMembers">
-      <% schueler.forEach(s => { %>
-        <div class="btn btn-outline-primary btn-sm drag-item" 
-        data-id="<%= s.id %>" data-klasse="<%= s.klasse_name %>" draggable="true">
-        <%= s.vorname %> <%= s.nachname %><% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
+  <label class="form-label">Teams</label>
+  
+
+  <div id="teamsContainer">
+    <div class="team-card card mb-2" data-team-id="1">
+      <div class="card-body p-2">
+        <div class="drag-area border rounded p-3 mb-3" id="teamDropZone" 
+        style="min-height: 100px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px;">
+        <p class="text-muted text-center mb-0 w-100">Ziehen Sie Teammitglieder hierher (für schnelles Testen)</p>
         </div>
-      <% }) %>
+        <input type="hidden" name="teams[]" value="">
+      </div>
     </div>
   </div>
-  <!-- Drop Zone für ausgewählte Schüler -->
-  <div class="drag-area border rounded p-3" id="teamDropZone" 
-     style="min-height: 100px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px;">
-    <p class="text-muted text-center mb-0 w-100">Ziehen Sie Teammitglieder hierher</p>
 </div>
+
+<button type="button" class="btn btn-success btn-sm mb-2" id="addTeamBtn">
+  <i class="fas fa-plus"></i> Team hinzufügen
+</button>
   
   <!-- Verstecktes Input für Formular -->
   <input type="hidden" name="schueler_ids" id="selectedSchuelerIds" value="<%= item.schueler_ids ? item.schueler_ids.join(',') : '' %>">
@@ -97,17 +107,13 @@
 </form>
 
 <script>
-  // Form Validation - Mindestens 1 Schüler ausgewählt
-  document.getElementById('challengeForm').addEventListener('submit', function(e) {
-    const selectedSchueler = Array.from(this.schueler_ids.selectedOptions).length;
-    if (selectedSchueler === 0) {
-      e.preventDefault();
-      alert('Bitte wählen Sie mindestens ein Teammitglied aus!');
-    }
-  });
+
+  const teamsContainer = document.getElementById('teamsContainer');
+  const addTeamBtn = document.getElementById('addTeamBtn');
+  let teamCounter = 1;
 
   // Drag & Drop und Filter Funktionalität
-document.addEventListener('DOMContentLoaded', function() {
+
   const availableMembers = document.getElementById('availableMembers');
   const teamDropZone = document.getElementById('teamDropZone');
   const selectedSchuelerIds = document.getElementById('selectedSchuelerIds');
@@ -157,6 +163,102 @@ document.addEventListener('DOMContentLoaded', function() {
     selectedSchuelerIds.value = selectedIds.join(',');
   }
 
+  function createTeamCard(teamId, databaseTeamId) {
+  const teamCard = document.createElement('div');
+  teamCard.className = 'team-card card mb-2';
+  teamCard.dataset.teamId = teamId;
+  
+  teamCard.innerHTML = `
+  <div class="card-body p-2">
+    <h6 class="card-title">Team ${teamId}</h6>
+    <div class="team-drop-zone border rounded p-2" 
+         style="min-height: 60px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; gap: 5px;">
+      <p class="text-muted text-center mb-0 w-100 small">Teammitglieder hierher ziehen</p>
+    </div>
+    <input type="hidden" name="teams[]" value="${databaseTeamId}">
+  </div>
+`;
+
+  const dropZone = teamCard.querySelector('.team-drop-zone');
+  setupTeamDropZone(dropZone);
+
+  return teamCard;
+}
+
+  addTeamBtn.addEventListener('click', function() {
+  // ERSTMAL OHNE BACKEND TESTEN
+  teamCounter++;
+  const teamCard = createTeamCard(teamCounter, 'temp-' + teamCounter);
+  teamsContainer.appendChild(teamCard);
+  updateTeamInputs();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+
+
+function setupTeamDropZone(dropZone) {
+  dropZone.addEventListener('dragover', e => e.preventDefault());
+  
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    const memberId = e.dataTransfer.getData('text/plain');
+    const member = availableMembers.querySelector(`[data-id="${memberId}"]`);
+    if (member && !isMemberInAnyTeam(memberId)) {
+      addMemberToTeam(member, dropZone);
+      updateTeamInputs();
+    }
+  });
+}
+
+function addMemberToTeam(memberElement, dropZone) {
+  const memberId = memberElement.dataset.id;
+  
+  const teamMember = document.createElement('span');
+  teamMember.className = 'badge bg-primary team-member-tag';
+  teamMember.dataset.id = memberId;
+  teamMember.textContent = memberElement.textContent.replace(' ×', '');
+  
+  const removeBtn = document.createElement('span');
+  removeBtn.innerHTML = ' ×';
+  removeBtn.style.cursor = 'pointer';
+  removeBtn.onclick = function() {
+    teamMember.remove();
+    updateTeamInputs();
+  };
+  
+  teamMember.appendChild(removeBtn);
+  
+  const placeholder = dropZone.querySelector('p');
+  if (placeholder) placeholder.remove();
+  
+  dropZone.appendChild(teamMember);
+}
+
+function isMemberInAnyTeam(memberId) {
+  const allTeamMembers = document.querySelectorAll('.team-member-tag');
+  return Array.from(allTeamMembers).some(member => member.dataset.id === memberId);
+}
+
+function updateTeamInputs() {
+  const teamCards = document.querySelectorAll('.team-card');
+  
+  teamCards.forEach((card, index) => {
+    const dropZone = card.querySelector('.team-drop-zone');
+    const hiddenInput = card.querySelector('input[name="teams[]"]');
+    
+    const members = Array.from(dropZone.querySelectorAll('.team-member-tag'))
+      .map(member => member.dataset.id);
+    
+    const teamData = {
+      name: `Team ${index + 1}`,
+      members: members
+    };
+    
+    hiddenInput.value = JSON.stringify(teamData);
+  });
+
+}
+
   // Filter
   function filterMembers() {
     const nameValue = document.getElementById('nameFilter')?.value.toLowerCase() || '';
@@ -168,25 +270,17 @@ document.addEventListener('DOMContentLoaded', function() {
       const show = text.includes(nameValue) && (!classValue || klasse === classValue.toLowerCase());
       item.style.display = show ? 'block' : 'none';
     });
-
   }
 
   document.getElementById('nameFilter')?.addEventListener('input', filterMembers);
   document.getElementById('classFilter')?.addEventListener('change', filterMembers);
-
-  // Validation
-  document.getElementById('challengeForm').addEventListener('submit', function(e) {
-    if (!selectedSchuelerIds.value) {
-      e.preventDefault();
-      alert('Bitte wählen Sie mindestens ein Teammitglied aus!');
-    }
-  });
 
   // Initialisierung
   const initialIds = selectedSchuelerIds.value.split(',').filter(id => id);
   initialIds.forEach(id => {
     addToTeam(availableMembers.querySelector(`[data-id="${id}"]`));
   });
-});
+
+}); // <-- HIER schließt DOMContentLoaded
 
 </script>
