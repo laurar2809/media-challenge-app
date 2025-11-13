@@ -18,6 +18,20 @@
     </select>
   </div>
 
+  <!-- SCHULJAHR AUSWAHL - NEU -->
+<div class="mb-3">
+  <label class="form-label">Schuljahr *</label>
+  <select name="schuljahr_id" class="form-control" required>
+    <option value="">Schuljahr wählen</option>
+    <% schuljahre.forEach(jahr => { %>
+      <option value="<%= jahr.id %>" 
+              <%= (item.schuljahr_id == jahr.id) ? 'selected' : '' %>>
+        <%= jahr.name %>
+      </option>
+    <% }) %>
+  </select>
+</div>
+
  <!-- TEAM MANAGEMENT SECTION -->
   <div class="mb-4 p-3 border rounded bg-light">
     <h5 class="mb-3">Team Management</h5>
