@@ -332,14 +332,36 @@ app.get('/challenges/new', async (req, res) => {
 });
 
 // Challenge speichern
-// Challenge speichern - MIT DYNAMISCHEM TEAM
+// Challenge speichern - MIT MEHREREN TEAMS
 app.post('/challenges', async (req, res) => {
   try {
-    const { aufgabenpaket_id, team_name, team_beschreibung, schueler_ids, zusatzinfos, abgabedatum } = req.body;
+    const { aufgabenpaket_id, teams_data, zusatzinfos, abgabedatum } = req.body;
+    
+    console.log('📝 Empfangene Daten:', req.body); // DEBUG
     
     // Validierung
-    if (!aufgabenpaket_id || !team_name || !schueler_ids) {
-      req.flash('error', 'Aufgabenpaket, Team Name und Teammitglieder sind erforderlich.');
+    if (!aufgabenpaket_id) {
+      req.flash('error', 'Aufgabenpaket ist erforderlich.');
+      return res.redirect('/challenges/new');
+    }
+    
+    if (!teams_data) {
+      req.flash('error', 'Mindestens ein Team ist erforderlich.');
+      return res.redirect('/challenges/new');
+    }
+    
+    // Parse teams data
+    let teams;
+    try {
+      teams = JSON.parse(teams_data);
+    } catch (e) {
+      console.error('❌ Fehler beim Parsen der Team-Daten:', e);
+      req.flash('error', 'Ungültige Team-Daten.');
+      return res.redirect('/challenges/new');
+    }
+    
+    if (!Array.isArray(teams) || teams.length === 0) {
+      req.flash('error', 'Mindestens ein Team ist erforderlich.');
       return res.redirect('/challenges/new');
     }
     
@@ -350,60 +372,62 @@ app.post('/challenges', async (req, res) => {
       return res.redirect('/challenges/new');
     }
     
-    // Prüfe ob Schüler existieren
-    const schuelerArray = Array.isArray(schueler_ids) ? schueler_ids : [schueler_ids];
-    const schueler = await db('schueler').whereIn('id', schuelerArray);
-    if (schueler.length !== schuelerArray.length) {
-      req.flash('error', 'Ein oder mehrere ausgewählte Schüler wurden nicht gefunden.');
-      return res.redirect('/challenges/new');
-    }
-    
-    // TRANSACTION START - Alles oder nichts
+    // TRANSACTION START
     const trx = await db.transaction();
     
     try {
-      // 1. Team erstellen
-      const [teamId] = await trx('teams').insert({
-        name: team_name,
-        beschreibung: team_beschreibung || null
-      });
+      const challengeIds = [];
       
-      // 2. Schüler dem Team zuweisen (erster Schüler = Teamleiter)
-      const teamMitglieder = schuelerArray.map((schuelerId, index) => ({
-        team_id: teamId,
-        schueler_id: parseInt(schuelerId),
-        rolle: index === 0 ? 'teamleiter' : 'mitglied' // Erster Schüler = Teamleiter
-      }));
-      
-      await trx('team_mitglieder').insert(teamMitglieder);
-      
-      // 3. Challenge erstellen
-      await trx('challenges').insert({
-        title: aufgabenpaket.title,
-        beschreibung: aufgabenpaket.description,
-        kategorie: aufgabenpaket.kategorie,
-        icon: aufgabenpaket.icon,
-        zusatzinfos: zusatzinfos || null,
-        abgabedatum: abgabedatum || null,
-        team_id: teamId,
-        aufgabenpaket_id: aufgabenpaket_id, 
-      });
+      // Für jedes Team eine Challenge erstellen
+      for (const teamData of teams) {
+        console.log('👥 Erstelle Team:', teamData.name, 'Mitglieder:', teamData.mitglieder.length);
+        
+        // 1. Team erstellen
+        const [teamId] = await trx('teams').insert({
+          name: teamData.name,
+          beschreibung: teamData.beschreibung || null
+        });
+        
+        // 2. Schüler dem Team zuweisen
+        const teamMitglieder = teamData.mitglieder.map((mitglied, index) => ({
+          team_id: teamId,
+          schueler_id: mitglied.id,
+          rolle: index === 0 ? 'teamleiter' : 'mitglied'
+        }));
+        
+        await trx('team_mitglieder').insert(teamMitglieder);
+        
+        // 3. Challenge erstellen
+        const [challengeId] = await trx('challenges').insert({
+          title: aufgabenpaket.title,
+          beschreibung: aufgabenpaket.description,
+          kategorie: aufgabenpaket.kategorie,
+          icon: aufgabenpaket.icon,
+          zusatzinfos: zusatzinfos || null,
+          abgabedatum: abgabedatum || null,
+          team_id: teamId,
+          aufgabenpaket_id: aufgabenpaket_id,
+        });
+        
+        challengeIds.push(challengeId);
+      }
       
       // Alles erfolgreich - Commit
       await trx.commit();
       
-      const mitgliederNamen = schueler.map(s => `${s.vorname} ${s.nachname}`).join(', ');
-      req.flash('success', `Challenge erfolgreich erstellt! Team "${team_name}" mit ${mitgliederNamen}`);
+      req.flash('success', `Erfolgreich ${teams.length} Team(s) mit Challenges erstellt!`);
       res.redirect('/challenges');
       
     } catch (error) {
       // Bei Fehler - Rollback
       await trx.rollback();
-      throw error;
+      console.error(' Datenbank-Fehler:', error);
+      req.flash('error', 'Datenbank-Fehler: ' + error.message);
+      res.redirect('/challenges/new');
     }
     
   } catch (error) {
-    console.error(' Fehler:', error);
+    console.error(' Allgemeiner Fehler:', error);
     req.flash('error', 'Fehler beim Erstellen: ' + error.message);
     res.redirect('/challenges/new');
   }
