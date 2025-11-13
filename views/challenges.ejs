@@ -2,8 +2,61 @@
 
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h2 class="h4 m-0">Challenges</h2>
+
+
+
+  <div class="d-flex align-items-center position-absolute start-50 translate-middle-x">
+      <!-- Filter Dropdown -->
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown">
+          <% if (locals.activeKategorie) { %>
+            Kategorie: <%= locals.activeKategorie %>
+          <% } else { %>
+            Alle Kategorien
+          <% } %>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="/challenges">Alle Kategorien</a></li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+        <!-- KATEGORIEN LISTE -->
+          <% if (locals.kategorien && locals.kategorien.length > 0) { %>
+            <% locals.kategorien.forEach(kat => { %>
+              <li>
+                <a class="dropdown-item <%= locals.activeKategorie === kat.title ? 'active' : '' %>"
+                  href="/challenges/filter/<%= encodeURIComponent(kat.title) %>">
+                  <%= kat.title %>
+                </a>
+              </li>
+            <% }) %>
+          <% } else { %>
+            <li><a class="dropdown-item text-muted" href="#">Keine Kategorien vorhanden</a></li>
+          <% } %>
+        </ul>
+      </div>
+
+      <!-- SUCHLEISTE MIT AUTOCOMPLETE -->
+      <div class="position-relative ms-3" id="searchContainer">
+        <input type="text" id="challengeSearch" class="form-control" placeholder="🔍 Teams, Aufgabenpakete suchen..." autocomplete="off">
+        <!-- Autocomplete Dropdown -->
+        <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
+      </div>
+    </div>
+  </div>
+
   <a href="/challenges/new" class="btn btn-custom-newCategorieChallenge">+ Neue Challenge</a>
 </div>
+
+<!-- Such-Badge -->
+<div id="searchBadge" class="mb-2" style="display: none;">
+  <span class="badge bg-primary d-inline-flex align-items-center">
+    Suchergebnisse für: <span id="searchTermText" class="ms-1"></span>
+    <a href="#" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
+  </span>
+</div>
+
 
 <div class="table-responsive">
   <table class="table table-hover table align-middle m-0">
@@ -81,6 +134,90 @@
 </div>
 
 <script>
+  // Suchfunktionalität
+  const searchContainer = document.getElementById('searchContainer');
+  const searchInput = document.getElementById('challengeSearch');
+  const searchResults = document.getElementById('searchResults');
+  const searchTermText = document.getElementById('searchTermText');
+  const clearSearch = document.getElementById('clearSearch');
+  const searchBadge = document.getElementById('searchBadge');
+  const challengeRows = document.querySelectorAll('.challenge-row');
+
+  let searchTimeout;
+
+  // Suche bei Eingabe
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim().toLowerCase();
+
+    if (query.length < 2) {
+      searchResults.style.display = 'none';
+      searchBadge.style.display = 'none';
+      showAllChallenges();
+      return;
+    }
+
+    searchTimeout = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  });
+
+  // Client-seitige Suche
+  function performSearch(query) {
+    // Such-Badge anzeigen
+    searchTermText.textContent = query;
+    searchBadge.style.display = 'flex';
+
+    // Alle Challenges verstecken
+    challengeRows.forEach(row => {
+      row.style.display = 'none';
+    });
+
+    // Passende Challenges anzeigen
+    const matchingRows = Array.from(challengeRows).filter(row => {
+      const title = row.getAttribute('data-title');
+      const team = row.getAttribute('data-team');
+      const kategorie = row.getAttribute('data-kategorie');
+      
+      return title.includes(query) || 
+             team.includes(query) || 
+             kategorie.includes(query);
+    });
+
+    if (matchingRows.length === 0) {
+      searchResults.innerHTML = '<div class="dropdown-item text-muted">Keine Ergebnisse</div>';
+      searchResults.style.display = 'block';
+    } else {
+      matchingRows.forEach(row => {
+        row.style.display = '';
+      });
+      searchResults.style.display = 'none';
+    }
+  }
+
+  // Alle Challenges anzeigen
+  function showAllChallenges() {
+    challengeRows.forEach(row => {
+      row.style.display = '';
+    });
+  }
+
+  // Search beenden
+  clearSearch.addEventListener('click', function (e) {
+    e.preventDefault();
+    searchInput.value = '';
+    searchBadge.style.display = 'none';
+    showAllChallenges();
+    searchResults.style.display = 'none';
+  });
+
+  // Klick außerhalb schließt Autocomplete
+  document.addEventListener('click', function (e) {
+    if (!searchContainer.contains(e.target)) {
+      searchResults.style.display = 'none';
+    }
+  });
+
   // Eventlistener für modales Fenster beim Delete
   const deleteModal = document.getElementById('confirmDeleteModal');
   const deleteForm = document.getElementById('deleteConfirmForm');
