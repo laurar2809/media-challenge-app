@@ -35,22 +35,48 @@
 
   <!-- Schüler Auswahl (Mehrfachauswahl) -->
   <!-- Schüler Auswahl als Checkbox-Liste -->
+<!-- Filter Section oben nach dem <h1> einfügen -->
+<div class="filter-section mb-4 p-3 border rounded bg-light">
+  <div class="row g-2">
+    <div class="col-md-6">
+      <label class="form-label small">Nach Namen filtern</label>
+      <input type="text" class="form-control form-control-sm" id="nameFilter" placeholder="Namen suchen...">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label small">Nach Klasse filtern</label>
+      <select class="form-select form-select-sm" id="classFilter">
+        <option value="">Alle Klassen</option>
+        <% const klassen = [...new Set(schueler.map(s => s.klasse_name).filter(Boolean))]; %>
+        <% klassen.forEach(klasse => { %>
+          <option value="<%= klasse %>"><%= klasse %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+  
 <div class="mb-3">
   <label class="form-label">Teammitglieder auswählen *</label>
-  <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
-    <% schueler.forEach(s => { %>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="schueler_ids" 
-               value="<%= s.id %>" id="schueler_<%= s.id %>"
-               <%= (item.schueler_ids && item.schueler_ids.includes(s.id.toString())) ? 'checked' : '' %>>
-        <label class="form-check-label" for="schueler_<%= s.id %>">
-          <%= s.vorname %> <%= s.nachname %> 
-          <% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
-        </label>
-      </div>
-    <% }) %>
+    <!-- Verfügbare Schüler -->
+  <div class="mb-2">
+    <small class="text-muted">Verfügbare Teammitglieder:</small>
+    <div class="d-flex flex-wrap gap-2 mt-1" id="availableMembers">
+      <% schueler.forEach(s => { %>
+        <div class="btn btn-outline-primary btn-sm drag-item" 
+        data-id="<%= s.id %>" data-klasse="<%= s.klasse_name %>" draggable="true">
+        <%= s.vorname %> <%= s.nachname %><% if (s.klasse_name) { %> - <%= s.klasse_name %><% } %>
+        </div>
+      <% }) %>
+    </div>
   </div>
-  <div class="form-text">Wählen Sie ein oder mehrere Teammitglieder aus</div>
+  <!-- Drop Zone für ausgewählte Schüler -->
+  <div class="drag-area border rounded p-3" id="teamDropZone" 
+     style="min-height: 100px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px;">
+    <p class="text-muted text-center mb-0 w-100">Ziehen Sie Teammitglieder hierher</p>
+</div>
+  
+  <!-- Verstecktes Input für Formular -->
+  <input type="hidden" name="schueler_ids" id="selectedSchuelerIds" value="<%= item.schueler_ids ? item.schueler_ids.join(',') : '' %>">
+  
 </div>
 
   <!-- Zusatzinfos -->
@@ -79,4 +105,88 @@
       alert('Bitte wählen Sie mindestens ein Teammitglied aus!');
     }
   });
+
+  // Drag & Drop und Filter Funktionalität
+document.addEventListener('DOMContentLoaded', function() {
+  const availableMembers = document.getElementById('availableMembers');
+  const teamDropZone = document.getElementById('teamDropZone');
+  const selectedSchuelerIds = document.getElementById('selectedSchuelerIds');
+
+  // Drag & Drop
+  availableMembers.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', e.target.dataset.id);
+  });
+
+  teamDropZone.addEventListener('dragover', e => e.preventDefault());
+  
+  teamDropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    const memberId = e.dataTransfer.getData('text/plain');
+    const member = availableMembers.querySelector(`[data-id="${memberId}"]`);
+    member && addToTeam(member);
+  });
+
+  // Klick zum Hinzufügen
+  availableMembers.addEventListener('click', e => {
+    e.target.classList.contains('drag-item') && addToTeam(e.target);
+  });
+
+  function addToTeam(memberElement) {
+    const memberId = memberElement.dataset.id;
+    if (!teamDropZone.querySelector(`[data-id="${memberId}"]`)) {
+      const teamMember = memberElement.cloneNode(true);
+      teamMember.classList.replace('btn-outline-primary', 'bg-primary', 'text-white');
+      
+      const removeBtn = document.createElement('span');
+      removeBtn.innerHTML = '×';
+      removeBtn.onclick = () => removeFromTeam(memberId);
+      teamMember.appendChild(removeBtn);
+      
+      teamDropZone.appendChild(teamMember);
+      updateSelectedIds();
+    }
+  }
+
+  function removeFromTeam(memberId) {
+    teamDropZone.querySelector(`[data-id="${memberId}"]`)?.remove();
+    updateSelectedIds();
+  }
+
+  function updateSelectedIds() {
+    const selectedIds = [...teamDropZone.querySelectorAll('.drag-item')].map(item => item.dataset.id);
+    selectedSchuelerIds.value = selectedIds.join(',');
+  }
+
+  // Filter
+  function filterMembers() {
+    const nameValue = document.getElementById('nameFilter')?.value.toLowerCase() || '';
+    const classValue = document.getElementById('classFilter')?.value || '';
+    
+    availableMembers.querySelectorAll('.drag-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      const klasse = item.dataset.klasse?.toLowerCase() || '';
+      const show = text.includes(nameValue) && (!classValue || klasse === classValue.toLowerCase());
+      item.style.display = show ? 'block' : 'none';
+    });
+
+  }
+
+  document.getElementById('nameFilter')?.addEventListener('input', filterMembers);
+  document.getElementById('classFilter')?.addEventListener('change', filterMembers);
+
+  // Validation
+  document.getElementById('challengeForm').addEventListener('submit', function(e) {
+    if (!selectedSchuelerIds.value) {
+      e.preventDefault();
+      alert('Bitte wählen Sie mindestens ein Teammitglied aus!');
+    }
+  });
+
+  // Initialisierung
+  const initialIds = selectedSchuelerIds.value.split(',').filter(id => id);
+  initialIds.forEach(id => {
+    addToTeam(availableMembers.querySelector(`[data-id="${id}"]`));
+  });
+});
+
 </script>
