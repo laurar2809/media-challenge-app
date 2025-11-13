@@ -93,11 +93,11 @@
           <div class="card-footer bg-transparent">
             <div class="d-flex gap-2">
               <a href="/aufgabenpakete/<%= paket.id %>" 
-                 class="btn btn-outline-primary btn-sm">Details</a>
+                 class="btn btn-custom-details btn-sm">Details</a>
               <a href="/aufgabenpakete/<%= paket.id %>/edit" 
                  class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
               <button type="button" 
-                      class="btn btn-outline-danger btn-sm" 
+                      class="btn btn-custom-delete btn-sm" 
                       data-bs-toggle="modal"
                       data-bs-target="#confirmDeleteModal" 
                       data-id="<%= paket.id %>">Löschen</button>
