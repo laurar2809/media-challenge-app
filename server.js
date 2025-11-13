@@ -141,7 +141,6 @@ app.get('/challenges', async (req, res) => {
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
           'teams.name as team_name',
-          'teams.beschreibung as team_beschreibung'
         )
         .orderBy('challenges.created_at', 'desc');
       
@@ -168,7 +167,6 @@ app.get('/challenges', async (req, res) => {
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
           'teams.name as team_name',
-          'teams.beschreibung as team_beschreibung',
           db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
         )
         .groupBy('challenges.id')
@@ -219,7 +217,6 @@ app.get('/challenges/filter/:kategorie', async (req, res) => {
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
           'teams.name as team_name',
-          'teams.beschreibung as team_beschreibung'
         )
         .orderBy('challenges.created_at', 'desc');
       
@@ -246,7 +243,6 @@ app.get('/challenges/filter/:kategorie', async (req, res) => {
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
           'teams.name as team_name',
-          'teams.beschreibung as team_beschreibung',
           db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
         )
         .groupBy('challenges.id')
