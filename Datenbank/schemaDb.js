@@ -1,6 +1,6 @@
 // schemaDb.js - Universelles Datenbank-Schema für SQLite & MySQL
 require('dotenv').config();
-const { db } = require('./db');
+const { db } = require('../db');
 
 async function createSchema() {
   try {
