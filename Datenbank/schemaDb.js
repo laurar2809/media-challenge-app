@@ -1,11 +1,31 @@
-// schemaDb.js - UNIVERSAL FÜR SQLITE & MYSQL (KORRIGIERT)
+// schemaDb.js - Universelles Datenbank-Schema für SQLite & MySQL
 require('dotenv').config();
-const { db } = require('../db');
+const { db } = require('./db');
 
 async function createSchema() {
   try {
     const dbClient = process.env.DB_CLIENT || 'sqlite';
-    console.log(` Erstelle Datenbank-Schema für ${dbClient.toUpperCase()}...`);
+    console.log(`📦 Erstelle Datenbank-Schema für ${dbClient.toUpperCase()}...`);
+
+    // Helper function für ENUM-Erstellung
+    const createEnum = (table, columnName, values, defaultValue = null) => {
+      if (dbClient === 'sqlite') {
+        // SQLite unterstützt kein ENUM, verwende TEXT mit CHECK constraint
+        let column = table.string(columnName, 20);
+        if (defaultValue) column.defaultTo(defaultValue);
+        // CHECK constraint wird später hinzugefügt
+      } else {
+        // MySQL/PostgreSQL unterstützen ENUM
+        table.enu(columnName, values, { useNative: true, enumName: `${columnName}_enum` }).defaultTo(defaultValue);
+      }
+    };
+
+    // Helper function für Fremdschlüssel
+    const addForeignKey = (table, column, references, onDelete = 'SET NULL') => {
+      if (dbClient !== 'sqlite') {
+        table.foreign(column).references('id').inTable(references).onDelete(onDelete);
+      }
+    };
 
     // categories Tabelle
     if (!(await db.schema.hasTable('categories'))) {
@@ -16,7 +36,7 @@ async function createSchema() {
         table.string('icon', 500);
         table.timestamps(true, true);
       });
-      console.log(' Categories-Tabelle erstellt');
+      console.log('✅ Categories-Tabelle erstellt');
     } else {
       console.log('⏭ Categories-Tabelle existiert bereits');
     }
@@ -29,11 +49,32 @@ async function createSchema() {
         table.text('description').notNullable();
         table.string('kategorie', 255).notNullable();
         table.string('icon', 500);
+        table.date('start_date').nullable();
+        table.date('end_date').nullable();
         table.timestamps(true, true);
       });
-      console.log(' Aufgabenpakete-Tabelle erstellt');
+      console.log('✅ Aufgabenpakete-Tabelle erstellt');
     } else {
       console.log('⏭ Aufgabenpakete-Tabelle existiert bereits');
+    }
+
+    // schuljahre Tabelle
+    if (!(await db.schema.hasTable('schuljahre'))) {
+      await db.schema.createTable('schuljahre', (table) => {
+        table.increments('id').primary();
+        table.string('name', 20).notNullable().unique();
+        table.integer('startjahr').notNullable();
+        table.integer('endjahr').notNullable();
+        if (dbClient === 'sqlite') {
+          table.integer('aktiv').defaultTo(1); // SQLite verwendet INTEGER für Boolean
+        } else {
+          table.boolean('aktiv').defaultTo(true);
+        }
+        table.timestamp('created_at').defaultTo(db.fn.now());
+      });
+      console.log('✅ Schuljahre-Tabelle erstellt');
+    } else {
+      console.log('⏭ Schuljahre-Tabelle existiert bereits');
     }
 
     // klassen Tabelle
@@ -43,9 +84,9 @@ async function createSchema() {
         table.string('name', 50).notNullable().unique();
         table.timestamps(true, true);
       });
-      console.log(' Klassen-Tabelle erstellt');
+      console.log('✅ Klassen-Tabelle erstellt');
     } else {
-      console.log(' Klassen-Tabelle existiert bereits');
+      console.log('⏭ Klassen-Tabelle existiert bereits');
     }
 
     // schueler Tabelle
@@ -55,15 +96,15 @@ async function createSchema() {
         table.string('vorname', 100).notNullable();
         table.string('nachname', 100).notNullable();
         table.integer('klasse_id').unsigned();
+        table.integer('schuljahr_id').unsigned();
         table.timestamps(true, true);
         
-        if (dbClient !== 'sqlite') {
-          table.foreign('klasse_id').references('id').inTable('klassen').onDelete('SET NULL');
-        }
+        addForeignKey(table, 'klasse_id', 'klassen');
+        addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
-      console.log(' Schueler-Tabelle erstellt');
+      console.log('✅ Schueler-Tabelle erstellt');
     } else {
-      console.log(' Schueler-Tabelle existiert bereits');
+      console.log('⏭ Schueler-Tabelle existiert bereits');
     }
 
     // teams Tabelle
@@ -72,9 +113,12 @@ async function createSchema() {
         table.increments('id').primary();
         table.string('name', 255).notNullable();
         table.text('beschreibung');
+        table.integer('schuljahr_id').unsigned();
         table.timestamps(true, true);
+        
+        addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
-      console.log(' Teams-Tabelle erstellt');
+      console.log('✅ Teams-Tabelle erstellt');
     } else {
       console.log('⏭ Teams-Tabelle existiert bereits');
     }
@@ -86,25 +130,32 @@ async function createSchema() {
         table.integer('team_id').unsigned().notNullable();
         table.integer('schueler_id').unsigned().notNullable();
         
-        if (dbClient === 'mysql' || dbClient === 'pg') {
-          table.enu('rolle', ['mitglied', 'teamleiter']).defaultTo('mitglied');
-        } else {
+        // ENUM für Rolle
+        if (dbClient === 'sqlite') {
           table.string('rolle', 20).defaultTo('mitglied');
-        }
-        
-        table.timestamps(true, true);
-        
-        if (dbClient !== 'sqlite') {
-          table.foreign('team_id').references('id').inTable('teams').onDelete('CASCADE');
-          table.foreign('schueler_id').references('id').inTable('schueler').onDelete('CASCADE');
-          table.unique(['team_id', 'schueler_id']);
         } else {
-          table.unique(['team_id', 'schueler_id']);
+          table.enu('rolle', ['mitglied', 'teamleiter']).defaultTo('mitglied');
         }
+        
+        table.timestamp('created_at').defaultTo(db.fn.now());
+        
+        addForeignKey(table, 'team_id', 'teams', 'CASCADE');
+        addForeignKey(table, 'schueler_id', 'schueler', 'CASCADE');
+        
+        // Unique constraint für Team-Mitglied Kombination
+        table.unique(['team_id', 'schueler_id']);
       });
-      console.log(' Team-Mitglieder-Tabelle erstellt');
+      
+      // Für SQLite: CHECK constraint für Rolle
+      if (dbClient === 'sqlite') {
+        // SQLite unterstützt kein ALTER TABLE ADD CONSTRAINT, daher muss es manuell gemacht werden
+        // Dies ist ein Workaround - in der Praxis wird der Constraint oft weggelassen
+        console.log('ℹ️  SQLite: CHECK constraint für Rolle muss manuell hinzugefügt werden');
+      }
+      
+      console.log('✅ Team-Mitglieder-Tabelle erstellt');
     } else {
-      console.log(' Team-Mitglieder-Tabelle existiert bereits');
+      console.log('⏭ Team-Mitglieder-Tabelle existiert bereits');
     }
 
     // challenges Tabelle
@@ -126,12 +177,13 @@ async function createSchema() {
         table.integer('aufgabenpaket_id').unsigned();
         table.integer('team_id').unsigned();
         table.integer('schueler_id').unsigned();
+        table.integer('schuljahr_id').unsigned();
         
-        // Status (falls gewünscht)
-        if (dbClient === 'mysql' || dbClient === 'pg') {
-          table.enu('status', ['offen', 'in_arbeit', 'abgeschlossen', 'bewertet']).defaultTo('offen');
-        } else {
+        // Status
+        if (dbClient === 'sqlite') {
           table.string('status', 20).defaultTo('offen');
+        } else {
+          table.enu('status', ['offen', 'in_arbeit', 'abgeschlossen', 'bewertet']).defaultTo('offen');
         }
         
         // Bewertung
@@ -143,15 +195,14 @@ async function createSchema() {
         table.timestamps(true, true);
         
         // Fremdschlüssel
-        if (dbClient !== 'sqlite') {
-          table.foreign('aufgabenpaket_id').references('id').inTable('aufgabenpakete').onDelete('SET NULL');
-          table.foreign('team_id').references('id').inTable('teams').onDelete('SET NULL');
-          table.foreign('schueler_id').references('id').inTable('schueler').onDelete('SET NULL');
-        }
+        addForeignKey(table, 'aufgabenpaket_id', 'aufgabenpakete');
+        addForeignKey(table, 'team_id', 'teams');
+        addForeignKey(table, 'schueler_id', 'schueler');
+        addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
-      console.log(' Challenges-Tabelle erstellt');
+      console.log('✅ Challenges-Tabelle erstellt');
     } else {
-      console.log(' Challenges-Tabelle existiert bereits');
+      console.log('⏭ Challenges-Tabelle existiert bereits');
     }
 
     // challenge_bilder Tabelle
@@ -162,29 +213,31 @@ async function createSchema() {
         table.string('bild_url', 500).notNullable();
         table.text('beschreibung');
         table.integer('reihenfolge').defaultTo(0);
-        table.timestamps(true, true);
+        table.timestamp('created_at').defaultTo(db.fn.now());
         
-        if (dbClient !== 'sqlite') {
-          table.foreign('challenge_id').references('id').inTable('challenges').onDelete('CASCADE');
-        }
+        addForeignKey(table, 'challenge_id', 'challenges', 'CASCADE');
       });
-      console.log(' Challenge-Bilder-Tabelle erstellt');
+      console.log('✅ Challenge-Bilder-Tabelle erstellt');
     } else {
-      console.log(' Challenge-Bilder-Tabelle existiert bereits');
+      console.log('⏭ Challenge-Bilder-Tabelle existiert bereits');
     }
 
-    console.log(' Datenbank-Schema erfolgreich geprüft/erstellt!');
+    console.log('🎉 Datenbank-Schema erfolgreich geprüft/erstellt!');
 
   } catch (error) {
-    console.error(' Fehler beim Erstellen des Schemas:', error);
+    console.error('❌ Fehler beim Erstellen des Schemas:', error);
     throw error;
-  } finally {
-    await db.destroy();
   }
 }
 
 if (require.main === module) {
-  createSchema();
+  createSchema().then(() => {
+    console.log('Schema creation completed');
+    process.exit(0);
+  }).catch(error => {
+    console.error('Schema creation failed:', error);
+    process.exit(1);
+  });
 }
 
 module.exports = { createSchema };
