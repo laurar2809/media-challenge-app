@@ -90,3 +90,26 @@ init().then(() => {
   console.error('DB init error:', err);
   process.exit(1);
 });
+
+// 404 Handler - EINFACHERE VERSION
+app.use((req, res) => {
+  res.status(404).send(`
+    <div style="text-align: center; margin-top: 50px;">
+      <h1> 404 - Seite nicht gefunden</h1>
+      <p>Die angeforderte Seite existiert nicht.</p>
+      <a href="/">Zur Startseite</a>
+    </div>
+  `);
+});
+
+// Error Handler - EINFACHERE VERSION  
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).send(`
+    <div style="text-align: center; margin-top: 50px;">
+      <h1>500 - Server Fehler</h1>
+      <p>Es ist ein interner Serverfehler aufgetreten.</p>
+      <a href="/">Zur Startseite</a>
+    </div>
+  `);
+});
