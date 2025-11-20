@@ -31,10 +31,9 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Kategorien für Filter-Dropdown
+    // Kategorien und Schuljahre laden
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-    
     
     let challenges;
     const dbClient = process.env.DB_CLIENT || 'sqlite';
@@ -46,6 +45,7 @@ router.get('/', async (req, res) => {
           'challenges.*',
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
+          'aufgabenpakete.icon as aufgabenpaket_icon',
           'teams.name as team_name',
           'schuljahre.name as schuljahr_name'
         )
@@ -73,6 +73,7 @@ router.get('/', async (req, res) => {
           'challenges.*',
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
+          'aufgabenpakete.icon as aufgabenpaket_icon',
           'teams.name as team_name',
           'schuljahre.name as schuljahr_name',
           db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
@@ -93,11 +94,17 @@ router.get('/', async (req, res) => {
     
   } catch (error) {
     console.error("Fehler beim Laden der challenges:", error);
+    
+    // Fehlerbehandlung mit allen Variablen
+    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
+    
     res.render('challenges', { 
       challenges: [], 
-      kategorien: [],
-      schuljahre: [],
+      kategorien: kategorien,
+      schuljahre: schuljahre,
       activeKategorie: 'alle',
+      activeSchuljahr: 'alle',
       searchTerm: '',
       activePage: 'challenges' 
     });
@@ -114,18 +121,21 @@ router.get('/filter/:kategorie', async (req, res) => {
       .leftJoin('teams', 'challenges.team_id', 'teams.id')
       .where('aufgabenpakete.kategorie', kategorie);
 
+    // Kategorien und Schuljahre laden
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
+    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
     let challenges;
     const dbClient = process.env.DB_CLIENT || 'sqlite';
     
     if (dbClient === 'sqlite') {
-      // SQLITE VERSION
+      // SQLITE VERSION - MIT AUFGABENPAKET ICON
       challenges = await query
         .select(
           'challenges.*',
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
+          'aufgabenpakete.icon as aufgabenpaket_icon',
           'teams.name as team_name',
         )
         .orderBy('challenges.created_at', 'desc');
@@ -144,7 +154,7 @@ router.get('/filter/:kategorie', async (req, res) => {
         }
       }
     } else {
-      // MYSQL VERSION
+      // MYSQL VERSION - MIT AUFGABENPAKET ICON
       challenges = await query
         .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
         .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
@@ -152,6 +162,7 @@ router.get('/filter/:kategorie', async (req, res) => {
           'challenges.*',
           'aufgabenpakete.title as aufgabenpaket_title',
           'aufgabenpakete.kategorie',
+          'aufgabenpakete.icon as aufgabenpaket_icon',
           'teams.name as team_name',
           db.raw("GROUP_CONCAT(CONCAT(schueler.vorname, ' ', schueler.nachname) SEPARATOR ', ') as team_mitglieder_names")
         )
@@ -159,10 +170,14 @@ router.get('/filter/:kategorie', async (req, res) => {
         .orderBy('challenges.created_at', 'desc');
     }
     
+    // Alle Variablen korrekt übergeben
     res.render('challenges', { 
       challenges, 
       kategorien,
+      schuljahre,
       activeKategorie: kategorie,
+      activeSchuljahr: 'alle',
+      searchTerm: '',
       activePage: 'challenges' 
     });
     
@@ -172,6 +187,69 @@ router.get('/filter/:kategorie', async (req, res) => {
     res.redirect('/challenges');
   }
 });
+
+// NEUE DETAIL-ROUTE FÜR CHALLENGES - KORRIGIERT
+router.get('/detail/:id', async (req, res) => {
+  try {
+    const challengeId = req.params.id;
+    
+    console.log('Lade Challenge Details für ID:', challengeId);
+    
+    // Challenge mit allen notwendigen Daten laden - OHNE teams.beschreibung
+    const challenge = await db('challenges')
+      .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .where('challenges.id', challengeId)
+      .select(
+        'challenges.*',
+        'aufgabenpakete.title as aufgabenpaket_title',
+        'aufgabenpakete.description as aufgabenpaket_description',
+        'aufgabenpakete.kategorie',
+        'aufgabenpakete.icon as aufgabenpaket_icon',
+        'teams.name as team_name',
+        // 'teams.beschreibung as team_beschreibung', // ❌ DIESE SPALTE EXISTIERT NICHT
+        'schuljahre.name as schuljahr_name'
+      )
+      .first();
+
+    if (!challenge) {
+      console.log('Challenge nicht gefunden für ID:', challengeId);
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+
+    console.log('Challenge gefunden:', challenge.aufgabenpaket_title);
+
+    // Team-Mitglieder laden
+    if (challenge.team_id) {
+      const mitglieder = await db('team_mitglieder')
+        .leftJoin('schueler', 'team_mitglieder.schueler_id', 'schueler.id')
+        .where('team_mitglieder.team_id', challenge.team_id)
+        .select('schueler.vorname', 'schueler.nachname');
+      
+      challenge.team_mitglieder_names = mitglieder
+        .map(m => `${m.vorname} ${m.nachname}`)
+        .join(', ');
+      
+      console.log('Team-Mitglieder geladen:', challenge.team_mitglieder_names);
+    }
+
+    // Team-Beschreibung auf null setzen (da Spalte nicht existiert)
+    challenge.team_beschreibung = null;
+
+    res.render('challengesDetail', {
+      challenge: challenge,
+      activePage: 'challenges'
+    });
+
+  } catch (error) {
+    console.error('Fehler beim Laden der Challenge-Details:', error);
+    req.flash('error', 'Fehler beim Laden der Challenge-Details.');
+    res.redirect('/challenges');
+  }
+});
+
 
 // Neues Challenge Formular
 router.get('/new', async (req, res) => {
@@ -200,6 +278,9 @@ router.get('/new', async (req, res) => {
     res.redirect('/challenges');
   }
 });
+
+
+
 
 // Challenge speichern
 router.post('/', async (req, res) => {
