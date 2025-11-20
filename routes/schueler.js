@@ -5,13 +5,15 @@ const { db } = require('../db');
 // Schüler Übersicht mit Filterung
 router.get('/', async (req, res) => {
   try {
-    const { klasse, search } = req.query;
+    const { klasse, schuljahr, search } = req.query; // ✅ schuljahr hinzugefügt
     
     let query = db('schueler')
       .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
+      .leftJoin('schuljahre', 'schueler.schuljahr_id', 'schuljahre.id')
       .select(
         'schueler.*', 
-        'klassen.name as klasse_name'
+        'klassen.name as klasse_name',
+        'schuljahre.name as schuljahr_name'
       );
 
     // Filter nach Klasse
@@ -19,12 +21,18 @@ router.get('/', async (req, res) => {
       query = query.where('klassen.name', klasse);
     }
 
+    // ✅ NEU: Filter nach Schuljahr
+    if (schuljahr && schuljahr !== 'alle') {
+      query = query.where('schuljahre.name', schuljahr);
+    }
+
     // Suche nach Namen
     if (search && search.length >= 2) {
       query = query.where(function() {
         this.where('schueler.vorname', 'like', `%${search}%`)
              .orWhere('schueler.nachname', 'like', `%${search}%`)
-             .orWhere('klassen.name', 'like', `%${search}%`);
+             .orWhere('klassen.name', 'like', `%${search}%`)
+             .orWhere('schuljahre.name', 'like', `%${search}%`);
       });
     }
 
@@ -32,11 +40,15 @@ router.get('/', async (req, res) => {
     
     // Alle Klassen für Filter-Dropdown
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+    // ✅ NEU: Alle Schuljahre für Filter-Dropdown
+    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
     res.render('schueler', { 
       schueler, 
       klassen,
-      activeFilter: klasse || 'alle',
+      schuljahre, // ✅ NEU
+      activeKlasseFilter: klasse || 'alle', // ✅ Umbenannt
+      activeSchuljahrFilter: schuljahr || 'alle', // ✅ NEU
       searchTerm: search || '',
       activePage: 'schueler' 
     });
@@ -45,7 +57,9 @@ router.get('/', async (req, res) => {
     res.render('schueler', { 
       schueler: [], 
       klassen: [],
-      activeFilter: 'alle',
+      schuljahre: [], // ✅ NEU
+      activeKlasseFilter: 'alle',
+      activeSchuljahrFilter: 'alle', // ✅ NEU
       searchTerm: '',
       activePage: 'schueler' 
     });
@@ -55,7 +69,7 @@ router.get('/', async (req, res) => {
 // Neuer Schüler Formular
 router.get('/new', async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
-  const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
+const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
   res.render('formSchueler', {
     item: {},
     klassen,
@@ -91,7 +105,7 @@ router.get('/:id/edit', async (req, res) => {
   try {
     const schueler = await db('schueler').where({ id: req.params.id }).first();
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
-    const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
+   const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
     if (!schueler) {
       req.flash('error', 'Schüler nicht gefunden.');

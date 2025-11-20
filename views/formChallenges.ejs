@@ -134,13 +134,13 @@
          value="<%= item.abgabedatum ? new Date(item.abgabedatum).toISOString().split('T')[0] : '' %>">
 </div>
 
-  <button type="submit" class="btn btn-custom-safe">Challenge erstellen</button>
+  <button type="submit" class="btn btn-custom-safe">Challenge speichern</button>
   <a href="/challenges" class="btn btn-secondary">Abbrechen</a>
 </form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ✅ ZUERST alle DOM-Elemente definieren
+  //  ZUERST alle DOM-Elemente definieren
   const availableMembers = document.getElementById('availableMembers');
   const teamDropZone = document.getElementById('teamDropZone');
   const teamsContainer = document.getElementById('teamsContainer');
@@ -151,14 +151,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const nameFilter = document.getElementById('nameFilter');
   const classFilter = document.getElementById('classFilter');
 
-  // ✅ Teams aus verstecktem Input-Feld lesen
+  //  Teams aus verstecktem Input-Feld lesen
   const existingTeamsInput = document.getElementById('existingTeamsData');
   const existingTeamsJSON = existingTeamsInput ? existingTeamsInput.value : '[]';
   
   let teams = [];  
   let teamCounter = 1;
 
-  // ✅ Teams Daten für Formular aktualisieren (GANZ EINFACH)
+  // Teams Daten für Formular aktualisieren (GANZ EINFACH)
   function updateTeamsData() {
     teamsDataInput.value = JSON.stringify(teams);
   }
@@ -168,8 +168,8 @@ document.addEventListener('DOMContentLoaded', function() {
       teams = JSON.parse(existingTeamsJSON);
       teamCounter = teams.length + 1;
       renderTeams();
-      updateTeamsData(); // ✅ AUFRUF 1: Beim Laden
-      console.log('✅ Vorhandene Teams geladen:', teams);
+      updateTeamsData(); // AUFRUF 1: Beim Laden
+      console.log(' Vorhandene Teams geladen:', teams);
     } catch (e) {
       console.error('Fehler beim Parsen der Teams:', e);
     }
