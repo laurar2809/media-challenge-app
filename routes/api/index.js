@@ -89,3 +89,4 @@ router.get('/aufgabenpakete/search', async (req, res) => {
   }
 });
 
+module.exports = router; 
