@@ -33,7 +33,8 @@ router.get('/', async (req, res) => {
 
     // Kategorien für Filter-Dropdown
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-    const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
+    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
+    
     
     let challenges;
     const dbClient = process.env.DB_CLIENT || 'sqlite';
@@ -83,6 +84,7 @@ router.get('/', async (req, res) => {
     res.render('challenges', { 
       challenges, 
       kategorien,
+      schuljahre,
       activeKategorie: kategorie || 'alle',
       activeSchuljahr: schuljahr || 'alle',
       searchTerm: search || '',
@@ -94,6 +96,7 @@ router.get('/', async (req, res) => {
     res.render('challenges', { 
       challenges: [], 
       kategorien: [],
+      schuljahre: [],
       activeKategorie: 'alle',
       searchTerm: '',
       activePage: 'challenges' 
@@ -179,13 +182,14 @@ router.get('/new', async (req, res) => {
       .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
       .select('schueler.*', 'klassen.name as klasse_name')
       .orderBy('schueler.nachname', 'asc');
-    const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
+    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
     res.render('formChallenges', {
       item: {},
       aufgabenpakete,
       teams,
       schueler,
       schuljahre,
+      existingTeam: [], 
       action: '/challenges',
       title: 'Neue Challenge erstellen',
       activePage: 'challenges'
@@ -355,7 +359,7 @@ router.get('/:id/edit', async (req, res) => {
       .select('schueler.*', 'klassen.name as klasse_name')
       .orderBy('schueler.nachname', 'asc');
     
-    const schuljahre = await db('schuljahre').where({ aktiv: true }).orderBy('startjahr', 'desc');
+   const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
     
     // 5. ALLE Daten an das Template übergeben
     res.render('formChallenges', {

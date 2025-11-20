@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
 const { uploadAufgabenpaket } = require('../middleware/uploads');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Aufgabenpakete Übersicht mit Filterung
 router.get('/', async (req, res) => {
@@ -135,27 +137,65 @@ router.get('/:id/edit', async (req, res) => {
   }
 });
 
+// Hilfsfunktion zum Löschen von Bildern
+const deleteImageFile = async (imagePath) => {
+  try {
+    if (imagePath && imagePath.startsWith('/uploads/')) {
+      const fullPath = path.join(__dirname, '../public', imagePath);
+      await fs.unlink(fullPath);
+      console.log('✅ Bild gelöscht:', fullPath);
+    }
+  } catch (error) {
+    console.log('⚠️ Bild konnte nicht gelöscht werden (evtl. nicht vorhanden):', error.message);
+  }
+};
+
 // Aufgabenpaket aktualisieren
 router.put('/:id', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
-  let { kategorie, description, icon, title } = req.body;
+  try {
+    let { kategorie, description, title, keep_existing_image } = req.body;
 
-  const currentAufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
-  if (!req.file) icon = currentAufgabenpaket.icon;
+    const currentAufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
+    if (!currentAufgabenpaket) {
+      req.flash('error', 'Aufgabenpaket nicht gefunden.');
+      return res.redirect('/aufgabenpakete');
+    }
 
-  // BILD VERARBEITUNG HINZUFÜGEN
-  if (req.file) {
-    icon = '/uploads/aufgabenpakete/' + req.file.filename;
+    let icon = currentAufgabenpaket.icon;
+
+    // FALL 1: Bestehendes Bild soll gelöscht werden
+    if (keep_existing_image === 'false') {
+      await deleteImageFile(currentAufgabenpaket.icon);
+      icon = null;
+    }
+
+    // FALL 2: Neues Bild wurde hochgeladen
+    if (req.file) {
+      // Altes Bild löschen (falls vorhanden)
+      if (currentAufgabenpaket.icon && keep_existing_image !== 'false') {
+        await deleteImageFile(currentAufgabenpaket.icon);
+      }
+      icon = '/uploads/aufgabenpakete/' + req.file.filename;
+    }
+
+    // FALL 3: Keine Änderung am Bild gewünscht
+    // icon bleibt currentAufgabenpaket.icon
+
+    await db('aufgabenpakete').where({ id: req.params.id }).update({
+      title: title.trim(),
+      description: description.trim(),
+      kategorie: kategorie.trim(),
+      icon: icon
+    });
+
+    req.flash('success', 'Änderungen gespeichert.');
+    res.redirect('/aufgabenpakete');
+
+  } catch (error) {
+    console.error("Fehler beim Aktualisieren:", error);
+    req.flash('error', 'Fehler beim Speichern der Änderungen.');
+    res.redirect(`/aufgabenpakete/${req.params.id}/edit`);
   }
-
-  await db('aufgabenpakete').where({ id: req.params.id }).update({
-    title: title.trim(),
-    description: description.trim(),
-    kategorie: kategorie.trim(),
-    icon: icon ? icon.trim() : null
-  });
-
-  req.flash('success', 'Änderungen gespeichert.');
-  res.redirect('/aufgabenpakete');
 });
 
 // Aufgabenpaket löschen
@@ -167,6 +207,11 @@ router.delete('/:id', async (req, res) => {
     if (!aufgabenpaketToDelete) {
       req.flash('error', `Aufgabenpaket mit ID ${aufgabenpaketId} nicht gefunden.`);
       return res.redirect('/aufgabenpakete');
+    }
+
+    // Bild löschen falls vorhanden
+    if (aufgabenpaketToDelete.icon) {
+      await deleteImageFile(aufgabenpaketToDelete.icon);
     }
 
     const deleteResult = await db('aufgabenpakete').where({ id: aufgabenpaketId }).del();
