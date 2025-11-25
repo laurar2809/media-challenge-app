@@ -1,4 +1,5 @@
 <% pageTitle=title %>
+
 <h1 class="h4 mb-3">
   <%= title %>
 </h1>
@@ -72,6 +73,8 @@
     </div>
 
     <!-- Aktuelle Teams -->
+    <input type="hidden" id="existingTeamsData" value='<%= JSON.stringify(existingTeam || []) %>'>
+    
     <div class="mb-3">
       <label class="form-label">Aktuelle Teams</label>
       <div id="teamsContainer">
@@ -125,17 +128,19 @@
   </div>
 
   <!-- Abgabedatum -->
-  <div class="mb-3">
-    <label class="form-label">Abgabedatum</label>
-    <input type="date" name="abgabedatum" class="form-control" value="<%= item.abgabedatum || '' %>">
-  </div>
+<div class="mb-3">
+  <label class="form-label">Abgabedatum</label>
+  <input type="date" name="abgabedatum" class="form-control" 
+         value="<%= item.abgabedatum ? new Date(item.abgabedatum).toISOString().split('T')[0] : '' %>">
+</div>
 
-  <button type="submit" class="btn btn-custom-safe">Challenge erstellen</button>
+  <button type="submit" class="btn btn-custom-safe">Challenge speichern</button>
   <a href="/challenges" class="btn btn-secondary">Abbrechen</a>
 </form>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  //  ZUERST alle DOM-Elemente definieren
   const availableMembers = document.getElementById('availableMembers');
   const teamDropZone = document.getElementById('teamDropZone');
   const teamsContainer = document.getElementById('teamsContainer');
@@ -145,9 +150,30 @@ document.addEventListener('DOMContentLoaded', function() {
   const newTeamDescription = document.getElementById('newTeamDescription');
   const nameFilter = document.getElementById('nameFilter');
   const classFilter = document.getElementById('classFilter');
+
+  //  Teams aus verstecktem Input-Feld lesen
+  const existingTeamsInput = document.getElementById('existingTeamsData');
+  const existingTeamsJSON = existingTeamsInput ? existingTeamsInput.value : '[]';
   
-  let teams = [];
+  let teams = [];  
   let teamCounter = 1;
+
+  // Teams Daten für Formular aktualisieren (GANZ EINFACH)
+  function updateTeamsData() {
+    teamsDataInput.value = JSON.stringify(teams);
+  }
+
+  if (existingTeamsJSON && existingTeamsJSON !== '[]') {
+    try {
+      teams = JSON.parse(existingTeamsJSON);
+      teamCounter = teams.length + 1;
+      renderTeams();
+      updateTeamsData(); // AUFRUF 1: Beim Laden
+      console.log(' Vorhandene Teams geladen:', teams);
+    } catch (e) {
+      console.error('Fehler beim Parsen der Teams:', e);
+    }
+  }
 
   // Drag & Drop Funktionen
   availableMembers.addEventListener('dragstart', e => {
@@ -246,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
     teams.push(team);
     renderTeams();
     clearTeamForm();
-    updateTeamsData();
+    updateTeamsData(); // ✅ AUFRUF 2: Beim Erstellen
   });
 
   // Teams anzeigen
@@ -281,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const index = parseInt(this.dataset.index);
         teams.splice(index, 1);
         renderTeams();
-        updateTeamsData();
+        updateTeamsData(); // ✅ AUFRUF 3: Beim Löschen
       });
     });
   }
@@ -291,11 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
     newTeamName.value = '';
     newTeamDescription.value = '';
     teamDropZone.innerHTML = '<p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>';
-  }
-
-  // Teams Daten für Formular aktualisieren
-  function updateTeamsData() {
-    teamsDataInput.value = JSON.stringify(teams);
   }
 
   // Filter Funktionen

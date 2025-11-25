@@ -5,20 +5,18 @@
   <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
 </div>
 
-
-
 <!-- FILTER UND SUCHLEISTE -->
 <div class="row mb-4">
-  <div class="col-md-6">
+  <div class="col-md-4"> <!-- ✅ Von col-md-6 auf col-md-4 geändert -->
     <!-- Klassen Filter -->
     <div class="input-group">
       <span class="input-group-text">Klasse:</span>
       <select class="form-select" id="klassenFilter">
-        <option value="alle" <%= activeFilter === 'alle' ? 'selected' : '' %>>Alle Klassen</option>
+        <option value="alle" <%= activeKlasseFilter === 'alle' ? 'selected' : '' %>>Alle Klassen</option>
         <% if (klassen && klassen.length > 0) { %>
           <% klassen.forEach(klasse => { %>
             <option value="<%= klasse.name %>" 
-                    <%= activeFilter === klasse.name ? 'selected' : '' %>>
+                    <%= activeKlasseFilter === klasse.name ? 'selected' : '' %>>
               <%= klasse.name %>
             </option>
           <% }) %>
@@ -27,7 +25,25 @@
     </div>
   </div>
   
-  <div class="col-md-6">
+  <div class="col-md-4"> <!-- ✅ NEU: Schuljahr Filter -->
+    <!-- Schuljahr Filter -->
+    <div class="input-group">
+      <span class="input-group-text">Schuljahr:</span>
+      <select class="form-select" id="schuljahrFilter">
+        <option value="alle" <%= activeSchuljahrFilter === 'alle' ? 'selected' : '' %>>Alle Schuljahre</option>
+        <% if (schuljahre && schuljahre.length > 0) { %>
+          <% schuljahre.forEach(jahr => { %>
+            <option value="<%= jahr.name %>" 
+                    <%= activeSchuljahrFilter === jahr.name ? 'selected' : '' %>>
+              <%= jahr.name %>
+            </option>
+          <% }) %>
+        <% } %>
+      </select>
+    </div>
+  </div>
+  
+  <div class="col-md-4"> <!-- ✅ Von col-md-6 auf col-md-4 geändert -->
     <!-- Suchleiste -->
     <div class="position-relative" id="searchContainer">
       <input type="text" 
@@ -61,6 +77,7 @@
         <th scope="col">Vorname</th>
         <th scope="col">Nachname</th>
         <th scope="col">Klasse</th>
+        <th scope="col">Schuljahr</th>
         <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
       </tr>
     </thead>
@@ -68,7 +85,7 @@
     <tbody id="schuelerTableBody">
   <% if (schueler && schueler.length === 0) { %>
     <tr>
-      <td colspan="4" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
+      <td colspan="5" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
     </tr>
   <% } %>
 
@@ -78,7 +95,8 @@
           data-id="<%= schueler.id %>"
           data-vorname="<%= schueler.vorname.toLowerCase() %>"
           data-nachname="<%= schueler.nachname.toLowerCase() %>"
-          data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>">
+          data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>"
+          data-schuljahr="<%= (schueler.schuljahr_name || '').toLowerCase() %>">
         <td class="fw-medium">
           <%= schueler.vorname %>
         </td>
@@ -87,6 +105,9 @@
         </td>
         <td class="text-body-secondary">
             <%= schueler.klasse_name || 'Keine Klasse' %>
+        </td>
+        <td class="text-body-secondary">
+            <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
         </td>
         <td class="text-end" style="white-space: nowrap;">
           <a href="/schueler/<%= schueler.id %>/edit" class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
@@ -131,12 +152,18 @@
   const clearSearch = document.getElementById('clearSearch');
   const searchBadge = document.getElementById('searchBadge');
   const klassenFilter = document.getElementById('klassenFilter');
+  const schuljahrFilter = document.getElementById('schuljahrFilter'); // ✅ NEU
   const schuelerRows = document.querySelectorAll('.schueler-row');
 
   let searchTimeout;
 
   // Filter bei Änderung anwenden
   klassenFilter.addEventListener('change', function() {
+    applyFilters();
+  });
+
+  // ✅ NEU: Schuljahr Filter bei Änderung
+  schuljahrFilter.addEventListener('change', function() {
     applyFilters();
   });
 
@@ -162,21 +189,10 @@
     }, 300);
   });
 
-  // API-Suche für Autocomplete (optional, falls gewünscht)
-  async function performSearch(query) {
-    try {
-      const response = await fetch(`/api/schueler/search?q=${encodeURIComponent(query)}`);
-      const schueler = await response.json();
-      return schueler;
-    } catch (error) {
-      console.error('Search error:', error);
-      return [];
-    }
-  }
-
   // Filter anwenden - LIVE-FILTERING
   function applyFilters() {
     const klasseValue = klassenFilter.value.toLowerCase();
+    const schuljahrValue = schuljahrFilter.value.toLowerCase(); // ✅ NEU
     const searchValue = searchInput.value.trim().toLowerCase();
     
     let visibleCount = 0;
@@ -185,14 +201,17 @@
       const vorname = row.getAttribute('data-vorname');
       const nachname = row.getAttribute('data-nachname');
       const klasse = row.getAttribute('data-klasse');
+      const schuljahr = row.getAttribute('data-schuljahr');
       
       const matchesKlasse = klasseValue === 'alle' || klasse === klasseValue;
+      const matchesSchuljahr = schuljahrValue === 'alle' || schuljahr === schuljahrValue; // ✅ NEU
       const matchesSearch = !searchValue || 
                            vorname.includes(searchValue) || 
                            nachname.includes(searchValue) || 
-                           klasse.includes(searchValue);
+                           klasse.includes(searchValue) ||
+                           schuljahr.includes(searchValue);
       
-      if (matchesKlasse && matchesSearch) {
+      if (matchesKlasse && matchesSchuljahr && matchesSearch) { // ✅ matchesSchuljahr hinzugefügt
         row.style.display = '';
         visibleCount++;
       } else {
@@ -209,7 +228,7 @@
         noResultsRow = document.createElement('tr');
         noResultsRow.className = 'no-results-row';
         noResultsRow.innerHTML = `
-          <td colspan="4" class="text-center py-4 text-muted">
+          <td colspan="5" class="text-center py-4 text-muted">
             Keine Schüler gefunden für die ausgewählten Filter
           </td>
         `;
