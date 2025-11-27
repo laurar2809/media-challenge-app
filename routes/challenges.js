@@ -193,7 +193,7 @@ router.post('/', async (req, res) => {
       res.redirect('/challenges');
       
     } catch (error) {
-      // Bei Fehler - Rollback
+      // Bei Fehler - Rollbackö
       await trx.rollback();
       console.error('❌ Datenbank-Fehler:', error);
       req.flash('error', 'Datenbank-Fehler: ' + error.message);
