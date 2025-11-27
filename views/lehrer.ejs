@@ -5,11 +5,10 @@
   <a href="/lehrer/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Lehrer</a>
 </div>
 
-<!-- SUCHLEISTE -->
+<!-- Suchleiste -->
 <div class="row mb-4">
   <div class="col-md-6">
-    <!-- Suchleiste -->
-    <div class="position-relative" id="searchContainer">
+    <div class="position-relative">
       <input type="text" 
              id="lehrerSearch" 
              class="form-control" 
@@ -38,74 +37,70 @@
       <tr>
         <th scope="col">Vorname</th>
         <th scope="col">Nachname</th>
-        <th scope="col">Klasse</th>
-        <th scope="col">Schuljahr</th>
         <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
       </tr>
     </thead>
     
     <tbody id="lehrerTableBody">
-  <% if (lehrer && lehrer.length === 0) { %>
-    <tr>
-      <td colspan="5" class="text-center py-4 text-muted">Noch keine Lehrer eingetragen</td>
-    </tr>
-  <% } %>
+      <% if (lehrer && lehrer.length === 0) { %>
+        <tr>
+          <td colspan="3" class="text-center py-4 text-muted">
+            <% if (searchTerm) { %>
+              Keine Lehrer gefunden für die Suche
+            <% } else { %>
+              Noch keine Lehrer eingetragen
+            <% } %>
+          </td>
+        </tr>
+      <% } %>
 
-  <% if (lehrer && lehrer.length > 0) { %>
-    <% lehrer.forEach(lehrer => { %>
-      <tr class="lehrer-row" 
-          data-id="<%= lehrer.id %>"
-          data-vorname="<%= lehrer.vorname.toLowerCase() %>"
-          data-nachname="<%= lehrer.nachname.toLowerCase() %>"
-          data-klasse="<%= (lehrer.klasse_name || '').toLowerCase() %>"
-          data-schuljahr="<%= (lehrer.schuljahr_name || '').toLowerCase() %>">
-        <td class="fw-medium">
-          <%= lehrer.vorname %>
-        </td>
-        <td class="fw-medium">
-          <%= lehrer.nachname %>
-        </td>
-        <td class="text-body-secondary">
-            <%= lehrer.klasse_name || 'Keine Klasse' %>
-        </td>
-        <td class="text-body-secondary">
-            <%= lehrer.schuljahr_name || 'Kein Schuljahr' %>
-        </td>
-        <td class="text-end" style="white-space: nowrap;">
-          <a href="/lehrer/<%= lehrer.id %>/edit" class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
-          <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm" data-bs-toggle="modal"
-            data-bs-target="#confirmDeleteModal" data-id="<%= lehrer.id %>">Löschen</button>
-        </td>
-      </tr>
-    <% }) %>
-  <% } %>
-</tbody>
+      <% if (lehrer && lehrer.length > 0) { %>
+        <% lehrer.forEach(lehrer => { %>
+          <tr class="lehrer-row" 
+              data-vorname="<%= lehrer.vorname.toLowerCase() %>"
+              data-nachname="<%= lehrer.nachname.toLowerCase() %>">
+            <td class="fw-medium">
+              <%= lehrer.vorname %>
+            </td>
+            <td class="fw-medium">
+              <%= lehrer.nachname %>
+            </td>
+            <td class="text-end" style="white-space: nowrap;">
+              <a href="/lehrer/<%= lehrer.id %>/edit" class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm" data-bs-toggle="modal"
+                data-bs-target="#confirmDeleteModal" data-id="<%= lehrer.id %>">Löschen</button>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
   </table>
+</div>
 
-  <!-- Pop Up Löschen Fenster -->
-  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header custom-delete-header">
-          <h5 class="modal-title">Löschen bestätigen</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Bist du sicher, dass du diesen Lehrer löschen möchtest?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-          <form id="deleteConfirmForm" method="POST">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
-          </form>
-        </div>
+<!-- Löschen Modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header custom-delete-header">
+        <h5 class="modal-title">Löschen bestätigen</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Bist du sicher, dass du diesen Lehrer löschen möchtest?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+        <form id="deleteConfirmForm" method="POST">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   // Suchfunktionalität für Lehrer
   const searchInput = document.getElementById('lehrerSearch');
   const searchTermText = document.getElementById('searchTermText');
@@ -134,7 +129,7 @@
     }, 300);
   });
 
-  // Filter anwenden
+  // Filter anwenden - LIVE-FILTERING
   function applyFilters() {
     const searchValue = searchInput.value.trim().toLowerCase();
     
@@ -143,14 +138,10 @@
     lehrerRows.forEach(row => {
       const vorname = row.getAttribute('data-vorname');
       const nachname = row.getAttribute('data-nachname');
-      const klasse = row.getAttribute('data-klasse');
-      const schuljahr = row.getAttribute('data-schuljahr');
       
       const matchesSearch = !searchValue || 
                            vorname.includes(searchValue) || 
-                           nachname.includes(searchValue) || 
-                           klasse.includes(searchValue) ||
-                           schuljahr.includes(searchValue);
+                           nachname.includes(searchValue);
       
       if (matchesSearch) {
         row.style.display = '';
@@ -164,13 +155,13 @@
     const tbody = document.getElementById('lehrerTableBody');
     let noResultsRow = tbody.querySelector('.no-results-row');
     
-    if (visibleCount === 0) {
+    if (visibleCount === 0 && lehrerRows.length > 0) {
       if (!noResultsRow) {
         noResultsRow = document.createElement('tr');
         noResultsRow.className = 'no-results-row';
         noResultsRow.innerHTML = `
-          <td colspan="5" class="text-center py-4 text-muted">
-            Keine Lehrer gefunden für die ausgewählten Filter
+          <td colspan="3" class="text-center py-4 text-muted">
+            Keine Lehrer gefunden für die Suche
           </td>
         `;
         tbody.appendChild(noResultsRow);
@@ -189,7 +180,7 @@
     applyFilters();
   });
 
-  // Eventlistener für modales Fenster beim Delete
+  // Löschen Modal
   const deleteModal = document.getElementById('confirmDeleteModal');
   const deleteForm = document.getElementById('deleteConfirmForm');
 
@@ -203,4 +194,5 @@
   if (searchInput.value) {
     applyFilters();
   }
+});
 </script>
