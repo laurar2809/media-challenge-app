@@ -2,16 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
 
-// Schüler Übersicht mit Filterung
+// Schüler Übersicht mit Filterung - VOLLSTÄNDIG KORRIGIERT
 router.get('/', async (req, res) => {
   try {
-    const { klasse, schuljahr, search } = req.query; // ✅ schuljahr hinzugefügt
+    const { klasse, schuljahr, search } = req.query;
     
-    let query = db('schueler')
-      .leftJoin('klassen', 'schueler.klasse_id', 'klassen.id')
-      .leftJoin('schuljahre', 'schueler.schuljahr_id', 'schuljahre.id')
+    let query = db('users')
+      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')  // ✅ users statt schueler
+      .leftJoin('schuljahre', 'users.schuljahr_id', 'schuljahre.id')  // ✅ users statt schueler
+      .where('users.user_role_id', 1)
       .select(
-        'schueler.*', 
+        'users.*',  // ✅ users statt schueler
         'klassen.name as klasse_name',
         'schuljahre.name as schuljahr_name'
       );
@@ -21,7 +22,7 @@ router.get('/', async (req, res) => {
       query = query.where('klassen.name', klasse);
     }
 
-    // ✅ NEU: Filter nach Schuljahr
+    // Filter nach Schuljahr
     if (schuljahr && schuljahr !== 'alle') {
       query = query.where('schuljahre.name', schuljahr);
     }
@@ -29,26 +30,26 @@ router.get('/', async (req, res) => {
     // Suche nach Namen
     if (search && search.length >= 2) {
       query = query.where(function() {
-        this.where('schueler.vorname', 'like', `%${search}%`)
-             .orWhere('schueler.nachname', 'like', `%${search}%`)
+        this.where('users.vorname', 'like', `%${search}%`)  // ✅ users statt schueler
+             .orWhere('users.nachname', 'like', `%${search}%`)  // ✅ users statt schueler
              .orWhere('klassen.name', 'like', `%${search}%`)
              .orWhere('schuljahre.name', 'like', `%${search}%`);
       });
     }
 
-    const schueler = await query.orderBy('schueler.nachname', 'asc');
+    const schueler = await query.orderBy('users.nachname', 'asc');  // ✅ users statt schueler
     
     // Alle Klassen für Filter-Dropdown
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
-    // ✅ NEU: Alle Schuljahre für Filter-Dropdown
+    // Alle Schuljahre für Filter-Dropdown
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
     res.render('schueler', { 
       schueler, 
       klassen,
-      schuljahre, // ✅ NEU
-      activeKlasseFilter: klasse || 'alle', // ✅ Umbenannt
-      activeSchuljahrFilter: schuljahr || 'alle', // ✅ NEU
+      schuljahre,
+      activeKlasseFilter: klasse || 'alle',
+      activeSchuljahrFilter: schuljahr || 'alle',
       searchTerm: search || '',
       activePage: 'schueler' 
     });
@@ -57,9 +58,9 @@ router.get('/', async (req, res) => {
     res.render('schueler', { 
       schueler: [], 
       klassen: [],
-      schuljahre: [], // ✅ NEU
+      schuljahre: [],
       activeKlasseFilter: 'alle',
-      activeSchuljahrFilter: 'alle', // ✅ NEU
+      activeSchuljahrFilter: 'alle',
       searchTerm: '',
       activePage: 'schueler' 
     });
@@ -69,7 +70,7 @@ router.get('/', async (req, res) => {
 // Neuer Schüler Formular
 router.get('/new', async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
-const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
+  const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
   res.render('formSchueler', {
     item: {},
     klassen,
@@ -89,11 +90,12 @@ router.post('/', async (req, res) => {
     return res.redirect('/schueler/new');
   }
   
-  await db('schueler').insert({
+  await db('users').insert({
     vorname: vorname.trim(),
     nachname: nachname.trim(),
     klasse_id: klasse_id || null,
-    schuljahr_id: schuljahr_id
+    schuljahr_id: schuljahr_id,
+    user_role_id: 1 // ✅ Immer als Schüler anlegen
   });
   
   req.flash('success', 'Schüler erfolgreich angelegt.');
@@ -103,15 +105,21 @@ router.post('/', async (req, res) => {
 // Schüler bearbeiten Formular
 router.get('/:id/edit', async (req, res) => {
   try {
-    const schueler = await db('schueler').where({ id: req.params.id }).first();
-    const klassen = await db('klassen').select('*').orderBy('name', 'asc');
-   const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
+    const schueler = await db('users')
+      .where({ 
+        id: req.params.id,
+        user_role_id: 1 // ✅ Nur Schüler bearbeiten dürfen
+      })
+      .first();
 
     if (!schueler) {
       req.flash('error', 'Schüler nicht gefunden.');
       return res.redirect('/schueler');
     }
     
+    const klassen = await db('klassen').select('*').orderBy('name', 'asc');
+    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
+
     res.render('formSchueler', {
       item: schueler,
       klassen,
@@ -138,12 +146,17 @@ router.put('/:id', async (req, res) => {
   }
   
   try {
-    await db('schueler').where({ id: req.params.id }).update({
-      vorname: vorname.trim(),
-      nachname: nachname.trim(),
-      klasse_id: klasse_id || null,
-      schuljahr_id: schuljahr_id
-    });
+    await db('users')
+      .where({ 
+        id: req.params.id,
+        user_role_id: 1 // ✅ Sicherstellen, dass nur Schüler aktualisiert werden
+      })
+      .update({
+        vorname: vorname.trim(),
+        nachname: nachname.trim(),
+        klasse_id: klasse_id || null,
+        schuljahr_id: schuljahr_id
+      });
     
     req.flash('success', 'Änderungen gespeichert.');
     res.redirect('/schueler');
@@ -156,7 +169,13 @@ router.put('/:id', async (req, res) => {
 
 // Schüler löschen
 router.delete('/:id', async (req, res) => {
-  await db('schueler').where({ id: req.params.id }).del();
+  await db('users')
+    .where({ 
+      id: req.params.id,
+      user_role_id: 1 // ✅ Nur Schüler löschen dürfen
+    })
+    .del();
+    
   req.flash('success', 'Schüler erfolgreich gelöscht.');
   res.redirect('/schueler');
 });

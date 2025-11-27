@@ -125,3 +125,22 @@ table td, table th { vertical-align: middle; }
 .custom-team-color {
   color: #0082ba;
 }
+
+
+/**
+ * Schüler:innen Ansicht
+ */
+
+ body.student .navbar.bg-primary{
+  background: red !important;
+ }
+
+
+ 
+/**
+ * Admin Ansicht
+ */
+
+ body.admin .navbar.bg-primary{
+  background: green !important;
+ }

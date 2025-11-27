@@ -1,0 +1,206 @@
+<% pageTitle="Lehrer" %>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 m-0">Lehrer</h2>
+  <a href="/lehrer/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Lehrer</a>
+</div>
+
+<!-- SUCHLEISTE -->
+<div class="row mb-4">
+  <div class="col-md-6">
+    <!-- Suchleiste -->
+    <div class="position-relative" id="searchContainer">
+      <input type="text" 
+             id="lehrerSearch" 
+             class="form-control" 
+             placeholder="🔍 Lehrer suchen..." 
+             value="<%= searchTerm %>"
+             autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<!-- Such-Badge -->
+<div id="searchBadge" class="mb-2" 
+  <% if (!searchTerm) { %>style="display: none;"<% } %>
+>
+  <span class="badge bg-primary d-inline-flex align-items-center">
+    Suchergebnisse für: <span id="searchTermText" class="ms-1">
+    <%= searchTerm %>
+    </span>
+    <a href="/lehrer" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
+  </span>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table align-middle m-0 table-light">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Vorname</th>
+        <th scope="col">Nachname</th>
+        <th scope="col">Klasse</th>
+        <th scope="col">Schuljahr</th>
+        <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
+      </tr>
+    </thead>
+    
+    <tbody id="lehrerTableBody">
+  <% if (lehrer && lehrer.length === 0) { %>
+    <tr>
+      <td colspan="5" class="text-center py-4 text-muted">Noch keine Lehrer eingetragen</td>
+    </tr>
+  <% } %>
+
+  <% if (lehrer && lehrer.length > 0) { %>
+    <% lehrer.forEach(lehrer => { %>
+      <tr class="lehrer-row" 
+          data-id="<%= lehrer.id %>"
+          data-vorname="<%= lehrer.vorname.toLowerCase() %>"
+          data-nachname="<%= lehrer.nachname.toLowerCase() %>"
+          data-klasse="<%= (lehrer.klasse_name || '').toLowerCase() %>"
+          data-schuljahr="<%= (lehrer.schuljahr_name || '').toLowerCase() %>">
+        <td class="fw-medium">
+          <%= lehrer.vorname %>
+        </td>
+        <td class="fw-medium">
+          <%= lehrer.nachname %>
+        </td>
+        <td class="text-body-secondary">
+            <%= lehrer.klasse_name || 'Keine Klasse' %>
+        </td>
+        <td class="text-body-secondary">
+            <%= lehrer.schuljahr_name || 'Kein Schuljahr' %>
+        </td>
+        <td class="text-end" style="white-space: nowrap;">
+          <a href="/lehrer/<%= lehrer.id %>/edit" class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
+          <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm" data-bs-toggle="modal"
+            data-bs-target="#confirmDeleteModal" data-id="<%= lehrer.id %>">Löschen</button>
+        </td>
+      </tr>
+    <% }) %>
+  <% } %>
+</tbody>
+  </table>
+
+  <!-- Pop Up Löschen Fenster -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header custom-delete-header">
+          <h5 class="modal-title">Löschen bestätigen</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Bist du sicher, dass du diesen Lehrer löschen möchtest?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+          <form id="deleteConfirmForm" method="POST">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Suchfunktionalität für Lehrer
+  const searchInput = document.getElementById('lehrerSearch');
+  const searchTermText = document.getElementById('searchTermText');
+  const clearSearch = document.getElementById('clearSearch');
+  const searchBadge = document.getElementById('searchBadge');
+  const lehrerRows = document.querySelectorAll('.lehrer-row');
+
+  let searchTimeout;
+
+  // LIVE-SUCHE bei Eingabe
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim().toLowerCase();
+
+    // Sofortige Filterung anwenden
+    searchTimeout = setTimeout(() => {
+      applyFilters();
+      
+      // Zeige Such-Badge nur bei Suchbegriff
+      if (query.length >= 2) {
+        searchTermText.textContent = query;
+        searchBadge.style.display = 'flex';
+      } else {
+        searchBadge.style.display = 'none';
+      }
+    }, 300);
+  });
+
+  // Filter anwenden
+  function applyFilters() {
+    const searchValue = searchInput.value.trim().toLowerCase();
+    
+    let visibleCount = 0;
+
+    lehrerRows.forEach(row => {
+      const vorname = row.getAttribute('data-vorname');
+      const nachname = row.getAttribute('data-nachname');
+      const klasse = row.getAttribute('data-klasse');
+      const schuljahr = row.getAttribute('data-schuljahr');
+      
+      const matchesSearch = !searchValue || 
+                           vorname.includes(searchValue) || 
+                           nachname.includes(searchValue) || 
+                           klasse.includes(searchValue) ||
+                           schuljahr.includes(searchValue);
+      
+      if (matchesSearch) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Zeige "Keine Ergebnisse" wenn nötig
+    const tbody = document.getElementById('lehrerTableBody');
+    let noResultsRow = tbody.querySelector('.no-results-row');
+    
+    if (visibleCount === 0) {
+      if (!noResultsRow) {
+        noResultsRow = document.createElement('tr');
+        noResultsRow.className = 'no-results-row';
+        noResultsRow.innerHTML = `
+          <td colspan="5" class="text-center py-4 text-muted">
+            Keine Lehrer gefunden für die ausgewählten Filter
+          </td>
+        `;
+        tbody.appendChild(noResultsRow);
+      }
+      noResultsRow.style.display = '';
+    } else if (noResultsRow) {
+      noResultsRow.style.display = 'none';
+    }
+  }
+
+  // Search beenden
+  clearSearch.addEventListener('click', function(e) {
+    e.preventDefault();
+    searchInput.value = '';
+    searchBadge.style.display = 'none';
+    applyFilters();
+  });
+
+  // Eventlistener für modales Fenster beim Delete
+  const deleteModal = document.getElementById('confirmDeleteModal');
+  const deleteForm = document.getElementById('deleteConfirmForm');
+
+  deleteModal.addEventListener('show.bs.modal', event => {
+    const button = event.relatedTarget;
+    const itemId = button.getAttribute('data-id');
+    deleteForm.action = `/lehrer/${itemId}?_method=DELETE`;
+  });
+
+  // Initial Filter anwenden falls Suchbegriff vorhanden
+  if (searchInput.value) {
+    applyFilters();
+  }
+</script>

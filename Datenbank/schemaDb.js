@@ -7,25 +7,44 @@ async function createSchema() {
     const dbClient = process.env.DB_CLIENT || 'sqlite';
     console.log(`📦 Erstelle Datenbank-Schema für ${dbClient.toUpperCase()}...`);
 
-    // Helper function für ENUM-Erstellung
-    const createEnum = (table, columnName, values, defaultValue = null) => {
-      if (dbClient === 'sqlite') {
-        // SQLite unterstützt kein ENUM, verwende TEXT mit CHECK constraint
-        let column = table.string(columnName, 20);
-        if (defaultValue) column.defaultTo(defaultValue);
-        // CHECK constraint wird später hinzugefügt
-      } else {
-        // MySQL/PostgreSQL unterstützen ENUM
-        table.enu(columnName, values, { useNative: true, enumName: `${columnName}_enum` }).defaultTo(defaultValue);
-      }
-    };
-
     // Helper function für Fremdschlüssel
     const addForeignKey = (table, column, references, onDelete = 'SET NULL') => {
       if (dbClient !== 'sqlite') {
         table.foreign(column).references('id').inTable(references).onDelete(onDelete);
       }
     };
+
+    // user_roles Tabelle - NEU
+    if (!(await db.schema.hasTable('user_roles'))) {
+      await db.schema.createTable('user_roles', (table) => {
+        table.increments('id').primary();
+        table.string('rolle', 50).notNullable().unique();
+        table.timestamps(true, true);
+      });
+      console.log('✅ User_Roles-Tabelle erstellt');
+    } else {
+      console.log('⏭ User_Roles-Tabelle existiert bereits');
+    }
+
+    // users Tabelle - NEU (ersetzt schueler)
+    if (!(await db.schema.hasTable('users'))) {
+      await db.schema.createTable('users', (table) => {
+        table.increments('id').primary();
+        table.integer('user_role_id').unsigned().notNullable().defaultTo(1); // Default = Schüler
+        table.string('vorname', 100).notNullable();
+        table.string('nachname', 100).notNullable();
+        table.integer('klasse_id').unsigned();
+        table.integer('schuljahr_id').unsigned();
+        table.timestamps(true, true);
+        
+        addForeignKey(table, 'user_role_id', 'user_roles');
+        addForeignKey(table, 'klasse_id', 'klassen');
+        addForeignKey(table, 'schuljahr_id', 'schuljahre');
+      });
+      console.log('✅ Users-Tabelle erstellt');
+    } else {
+      console.log('⏭ Users-Tabelle existiert bereits');
+    }
 
     // categories Tabelle
     if (!(await db.schema.hasTable('categories'))) {
@@ -66,7 +85,7 @@ async function createSchema() {
         table.integer('startjahr').notNullable();
         table.integer('endjahr').notNullable();
         if (dbClient === 'sqlite') {
-          table.integer('aktiv').defaultTo(1); // SQLite verwendet INTEGER für Boolean
+          table.integer('aktiv').defaultTo(1);
         } else {
           table.boolean('aktiv').defaultTo(true);
         }
@@ -89,24 +108,6 @@ async function createSchema() {
       console.log('⏭ Klassen-Tabelle existiert bereits');
     }
 
-    // schueler Tabelle
-    if (!(await db.schema.hasTable('schueler'))) {
-      await db.schema.createTable('schueler', (table) => {
-        table.increments('id').primary();
-        table.string('vorname', 100).notNullable();
-        table.string('nachname', 100).notNullable();
-        table.integer('klasse_id').unsigned();
-        table.integer('schuljahr_id').unsigned();
-        table.timestamps(true, true);
-        
-        addForeignKey(table, 'klasse_id', 'klassen');
-        addForeignKey(table, 'schuljahr_id', 'schuljahre');
-      });
-      console.log('✅ Schueler-Tabelle erstellt');
-    } else {
-      console.log('⏭ Schueler-Tabelle existiert bereits');
-    }
-
     // teams Tabelle
     if (!(await db.schema.hasTable('teams'))) {
       await db.schema.createTable('teams', (table) => {
@@ -123,12 +124,12 @@ async function createSchema() {
       console.log('⏭ Teams-Tabelle existiert bereits');
     }
 
-    // team_mitglieder Tabelle
+    // team_mitglieder Tabelle - ANGEPASST (schueler_id → user_id)
     if (!(await db.schema.hasTable('team_mitglieder'))) {
       await db.schema.createTable('team_mitglieder', (table) => {
         table.increments('id').primary();
         table.integer('team_id').unsigned().notNullable();
-        table.integer('schueler_id').unsigned().notNullable();
+        table.integer('user_id').unsigned().notNullable(); // GEÄNDERT: schueler_id → user_id
         
         // ENUM für Rolle
         if (dbClient === 'sqlite') {
@@ -140,25 +141,18 @@ async function createSchema() {
         table.timestamp('created_at').defaultTo(db.fn.now());
         
         addForeignKey(table, 'team_id', 'teams', 'CASCADE');
-        addForeignKey(table, 'schueler_id', 'schueler', 'CASCADE');
+        addForeignKey(table, 'user_id', 'users', 'CASCADE'); // GEÄNDERT: schueler → users
         
         // Unique constraint für Team-Mitglied Kombination
-        table.unique(['team_id', 'schueler_id']);
+        table.unique(['team_id', 'user_id']);
       });
-      
-      // Für SQLite: CHECK constraint für Rolle
-      if (dbClient === 'sqlite') {
-        // SQLite unterstützt kein ALTER TABLE ADD CONSTRAINT, daher muss es manuell gemacht werden
-        // Dies ist ein Workaround - in der Praxis wird der Constraint oft weggelassen
-        console.log('ℹ️  SQLite: CHECK constraint für Rolle muss manuell hinzugefügt werden');
-      }
       
       console.log('✅ Team-Mitglieder-Tabelle erstellt');
     } else {
       console.log('⏭ Team-Mitglieder-Tabelle existiert bereits');
     }
 
-    // challenges Tabelle
+    // challenges Tabelle - ANGEPASST (schueler_id → user_id)
     if (!(await db.schema.hasTable('challenges'))) {
       await db.schema.createTable('challenges', (table) => {
         table.increments('id').primary();
@@ -176,7 +170,7 @@ async function createSchema() {
         // Verknüpfungen
         table.integer('aufgabenpaket_id').unsigned();
         table.integer('team_id').unsigned();
-        table.integer('schueler_id').unsigned();
+        table.integer('user_id').unsigned(); // GEÄNDERT: schueler_id → user_id
         table.integer('schuljahr_id').unsigned();
         
         // Status
@@ -197,7 +191,7 @@ async function createSchema() {
         // Fremdschlüssel
         addForeignKey(table, 'aufgabenpaket_id', 'aufgabenpakete');
         addForeignKey(table, 'team_id', 'teams');
-        addForeignKey(table, 'schueler_id', 'schueler');
+        addForeignKey(table, 'user_id', 'users'); // GEÄNDERT: schueler → users
         addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
       console.log('✅ Challenges-Tabelle erstellt');
