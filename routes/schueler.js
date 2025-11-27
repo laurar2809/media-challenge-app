@@ -22,13 +22,12 @@ router.get('/', async (req, res) => {
       query = query.where('klassen.name', klasse);
     }
 
-    // Filter nach Schuljahr
     if (schuljahr && schuljahr !== 'alle') {
-      query = query.where('schuljahre.name', schuljahr);
+      query = query.where('schuljahre.id', schuljahr); // ✅ 'name' durch 'id' ersetzen
     }
 
-    // Suche nach Namen
-    if (search && search.length >= 2) {
+    // Suche nach Namen 
+    if (search) { 
       query = query.where(function() {
         this.where('users.vorname', 'like', `%${search}%`)  // ✅ users statt schueler
              .orWhere('users.nachname', 'like', `%${search}%`)  // ✅ users statt schueler
