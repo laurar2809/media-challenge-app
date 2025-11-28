@@ -55,6 +55,7 @@ app.use('/schueler', require('./routes/schueler'));
 app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
 app.use('/categories', require('./routes/categories'));
 app.use('/api', require('./routes/api'));
+app.use('/lehrer', require('./routes/lehrer'));
 
 // 404 Handler
 app.use((req, res) => {
@@ -73,6 +74,8 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err : {}
   });
 });
+
+
 
 // Server starten
 init().then(() => {

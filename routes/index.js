@@ -6,7 +6,7 @@ const { db } = require('../db');
 router.get('/', async (req, res) => {
   try {
     const categories = await db('categories').select('*').orderBy('title', 'asc');
-    res.render('index', { 
+    res.render('kategorien', { 
       categories, 
       activePage: 'kategorien' 
     });
