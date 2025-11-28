@@ -1,0 +1,25 @@
+<% pageTitle=title %>
+
+<h1 class="h4 mb-3">
+  <%= title %>
+</h1>
+
+<form action="<%= action %>" method="POST">
+  
+  <!-- Vorname -->
+  <div class="mb-3">
+    <label class="form-label">Vorname *</label>
+    <input type="text" name="vorname" class="form-control" 
+           value="<%= item.vorname || '' %>" required>
+  </div>
+
+  <!-- Nachname -->
+  <div class="mb-3">
+    <label class="form-label">Nachname *</label>
+    <input type="text" name="nachname" class="form-control" 
+           value="<%= item.nachname || '' %>" required>
+  </div>
+
+  <button type="submit" class="btn btn-custom-safe">Lehrer speichern</button>
+  <a href="/lehrer" class="btn btn-secondary">Abbrechen</a>
+</form>
