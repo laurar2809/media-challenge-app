@@ -126,21 +126,44 @@ table td, table th { vertical-align: middle; }
   color: #0082ba;
 }
 
-
-/**
- * Schüler:innen Ansicht
- */
-
- body.student .navbar.bg-primary{
-  background: red !important;
- }
+/* inputgroup text oben*/
 
 
- 
-/**
- * Admin Ansicht
- */
+.input-group.align-top-stretch{
+  align-items: stretch;
+}
 
- body.admin .navbar.bg-primary{
-  background: green !important;
- }
+.input-group.align-top-stretch .input-group-text{
+  display: flex;
+  align-items: flex-start;
+}
+
+/*Kalender Icon ausblenden*/
+.custom-date-input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+.custom-date-input::-moz-calendar-picker-indicator {
+  display: none !important;
+}
+.custom-date-input::-ms-clear {
+  display: none !important;
+}
+
+
+.member-chip {
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid #0082ba;
+    border-radius: 4px;
+    background: white;
+    color: #0082ba;
+    cursor: grab;
+    font-size: 0.8rem;
+}
+.member-chip.opacity-50 {
+    opacity: 0.5;
+}
+
+.custom-selected-count {
+    color: #0082ba !important; 
+}
