@@ -8,7 +8,7 @@ const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 
-const { init } = require('./db');
+const {db, init } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +27,17 @@ app.use(session({
   saveUninitialized: false,
 }));
 app.use(flash());
+
+// DB zu allen Requests hinzufügen
+app.use((req, res, next) => {
+  req.db = db;  // Database connection zu allen Routes hinzufügen
+  next();
+});
+
+// UND die loadUser Middleware KORREKT einbinden (VOR den Routes!)
+const { loadUser } = require('./middleware/auth');
+app.use(loadUser);  // Diese Zeile einfügen!
+
 
 // View Engine
 app.set('view engine', 'ejs');
@@ -48,6 +59,14 @@ app.use((req, res, next) => {
   next();
 });
 
+
+
+
+
+
+
+
+
 // Routen einbinden
 app.use('/', require('./routes/index'));
 app.use('/challenges', require('./routes/challenges'));
@@ -56,6 +75,7 @@ app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
 app.use('/categories', require('./routes/categories'));
 app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
+app.use('/auth', require('./routes/auth'));  // AUCH DIE AUTH ROUTE!
 
 // 404 Handler
 app.use((req, res) => {
