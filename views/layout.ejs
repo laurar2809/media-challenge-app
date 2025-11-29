@@ -64,24 +64,22 @@
              <% } %>
           </ul>
           <!-- RECHTS: User Info & Login/Logout -->
-          <div class="navbar-nav align-items-center">
-            <% if (currentUser) { %>
-              <!-- EINGELOGGT: User Info + Logout -->
-              <span class="navbar-text me-3">
-                 <%= currentUser.vorname %> 
-                <small class="text">(<%= currentUser.rolle %>)</small>
-              </span>
-              <form action="/auth/logout" method="POST" class="d-inline">
-                <button type="submit" class="btn btn-outline-light btn-sm" 
-                        onclick="console.log('Logout button clicked')">
-                  Logout
-                </button>
-              </form>
-            <% } else { %>
-              <!-- NICHT EINGELOGGT: Login Button -->
-              <a href="/auth/login" class="btn btn-outline-light btn-sm">Login</a>
-            <% } %>
-          <div class="d-flex"> <!-- Button rechts-->
+         <!-- RECHTS: User Info & Login/Logout -->
+              <div class="navbar-nav align-items-center">
+                <% if (currentUser) { %>
+                  <!-- EINGELOGGT: User Info + Logout -->
+                  <span class="navbar-text me-3">
+                    <%= currentUser.vorname %> <%= currentUser.nachname %>
+                    <small class="text">(<%= currentUser.rolle %>)</small>
+                  </span>
+                  <form action="/auth/logout" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                  </form>
+                <% } else { %>
+                  <!-- NICHT EINGELOGGT: Login Button -->
+                  <a href="/auth/login" class="btn btn-outline-light btn-sm">Login</a>
+                <% } %>
+              </div>
             <a href="/api/categories" class="btn btn-outline-light btn-sm">API JSON</a>
           </div>
         </div>
@@ -105,7 +103,7 @@
 
     <footer class="border-top py-3 small text-muted">
       <div class="container">
-        Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads
+        Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads ----
 
         <% if (currentUser) { %>
           Eingeloggt als: <%= currentUser.rolle %>

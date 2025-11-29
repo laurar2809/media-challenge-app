@@ -5,22 +5,31 @@ const mockUsers = {
   3: { id: 3, vorname: "Admin User", user_role_id: 3, rolle: "Admin" }
 };
 
-function loadUser(req, res, next) {
+// middleware/auth.js - MIT ECHTEN USER AUS DB
+async function loadUser(req, res, next) {
   try {
-    console.log('🔍 Session userId:', req.session.userId);
+    console.log(' Session userId:', req.session.userId);
     
-    // 1. NUR Session prüfen - kein Fallback!
-    if (req.session.userId && mockUsers[req.session.userId]) {
-      res.locals.currentUser = mockUsers[req.session.userId];
-      req.currentUser = mockUsers[req.session.userId];
-      console.log(`✅ User geladen: ${req.currentUser.vorname} (${req.currentUser.rolle})`);
-      return next();
+    // 1. User aus Session laden
+    if (req.session.userId) {
+      const user = await req.db('users')
+        .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
+        .where('users.id', req.session.userId)
+        .select('users.*', 'user_roles.rolle')
+        .first();
+      
+      if (user) {
+        res.locals.currentUser = user;
+        req.currentUser = user;
+        console.log(` User geladen: ${user.vorname} ${user.nachname} (${user.rolle})`);
+        return next();
+      }
     }
     
     // 2. KEIN Fallback - wirklich null setzen
     res.locals.currentUser = null;
     req.currentUser = null;
-    console.log('❌ Kein User eingeloggt');
+    console.log(' Kein User eingeloggt');
     
     next();
   } catch (error) {
@@ -31,6 +40,7 @@ function loadUser(req, res, next) {
   }
 }
 
+// ... restliche Funktionen bleiben gleich
 function requireAuth(req, res, next) {
   if (!req.currentUser) {
     req.flash('error', 'Bitte melde dich zuerst an!');
