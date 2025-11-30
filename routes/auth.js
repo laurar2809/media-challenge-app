@@ -1,4 +1,4 @@
-// routes/auth.js - KORRIGIERTE VERSION
+// routes/auth.js - MIT VOLLSTÄNDIGEN FEHLERMELDUNGEN
 const express = require('express');
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.get('/login', (req, res) => {
   });
 });
 
-// Login-Prozess mit BEIDEN Optionen - KORRIGIERT
+// Login-Prozess mit BEIDEN Optionen - MIT FEHLERMELDUNGEN
 router.post('/login', async (req, res) => {
   const { password, vorname, nachname } = req.body;
   console.log(' Login versucht:', { password, vorname, nachname });
@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
         return res.redirect('/');
       } else {
         console.log(' Kein User gefunden für Rolle:', password);
-        req.flash('error', `Kein User mit Rolle ${password} gefunden!`);
+        req.flash('error', `Kein Benutzer mit Rolle ${password} gefunden!`);
         return res.redirect('/auth/login');
       }
     } catch (error) {
@@ -66,19 +66,40 @@ router.post('/login', async (req, res) => {
         return res.redirect('/');
       } else {
         console.log(' Kein User gefunden mit:', vorname, nachname);
-        req.flash('error', `Kein User gefunden mit: ${vorname} ${nachname}`);
+        req.flash('error', ` Kein Benutzer gefunden mit: "${vorname} ${nachname}"`);
         return res.redirect('/auth/login');
       }
     } catch (error) {
       console.error('Namens-Login DB Error:', error);
-      req.flash('error', 'Fehler bei der Anmeldung');
+      req.flash('error', ' Datenbank-Fehler bei der Anmeldung');
       return res.redirect('/auth/login');
     }
   }
 
-  // Falls nichts funktioniert hat
-  console.log(' Login fehlgeschlagen - keine gültigen Daten');
-  req.flash('error', 'Bitte gib entweder 1,2,3 ODER Vor- und Nachname ein!');
+  // OPTION 3: Nur Vorname eingegeben
+  if (vorname && !nachname) {
+    console.log(' Nur Vorname eingegeben:', vorname);
+    req.flash('error', ' Bitte gib sowohl Vorname als auch Nachname ein!');
+    return res.redirect('/auth/login');
+  }
+
+  // OPTION 4: Nur Nachname eingegeben
+  if (!vorname && nachname) {
+    console.log(' Nur Nachname eingegeben:', nachname);
+    req.flash('error', ' Bitte gib sowohl Vorname als auch Nachname ein!');
+    return res.redirect('/auth/login');
+  }
+
+  // OPTION 5: Ungültiges Passwort (nicht 1,2,3)
+  if (password && !['1', '2', '3'].includes(password)) {
+    console.log(' Ungültiges Passwort:', password);
+    req.flash('error', ' Ungültiges Passwort! Nur 1, 2 oder 3 sind erlaubt.');
+    return res.redirect('/auth/login');
+  }
+
+  // OPTION 6: Keine Daten eingegeben
+  console.log(' Keine Login-Daten eingegeben');
+  req.flash('error', ' Bitte gib entweder 1, 2, 3 ODER Vor- und Nachname ein!');
   res.redirect('/auth/login');
 });
 
