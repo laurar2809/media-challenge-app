@@ -2,19 +2,20 @@
 <h1 class="h4 mb-3">
   <%= title %>
 </h1>
+
 <form action="<%= action %>" method="POST">
-  <div class="mb-3">
-    <label class="form-label">Vorname *</label>
+  <div class="input-group mb-3">
+    <span class="input-group-text">Vorname *</span>
     <input type="text" name="vorname" class="form-control" required value="<%= item.vorname || '' %>">
   </div>
   
-  <div class="mb-3">
-    <label class="form-label">Nachname *</label>
+  <div class="input-group mb-3">
+    <span class="input-group-text">Nachname *</span>
     <input type="text" name="nachname" class="form-control" required value="<%= item.nachname || '' %>">
   </div>
   
-  <div class="mb-3">
-    <label class="form-label">Klasse</label>
+  <div class="input-group mb-3">
+    <span class="input-group-text">Klasse</span>
     <select name="klasse_id" class="form-control">
       <option value="">Keine Klasse</option>
       <% if (klassen && klassen.length > 0) { %>
@@ -29,8 +30,8 @@
   </div>
 
   <!-- SCHULJAHR AUSWAHL -->
-  <div class="mb-3">
-    <label class="form-label">Schuljahr *</label>
+  <div class="input-group mb-3">
+    <label class="input-group-text">Schuljahr *</label>
     <select name="schuljahr_id" class="form-control" required>
       <option value="">Schuljahr wählen</option>
       <% schuljahre.forEach(jahr => { %>
