@@ -22,7 +22,7 @@ router.post('/login', async (req, res) => {
       '2': 2, // Lehrer  
       '3': 3  // Admin
     };
-    
+
     try {
       // Ersten User mit dieser Rolle finden
       const user = await req.db('users')
@@ -30,7 +30,7 @@ router.post('/login', async (req, res) => {
         .where('users.user_role_id', roleMap[password])
         .select('users.*', 'user_roles.rolle')
         .first();
-      
+
       if (user) {
         req.session.userId = user.id;
         console.log(' Schnell-Login erfolgreich:', user.vorname, user.nachname, user.rolle);
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
         .andWhere('users.nachname', 'like', `%${nachname}%`)
         .select('users.*', 'user_roles.rolle')
         .first();
-      
+
       if (user) {
         req.session.userId = user.id;
         console.log(' Namens-Login erfolgreich:', user.vorname, user.nachname, user.rolle);

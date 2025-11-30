@@ -60,13 +60,6 @@ app.use((req, res, next) => {
 });
 
 
-
-
-
-
-
-
-
 // Routen einbinden
 app.use('/', require('./routes/index'));
 app.use('/challenges', require('./routes/challenges'));

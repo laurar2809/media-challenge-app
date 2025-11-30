@@ -29,10 +29,10 @@ router.post('/', uploadCategory.single('iconFile'), async (req, res) => {
   }
   if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
-  await db('categories').insert({ 
-    title: title.trim(), 
-    description: description.trim(), 
-    icon: icon ? icon.trim() : null 
+  await db('categories').insert({
+    title: title.trim(),
+    description: description.trim(),
+    icon: icon ? icon.trim() : null
   });
   req.flash('success', 'Kategorie erfolgreich angelegt.');
   res.redirect('/');
@@ -45,12 +45,12 @@ router.get('/:id/edit', async (req, res) => {
     req.flash('error', 'Kategorie nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('formKategorien', { 
-    item, 
-    action: `/categories/${item.id}?_method=PUT`, 
-    method: 'POST', 
-    title: 'Kategorie bearbeiten', 
-    activePage: 'kategorien' 
+  res.render('formKategorien', {
+    item,
+    action: `/categories/${item.id}?_method=PUT`,
+    method: 'POST',
+    title: 'Kategorie bearbeiten',
+    activePage: 'kategorien'
   });
 });
 
