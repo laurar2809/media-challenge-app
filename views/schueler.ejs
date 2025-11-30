@@ -1,272 +1,266 @@
 <% pageTitle="Schüler" %>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="h4 m-0">Schüler</h2>
-  <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
-</div>
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="h4 m-0">Schüler</h2>
+    <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
+  </div>
 
-<!-- FILTER UND SUCHLEISTE -->
-<div class="row mb-4">
-  <div class="col-md-4"> <!-- ✅ Von col-md-6 auf col-md-4 geändert -->
-    <!-- Klassen Filter -->
-    <div class="input-group">
-      <span class="input-group-text">Klasse:</span>
-      <select class="form-select" id="klassenFilter">
-        <option value="alle" <%= activeKlasseFilter === 'alle' ? 'selected' : '' %>>Alle Klassen</option>
-        <% if (klassen && klassen.length > 0) { %>
-          <% klassen.forEach(klasse => { %>
-            <option value="<%= klasse.name %>" 
-                    <%= activeKlasseFilter === klasse.name ? 'selected' : '' %>>
-              <%= klasse.name %>
-            </option>
-          <% }) %>
-        <% } %>
-      </select>
+  <!-- FILTER UND SUCHLEISTE -->
+  <div class="row mb-4">
+    <div class="col-md-4"> <!-- ✅ Von col-md-6 auf col-md-4 geändert -->
+      <!-- Klassen Filter -->
+      <div class="input-group">
+        <span class="input-group-text">Klasse:</span>
+        <select class="form-select" id="klassenFilter">
+          <option value="alle" <%=activeKlasseFilter==='alle' ? 'selected' : '' %>>Alle Klassen</option>
+          <% if (klassen && klassen.length> 0) { %>
+            <% klassen.forEach(klasse=> { %>
+              <option value="<%= klasse.name %>" <%=activeKlasseFilter===klasse.name ? 'selected' : '' %>>
+                <%= klasse.name %>
+              </option>
+              <% }) %>
+                <% } %>
+        </select>
+      </div>
+    </div>
+
+    <div class="col-md-4"> <!-- ✅ NEU: Schuljahr Filter -->
+      <!-- Schuljahr Filter -->
+      <div class="input-group">
+        <span class="input-group-text">Schuljahr:</span>
+        <select class="form-select" id="schuljahrFilter">
+          <option value="alle" <%=activeSchuljahrFilter==='alle' ? 'selected' : '' %>>Alle Schuljahre</option>
+          <% if (schuljahre && schuljahre.length> 0) { %>
+            <% schuljahre.forEach(jahr=> { %>
+              <option value="<%= jahr.name %>" <%=activeSchuljahrFilter===jahr.name ? 'selected' : '' %>>
+                <%= jahr.name %>
+              </option>
+              <% }) %>
+                <% } %>
+        </select>
+      </div>
+    </div>
+
+    <div class="col-md-4"> <!-- ✅ Von col-md-6 auf col-md-4 geändert -->
+      <!-- Suchleiste -->
+      <div class="position-relative" id="searchContainer">
+        <input type="text" id="schuelerSearch" class="form-control" placeholder="🔍 Schüler suchen..."
+          value="<%= searchTerm %>" autocomplete="off">
+        <!-- Autocomplete Dropdown -->
+        <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
+      </div>
     </div>
   </div>
-  
-  <div class="col-md-4"> <!-- ✅ NEU: Schuljahr Filter -->
-    <!-- Schuljahr Filter -->
-    <div class="input-group">
-      <span class="input-group-text">Schuljahr:</span>
-      <select class="form-select" id="schuljahrFilter">
-        <option value="alle" <%= activeSchuljahrFilter === 'alle' ? 'selected' : '' %>>Alle Schuljahre</option>
-        <% if (schuljahre && schuljahre.length > 0) { %>
-          <% schuljahre.forEach(jahr => { %>
-            <option value="<%= jahr.name %>" 
-                    <%= activeSchuljahrFilter === jahr.name ? 'selected' : '' %>>
-              <%= jahr.name %>
-            </option>
-          <% }) %>
-        <% } %>
-      </select>
-    </div>
+
+  <!-- Such-Badge -->
+  <div id="searchBadge" class="mb-2" <% if (!searchTerm) { %>style="display: none;"<% } %>
+      >
+      <span class="badge bg-primary d-inline-flex align-items-center">
+        Suchergebnisse für: <span id="searchTermText" class="ms-1">
+          <%= searchTerm %>
+        </span>
+        <a href="/schueler" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
+      </span>
   </div>
-  
-  <div class="col-md-4"> <!-- ✅ Von col-md-6 auf col-md-4 geändert -->
-    <!-- Suchleiste -->
-    <div class="position-relative" id="searchContainer">
-      <input type="text" 
-             id="schuelerSearch" 
-             class="form-control" 
-             placeholder="🔍 Schüler suchen..." 
-             value="<%= searchTerm %>"
-             autocomplete="off">
-      <!-- Autocomplete Dropdown -->
-      <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
-    </div>
-  </div>
-</div>
 
-<!-- Such-Badge -->
-<div id="searchBadge" class="mb-2" 
-  <% if (!searchTerm) { %>style="display: none;"<% } %>
->
-  <span class="badge bg-primary d-inline-flex align-items-center">
-    Suchergebnisse für: <span id="searchTermText" class="ms-1">
-    <%= searchTerm %>
-    </span>
-    <a href="/schueler" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
-  </span>
-</div>
+  <div class="table-responsive">
+    <table class="table table-hover table align-middle m-0 table-light">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Vorname</th>
+          <th scope="col">Nachname</th>
+          <th scope="col">Klasse</th>
+          <th scope="col">Schuljahr</th>
+          <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
+        </tr>
+      </thead>
 
-<div class="table-responsive">
-  <table class="table table-hover table align-middle m-0 table-light">
-    <thead class="table-light">
-      <tr>
-        <th scope="col">Vorname</th>
-        <th scope="col">Nachname</th>
-        <th scope="col">Klasse</th>
-        <th scope="col">Schuljahr</th>
-        <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
-      </tr>
-    </thead>
-    
-    <tbody id="schuelerTableBody">
-  <% if (schueler && schueler.length === 0) { %>
-    <tr>
-      <td colspan="5" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
-    </tr>
-  <% } %>
+      <tbody id="schuelerTableBody">
+        <% if (schueler && schueler.length===0) { %>
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
+          </tr>
+          <% } %>
 
-  <% if (schueler && schueler.length > 0) { %>
-    <% schueler.forEach(schueler => { %>
-      <tr class="schueler-row" 
-          data-id="<%= schueler.id %>"
-          data-vorname="<%= schueler.vorname.toLowerCase() %>"
-          data-nachname="<%= schueler.nachname.toLowerCase() %>"
-          data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>"
-          data-schuljahr="<%= (schueler.schuljahr_name || '').toLowerCase() %>">
-        <td class="fw-medium">
-          <%= schueler.vorname %>
-        </td>
-        <td class="fw-medium">
-          <%= schueler.nachname %>
-        </td>
-        <td class="text-body-secondary">
-            <%= schueler.klasse_name || 'Keine Klasse' %>
-        </td>
-        <td class="text-body-secondary">
-            <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
-        </td>
-        <td class="text-end" style="white-space: nowrap;">
-          <a href="/schueler/<%= schueler.id %>/edit" class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
-          <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm" data-bs-toggle="modal"
-            data-bs-target="#confirmDeleteModal" data-id="<%= schueler.id %>">Löschen</button>
-        </td>
-      </tr>
-    <% }) %>
-  <% } %>
-</tbody>
-  </table>
+            <% if (schueler && schueler.length> 0) { %>
+              <% schueler.forEach(schueler=> { %>
+                <tr class="schueler-row" data-id="<%= schueler.id %>"
+                  data-vorname="<%= schueler.vorname.toLowerCase() %>"
+                  data-nachname="<%= schueler.nachname.toLowerCase() %>"
+                  data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>"
+                  data-schuljahr="<%= (schueler.schuljahr_name || '').toLowerCase() %>">
+                  <td class="fw-medium">
+                    <%= schueler.vorname %>
+                  </td>
+                  <td class="fw-medium">
+                    <%= schueler.nachname %>
+                  </td>
+                  <td class="text-body-secondary">
+                    <%= schueler.klasse_name || 'Keine Klasse' %>
+                  </td>
+                  <td class="text-body-secondary">
+                    <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
+                  </td>
+                  <td class="text-end" style="white-space: nowrap;">
+                    <a href="/schueler/<%= schueler.id %>/edit"
+                      class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
+                    <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm"
+                      data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                      data-id="<%= schueler.id %>">Löschen</button>
+                  </td>
+                </tr>
+                <% }) %>
+                  <% } %>
+      </tbody>
+    </table>
 
-  <!-- Pop Up Löschen Fenster -->
-  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header custom-delete-header">
-          <h5 class="modal-title">Löschen bestätigen</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Bist du sicher, dass du diesen Schüler löschen möchtest?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-          <form id="deleteConfirmForm" method="POST">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
-          </form>
+    <!-- Pop Up Löschen Fenster -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header custom-delete-header">
+            <h5 class="modal-title">Löschen bestätigen</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bist du sicher, dass du diesen Schüler löschen möchtest?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <form id="deleteConfirmForm" method="POST">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-  // Suchfunktionalität für Schüler - MIT LIVE-FILTERING
-  const searchContainer = document.getElementById('searchContainer');
-  const searchInput = document.getElementById('schuelerSearch');
-  const searchResults = document.getElementById('searchResults');
-  const searchTermText = document.getElementById('searchTermText');
-  const clearSearch = document.getElementById('clearSearch');
-  const searchBadge = document.getElementById('searchBadge');
-  const klassenFilter = document.getElementById('klassenFilter');
-  const schuljahrFilter = document.getElementById('schuljahrFilter'); // ✅ NEU
-  const schuelerRows = document.querySelectorAll('.schueler-row');
+  <script>
+    // Suchfunktionalität für Schüler - MIT LIVE-FILTERING
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('schuelerSearch');
+    const searchResults = document.getElementById('searchResults');
+    const searchTermText = document.getElementById('searchTermText');
+    const clearSearch = document.getElementById('clearSearch');
+    const searchBadge = document.getElementById('searchBadge');
+    const klassenFilter = document.getElementById('klassenFilter');
+    const schuljahrFilter = document.getElementById('schuljahrFilter'); // ✅ NEU
+    const schuelerRows = document.querySelectorAll('.schueler-row');
 
-  let searchTimeout;
+    let searchTimeout;
 
-  // Filter bei Änderung anwenden
-  klassenFilter.addEventListener('change', function() {
-    applyFilters();
-  });
-
-  // ✅ NEU: Schuljahr Filter bei Änderung
-  schuljahrFilter.addEventListener('change', function() {
-    applyFilters();
-  });
-
-  // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
-  searchInput.addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    const query = this.value.trim().toLowerCase();
-
-    // Verstecke Autocomplete-Ergebnisse
-    searchResults.style.display = 'none';
-
-    // Sofortige Filterung anwenden
-    searchTimeout = setTimeout(() => {
+    // Filter bei Änderung anwenden
+    klassenFilter.addEventListener('change', function () {
       applyFilters();
-      
-      // Zeige Such-Badge nur bei Suchbegriff
-      if (query.length >= 2) {
-        searchTermText.textContent = query;
-        searchBadge.style.display = 'flex';
-      } else {
-        searchBadge.style.display = 'none';
-      }
-    }, 300);
-  });
-
-  // Filter anwenden - LIVE-FILTERING
-  function applyFilters() {
-    const klasseValue = klassenFilter.value.toLowerCase();
-    const schuljahrValue = schuljahrFilter.value.toLowerCase(); // ✅ NEU
-    const searchValue = searchInput.value.trim().toLowerCase();
-    
-    let visibleCount = 0;
-
-    schuelerRows.forEach(row => {
-      const vorname = row.getAttribute('data-vorname');
-      const nachname = row.getAttribute('data-nachname');
-      const klasse = row.getAttribute('data-klasse');
-      const schuljahr = row.getAttribute('data-schuljahr');
-      
-      const matchesKlasse = klasseValue === 'alle' || klasse === klasseValue;
-      const matchesSchuljahr = schuljahrValue === 'alle' || schuljahr === schuljahrValue; // ✅ NEU
-      const matchesSearch = !searchValue || 
-                           vorname.includes(searchValue) || 
-                           nachname.includes(searchValue) || 
-                           klasse.includes(searchValue) ||
-                           schuljahr.includes(searchValue);
-      
-      if (matchesKlasse && matchesSchuljahr && matchesSearch) { // ✅ matchesSchuljahr hinzugefügt
-        row.style.display = '';
-        visibleCount++;
-      } else {
-        row.style.display = 'none';
-      }
     });
 
-    // Zeige "Keine Ergebnisse" wenn nötig
-    const tbody = document.getElementById('schuelerTableBody');
-    let noResultsRow = tbody.querySelector('.no-results-row');
-    
-    if (visibleCount === 0) {
-      if (!noResultsRow) {
-        noResultsRow = document.createElement('tr');
-        noResultsRow.className = 'no-results-row';
-        noResultsRow.innerHTML = `
+    // ✅ NEU: Schuljahr Filter bei Änderung
+    schuljahrFilter.addEventListener('change', function () {
+      applyFilters();
+    });
+
+    // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim().toLowerCase();
+
+      // Verstecke Autocomplete-Ergebnisse
+      searchResults.style.display = 'none';
+
+      // Sofortige Filterung anwenden
+      searchTimeout = setTimeout(() => {
+        applyFilters();
+
+        // Zeige Such-Badge nur bei Suchbegriff
+        if (query.length >= 2) {
+          searchTermText.textContent = query;
+          searchBadge.style.display = 'flex';
+        } else {
+          searchBadge.style.display = 'none';
+        }
+      }, 300);
+    });
+
+    // Filter anwenden - LIVE-FILTERING
+    function applyFilters() {
+      const klasseValue = klassenFilter.value.toLowerCase();
+      const schuljahrValue = schuljahrFilter.value.toLowerCase(); // ✅ NEU
+      const searchValue = searchInput.value.trim().toLowerCase();
+
+      let visibleCount = 0;
+
+      schuelerRows.forEach(row => {
+        const vorname = row.getAttribute('data-vorname');
+        const nachname = row.getAttribute('data-nachname');
+        const klasse = row.getAttribute('data-klasse');
+        const schuljahr = row.getAttribute('data-schuljahr');
+
+        const matchesKlasse = klasseValue === 'alle' || klasse === klasseValue;
+        const matchesSchuljahr = schuljahrValue === 'alle' || schuljahr === schuljahrValue; // ✅ NEU
+        const matchesSearch = !searchValue ||
+          vorname.includes(searchValue) ||
+          nachname.includes(searchValue) ||
+          klasse.includes(searchValue) ||
+          schuljahr.includes(searchValue);
+
+        if (matchesKlasse && matchesSchuljahr && matchesSearch) { // ✅ matchesSchuljahr hinzugefügt
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Zeige "Keine Ergebnisse" wenn nötig
+      const tbody = document.getElementById('schuelerTableBody');
+      let noResultsRow = tbody.querySelector('.no-results-row');
+
+      if (visibleCount === 0) {
+        if (!noResultsRow) {
+          noResultsRow = document.createElement('tr');
+          noResultsRow.className = 'no-results-row';
+          noResultsRow.innerHTML = `
           <td colspan="5" class="text-center py-4 text-muted">
             Keine Schüler gefunden für die ausgewählten Filter
           </td>
         `;
-        tbody.appendChild(noResultsRow);
+          tbody.appendChild(noResultsRow);
+        }
+        noResultsRow.style.display = '';
+      } else if (noResultsRow) {
+        noResultsRow.style.display = 'none';
       }
-      noResultsRow.style.display = '';
-    } else if (noResultsRow) {
-      noResultsRow.style.display = 'none';
     }
-  }
 
-  // Search beenden
-  clearSearch.addEventListener('click', function(e) {
-    e.preventDefault();
-    searchInput.value = '';
-    searchBadge.style.display = 'none';
-    applyFilters();
-  });
+    // Search beenden
+    clearSearch.addEventListener('click', function (e) {
+      e.preventDefault();
+      searchInput.value = '';
+      searchBadge.style.display = 'none';
+      applyFilters();
+    });
 
-  // Klick außerhalb schließt Autocomplete
-  document.addEventListener('click', function(e) {
-    if (!searchContainer.contains(e.target)) {
-      searchResults.style.display = 'none';
+    // Klick außerhalb schließt Autocomplete
+    document.addEventListener('click', function (e) {
+      if (!searchContainer.contains(e.target)) {
+        searchResults.style.display = 'none';
+      }
+    });
+
+    // Eventlistener für modales Fenster beim Delete
+    const deleteModal = document.getElementById('confirmDeleteModal');
+    const deleteForm = document.getElementById('deleteConfirmForm');
+
+    deleteModal.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget;
+      const itemId = button.getAttribute('data-id');
+      deleteForm.action = `/schueler/${itemId}?_method=DELETE`;
+    });
+
+    // Initial Filter anwenden falls Suchbegriff vorhanden
+    if (searchInput.value) {
+      applyFilters();
     }
-  });
-
-  // Eventlistener für modales Fenster beim Delete
-  const deleteModal = document.getElementById('confirmDeleteModal');
-  const deleteForm = document.getElementById('deleteConfirmForm');
-
-  deleteModal.addEventListener('show.bs.modal', event => {
-    const button = event.relatedTarget;
-    const itemId = button.getAttribute('data-id');
-    deleteForm.action = `/schueler/${itemId}?_method=DELETE`;
-  });
-
-  // Initial Filter anwenden falls Suchbegriff vorhanden
-  if (searchInput.value) {
-    applyFilters();
-  }
-</script>
+  </script>

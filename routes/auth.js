@@ -112,7 +112,7 @@ router.post('/logout', (req, res) => {
       return res.redirect('/');
     }
     console.log(' Session erfolgreich zerstört');
-    res.redirect('/');
+    res.redirect('/auth/login');
   });
 });
 

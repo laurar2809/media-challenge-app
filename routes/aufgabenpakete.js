@@ -9,7 +9,7 @@ const path = require('path');
 router.get('/', async (req, res) => {
   try {
     const { kategorie, search } = req.query;
-    
+
     let query = db('aufgabenpakete').select('*');
 
     // Filter nach Kategorie
@@ -19,10 +19,10 @@ router.get('/', async (req, res) => {
 
     // Suche nach Titel/Beschreibung
     if (search && search.length >= 2) {
-      query = query.where(function() {
+      query = query.where(function () {
         this.where('title', 'like', `%${search}%`)
-             .orWhere('description', 'like', `%${search}%`)
-             .orWhere('kategorie', 'like', `%${search}%`);
+          .orWhere('description', 'like', `%${search}%`)
+          .orWhere('kategorie', 'like', `%${search}%`);
       });
     }
 
