@@ -2,6 +2,153 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
+const { requireAuth } = require('../middleware/auth');
+
+// Challenges Übersicht - ADMIN: alles, SCHÜLER: nur eigene
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    let challenges;
+    
+    if (req.currentUser.user_role_id === 1) { // Schüler
+      console.log(` Lade Challenges für Schüler ${req.currentUser.vorname}`);
+      
+      // Schüler-Logik - nur eigene Challenges
+      const userTeams = await req.db('team_mitglieder')
+        .where('user_id', req.currentUser.id)
+        .pluck('team_id');
+      
+      if (userTeams.length > 0) {
+        challenges = await req.db('challenges')
+          .whereIn('team_id', userTeams)
+          .select('*')
+          .orderBy('created_at', 'desc');
+      } else {
+        challenges = [];
+      }
+      
+      // Schüler bekommt die einfache View
+      res.render('challenges/index', {
+        title: 'Challenges',
+        activePage: 'challenges',
+        challenges
+      });
+        
+    } else { // Lehrer/Admin - KOMPLETTE FUNKTION MIT ALLEN JOINS
+      console.log(`👨‍🏫 Lade ALLE Challenges für ${req.currentUser.rolle}`);
+      
+      // VOLLSTÄNDIGE QUERY MIT ALLEN JOINS
+      let challengesQuery = req.db('challenges')
+        .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+        .leftJoin('teams', 'challenges.team_id', 'teams.id')
+        .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
+        .select(
+          'challenges.*',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.icon as aufgabenpaket_icon',
+          'aufgabenpakete.description as aufgabenpaket_description',
+          'teams.name as team_name',
+          'schuljahre.name as schuljahr_name'
+        )
+        .orderBy('challenges.created_at', 'desc');
+      
+      // Hole zusätzlich Team-Mitglieder für jede Challenge
+      const allChallenges = await challengesQuery;
+      
+      // Für jede Challenge die Team-Mitglieder laden
+      const challengesWithMembers = await Promise.all(
+        allChallenges.map(async (challenge) => {
+          if (challenge.team_id) {
+            const mitglieder = await req.db('team_mitglieder')
+              .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+              .where('team_mitglieder.team_id', challenge.team_id)
+              .select(
+                'users.vorname',
+                'users.nachname'
+              );
+            
+            // Namen der Mitglieder als String zusammenfassen
+            challenge.team_mitglieder_names = mitglieder
+              .map(m => `${m.vorname} ${m.nachname}`)
+              .join(', ');
+          } else {
+            challenge.team_mitglieder_names = '';
+          }
+          
+          return challenge;
+        })
+      );
+      
+      // Hole Filter-Daten
+      const [kategorien, schuljahre, teams] = await Promise.all([
+        req.db('categories').select('*'),
+        req.db('schuljahre').select('*'),
+        req.db('teams').select('*')
+      ]);
+      
+      // Setze ALLE Filter-Werte (mit Defaults)
+      const activeKategorie = req.query.kategorie || 'alle';
+      const activeSchuljahr = req.query.schuljahr || 'alle';
+      const searchTerm = req.query.search || '';
+      
+      // Filtere Challenges
+      let gefilterteChallenges = challengesWithMembers;
+      
+      // Kategorie-Filter
+      if (activeKategorie !== 'alle') {
+        gefilterteChallenges = gefilterteChallenges.filter(c => c.kategorie === activeKategorie);
+      }
+      
+      // Schuljahr-Filter
+      if (activeSchuljahr !== 'alle') {
+        gefilterteChallenges = gefilterteChallenges.filter(c => c.schuljahr_name === activeSchuljahr);
+      }
+      
+      // Such-Filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        gefilterteChallenges = gefilterteChallenges.filter(c => 
+          c.title.toLowerCase().includes(searchLower) ||
+          c.beschreibung.toLowerCase().includes(searchLower) ||
+          c.kategorie.toLowerCase().includes(searchLower) ||
+          (c.aufgabenpaket_title && c.aufgabenpaket_title.toLowerCase().includes(searchLower)) ||
+          (c.team_name && c.team_name.toLowerCase().includes(searchLower)) ||
+          (c.team_mitglieder_names && c.team_mitglieder_names.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      console.log(` Gefundene Challenges: ${gefilterteChallenges.length} (gefiltert von ${allChallenges.length})`);
+      
+      // Debug: Zeige erste Challenge mit allen Daten
+      if (gefilterteChallenges.length > 0) {
+        console.log('🔍 Erste Challenge mit allen Daten:', {
+          title: gefilterteChallenges[0].title,
+          team_id: gefilterteChallenges[0].team_id,
+          team_name: gefilterteChallenges[0].team_name,
+          team_mitglieder: gefilterteChallenges[0].team_mitglieder_names,
+          aufgabenpaket_title: gefilterteChallenges[0].aufgabenpaket_title,
+          aufgabenpaket_icon: gefilterteChallenges[0].aufgabenpaket_icon
+        });
+      }
+      
+      // Admin/Lehrer bekommt die ORIGINALE View mit ALLEN Funktionen
+      res.render('challenges', {
+        title: 'Challenges',
+        activePage: 'challenges',
+        challenges: gefilterteChallenges,
+        kategorien,
+        schuljahre,
+        teams,
+        activeKategorie,
+        activeSchuljahr,
+        searchTerm
+      });
+    }
+    
+  } catch (error) {
+    console.error('Challenges Fehler:', error);
+    res.status(500).send('Server Fehler');
+  }
+});
 
 // Challenges Übersicht
 router.get('/', async (req, res) => {
@@ -195,13 +342,13 @@ router.post('/', async (req, res) => {
     } catch (error) {
       // Bei Fehler - Rollbackö
       await trx.rollback();
-      console.error('❌ Datenbank-Fehler:', error);
+      console.error(' Datenbank-Fehler:', error);
       req.flash('error', 'Datenbank-Fehler: ' + error.message);
       res.redirect('/challenges/new');
     }
     
   } catch (error) {
-    console.error('❌ Allgemeiner Fehler:', error);
+    console.error(' Allgemeiner Fehler:', error);
     req.flash('error', 'Fehler beim Erstellen: ' + error.message);
     res.redirect('/challenges/new');
   }

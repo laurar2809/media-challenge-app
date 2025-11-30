@@ -3,6 +3,8 @@ const mime = require('mime-types');
 const path = require('path');
 const fs = require('fs');
 
+
+
 // Upload-Verzeichnisse sicherstellen
 const ensureUploadDir = (subDir) => {
   const fullPath = path.join(__dirname, '../public/uploads', subDir);

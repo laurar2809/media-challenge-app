@@ -1,0 +1,49 @@
+<% pageTitle="Login" %>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-5">
+                <div class="card-header text-center">
+                    <h4 class="mb-0"> Login</h4>
+                </div>
+                <div class="card-body">
+                    <!-- EINFACHE VARIANTE (1,2,3) -->
+                    <div class="border border-light text-center mb-4 p-3 bg-light rounded">
+                        <strong>Einfache Passwörter:</strong><br>
+                        <code>1</code> = Schüler<br>
+                        <code>2</code> = Lehrer<br> 
+                        <code>3</code> = Admin
+                    </div>
+
+                    <form action="/auth/login" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Schnell-Login (1, 2 oder 3)</label>
+                            <input type="password" class="form-control text-center" name="password" 
+                                   placeholder="1, 2 oder 3" autofocus>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- NAMENS-LOGIN -->
+                        <h6 class="text-center text-muted mb-3">Oder mit Namen einloggen</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Vorname</label>
+                            <input type="text" class="form-control" name="vorname" 
+                                   placeholder="Vorname">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nachname</label>
+                            <input type="text" class="form-control" name="nachname" 
+                                   placeholder="Nachname">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Anmelden</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

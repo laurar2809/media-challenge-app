@@ -12,6 +12,13 @@
 </head>
 
 <body >
+
+  <% // SICHERHEITS-FALLBACK
+   if (typeof currentUser === 'undefined') { 
+     currentUser = null; 
+   } 
+   %>
+
   <% // FALLBACK FÜR activePage if (typeof activePage==='undefined' ) { activePage='' ; } %>
     <nav class="navbar navbar-expand-lg bg-primary navbar-dark navbar sticky-top"> <!--Navigationsleiste-->
       <div class="container">
@@ -26,19 +33,24 @@
 
         <div class="collapse navbar-collapse" id="navbarNav"> <!-- Leiste linksbündig, neben CRUD LISTE -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <!--für alle sichtbar!!!:-->
             <li class="nav-item">
               <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>"
                 aria-current="<%= activePage === 'kategorien' ? 'page' : '' %>" href="/">Kategorien </a>
             </li>
+             <% if (currentUser && currentUser.user_role_id !== 1) { %>
             <li class="nav-item">
               <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>" 
                 href="/aufgabenpakete">Aufgabenpakete</a>
             </li>
+            <% } %>
             <li class="nav-item">
               <a class="nav-link <%= activePage === 'challenges' ? 'active' : '' %>" 
                 aria-current="<%= activePage === 'challenges' ? 'page' : '' %>"
                 href="/challenges">Challenges</a>
             </li>
+            <!--Nur für Lehrer und Admin sichtbar!:-->
+             <% if (currentUser && currentUser.user_role_id !== 1) { %>
             <li class="nav-item">
               <a class="nav-link <%= activePage === 'schueler' ? 'active' : '' %>"
                 aria-current="<%= activePage === 'schueler' ? 'page' : '' %>" 
@@ -49,8 +61,25 @@
                 aria-current="<%= activePage === 'lehrer' ? 'page' : '' %>" 
                 href="/lehrer">Lehrer</a>
             </li>
+             <% } %>
           </ul>
-          <div class="d-flex"> <!-- Button rechts-->
+          <!-- RECHTS: User Info & Login/Logout -->
+         <!-- RECHTS: User Info & Login/Logout -->
+              <div class="navbar-nav align-items-center">
+                <% if (currentUser) { %>
+                  <!-- EINGELOGGT: User Info + Logout -->
+                  <span class="navbar-text me-3">
+                    <%= currentUser.vorname %> <%= currentUser.nachname %>
+                    <small class="text">(<%= currentUser.rolle %>)</small>
+                  </span>
+                  <form action="/auth/logout" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                  </form>
+                <% } else { %>
+                  <!-- NICHT EINGELOGGT: Login Button -->
+                  <a href="/auth/login" class="btn btn-outline-light btn-sm">Login</a>
+                <% } %>
+              </div>
             <a href="/api/categories" class="btn btn-outline-light btn-sm">API JSON</a>
           </div>
         </div>
@@ -74,7 +103,14 @@
 
     <footer class="border-top py-3 small text-muted">
       <div class="container">
-        Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads
+        Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads ----
+
+        <% if (currentUser) { %>
+          Eingeloggt als: <%= currentUser.rolle %>
+        <% } else { %>
+          Nicht eingeloggt
+        <% } %>
+
       </div>
     </footer>
 
