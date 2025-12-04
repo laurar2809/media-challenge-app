@@ -92,17 +92,17 @@
           </div>
           <div class="modal-body">
             <!-- Team Name -->
-            <div class="mb-3">
+            <div class="mb-2">
               <label class="form-label">Team Name *</label>
               <input type="text" class="form-control" id="newTeamName" placeholder="Team Name eingeben...">
             </div>
 
 
-            <div class="row g-2 mb-3">
-              <div class="col-md-5">
+            <div class="row g-2 mb-2">
+              <div class="col-md-4">
                 <input type="text" class="form-control form-control-sm" id="nameFilter" placeholder="Namen suchen...">
               </div>
-              <div class="col-md-4">
+              <div class="col-md-2">
                 <select class="form-select form-select-sm" id="classFilter">
                   <option value="">Alle Klassen</option>
                   <% const klassen=[...new Set(schueler.map(s=> s.klasse_name).filter(Boolean).sort())]; %>
@@ -113,7 +113,29 @@
                       <% }) %>
                 </select>
               </div>
+
               <div class="col-md-3">
+    <select class="form-select form-select-sm" id="teamSchuljahrFilter">
+      <option value="">Alle Schuljahre</option>
+      <% if (schuljahre && schuljahre.length) { %>
+        <% schuljahre.forEach(schuljahr=> { %>
+          <option value="<%= schuljahr.id %>">
+            <%= schuljahr.name %>
+          </option>
+        <% }) %>
+      <% } else { %>
+        <% const schuljahrIds=[...new Set(schueler.map(s=> s.schuljahr_id).filter(Boolean).sort())]; %>
+          <% schuljahrIds.forEach(id=> { %>
+            <option value="<%= id %>">
+              Schuljahr ID: <%= id %>
+            </option>
+          <% }) %>
+      <% } %>
+    </select>
+  </div>
+        
+
+              <div class="col-md-2">
                 <div class="form-check form-switch mt-1">
                   <input class="form-check-input" type="checkbox" id="onlyAvailableFilter">
                   <label class="form-check-label small" for="onlyAvailableFilter">Nur verfügbare</label>
@@ -189,6 +211,7 @@
       const dateInput = document.getElementById('dateInput');
       const filterHint = document.getElementById('filterHint');
       const onlyAvailableFilter = document.getElementById('onlyAvailableFilter');
+      const teamSchuljahrFilter = document.getElementById('teamSchuljahrFilter');
 
       document.getElementById('teamModal')?.addEventListener('hidden.bs.modal', () => {
         console.log(' Modal wurde vollständig geschlossen!');
@@ -225,6 +248,14 @@
       // Schüler-Daten aus dem versteckten Container lesen
       const schuelerDataElement = document.getElementById('schuelerData');
       const schuelerListe = schuelerDataElement ? JSON.parse(schuelerDataElement.dataset.schueler) : [];
+
+      console.log('Schüler Daten:', schuelerListe);
+      console.log('Erster Schüler:', schuelerListe[0]);
+      console.log('Verfügbare Felder:', Object.keys(schuelerListe[0] || {}));
+      console.log('Alle Felder des ersten Schülers:');
+for (let key in schuelerListe[0]) {
+  console.log(`- ${key}: ${schuelerListe[0][key]}`);
+}
 
       let teams = [];
       let teamCounter = 1;
@@ -455,6 +486,7 @@
       function filterMembers() {
         const nameValue = nameFilter.value.toLowerCase().trim();
         const classValue = classFilter.value;
+        const schuljahrValue = teamSchuljahrFilter ? teamSchuljahrFilter.value : '';
         const onlyAvailable = document.getElementById('onlyAvailableFilter')?.checked;
 
         const availableMembersContainer = document.getElementById('availableMembersContainer');
@@ -480,6 +512,7 @@
           const vorname = (s.vorname || '').toLowerCase();
           const nachname = (s.nachname || '').toLowerCase();
           const klasse = s.klasse_name || s.klasse || '';
+          const schuljahr = s.schuljahr_name || s.schuljahr || '';
           const memberId = s.id;
 
           // Prüfen ob Mitglied bereits in einem Team ist
@@ -493,7 +526,7 @@
           const availableMatch = !onlyAvailable || !isInTeam;
 
           //Kombinierte Filterung
-          if (nameMatch && classMatch && availableMatch) {
+          if (nameMatch && schuljahrMatch && classMatch && availableMatch) {
             hasResults = true;
 
             const memberElement = document.createElement('div');
@@ -560,6 +593,15 @@
         });
       }
 
+      if (teamSchuljahrFilter) {
+        teamSchuljahrFilter.addEventListener('change', function() {
+          clearTimeout(filterTimeout);
+          filterTimeout = setTimeout(() => {
+            filterMembers();
+          }, 200);
+        });
+      }
+
       document.getElementById('availableMembersContainer').addEventListener('dragstart', function (e) {
         if (e.target.classList.contains('drag-item')) {
           e.dataTransfer.setData('text/plain', e.target.dataset.id);
@@ -591,6 +633,7 @@
         clearTeamForm();
         nameFilter.value = '';
         classFilter.value = '';
+        if (teamSchuljahrFilter) teamSchuljahrFilter.value = '';
         if (onlyAvailableFilter) onlyAvailableFilter.checked = false;
         filterMembers();
       });
