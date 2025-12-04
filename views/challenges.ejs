@@ -44,284 +44,277 @@
     <div class="col-md-4">
       <!-- Suchleiste -->
       <div class="position-relative" id="searchContainer">
-        <input type="text" id="challengesSearch" class="form-control" placeholder="🔍 Teams, Aufgabenpakete suchen..."
-          value="<%= searchTerm %>" autocomplete="off">
+        <div class="input-group mb-3">
+          <span class="input-group-text">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" id="challengesSearch" class="form-control p-1 border-start-0"
+            placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Such-Badge -->
-  <div id="searchBadge" class="mb-2" <% if (!searchTerm) { %>style="display: none;"<% } %>
-      >
-      <span class="badge bg-primary d-inline-flex align-items-center">
-        Suchergebnisse für: <span id="searchTermText" class="ms-1">
-          <%= searchTerm %>
-        </span>
-        <a href="/challenges" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
-      </span>
-  </div>
-
-  <div class="table-responsive">
-    <!-- Card-Container -->
-    <div class="row" id="challengesCardContainer">
-      <% if (challenges && challenges.length===0) { %>
-        <div class="col-12">
-          <div class="card text-center py-4 text-muted">
-            <div class="card-body">
-              <% if (searchTerm || activeKategorie !=='alle' ) { %>
-                Keine Challenges gefunden für die ausgewählten Filter
-                <% } else { %>
-                  Noch keine Challenges erstellt
-                  <% } %>
+    <div class="table-responsive">
+      <!-- Card-Container -->
+      <div class="row" id="challengesCardContainer">
+        <% if (challenges && challenges.length===0) { %>
+          <div class="col-12">
+            <div class="card text-center py-4 text-muted">
+              <div class="card-body">
+                <% if (searchTerm || activeKategorie !=='alle' ) { %>
+                  Keine Challenges gefunden für die ausgewählten Filter
+                  <% } else { %>
+                    Noch keine Challenges erstellt
+                    <% } %>
+              </div>
             </div>
           </div>
-        </div>
-        <% } %>
+          <% } %>
 
-          <% if (challenges && challenges.length> 0) { %>
-            <% challenges.forEach(challenge=> { %>
-              <div class="col-md-6 col-lg-4 mb-4 challenge-card" data-id="<%= challenge.id %>"
-                data-aufgabenpaket="<%= (challenge.aufgabenpaket_title || '').toLowerCase() %>"
-                data-team="<%= (challenge.team_name || '').toLowerCase() %>"
-                data-kategorie="<%= (challenge.kategorie || '').toLowerCase() %>"
-                data-schuljahr="<%= (challenge.schuljahr_name || '').toLowerCase() %>"
-                data-teammitglieder="<%= (challenge.team_mitglieder_names || '').toLowerCase() %>">
+            <% if (challenges && challenges.length> 0) { %>
+              <% challenges.forEach(challenge=> { %>
+                <div class="col-md-6 col-lg-4 mb-4 challenge-card" data-id="<%= challenge.id %>"
+                  data-aufgabenpaket="<%= (challenge.aufgabenpaket_title || '').toLowerCase() %>"
+                  data-team="<%= (challenge.team_name || '').toLowerCase() %>"
+                  data-kategorie="<%= (challenge.kategorie || '').toLowerCase() %>"
+                  data-schuljahr="<%= (challenge.schuljahr_name || '').toLowerCase() %>"
+                  data-teammitglieder="<%= (challenge.team_mitglieder_names || '').toLowerCase() %>">
 
-                <div class="card h-100 shadow-sm">
-                  <!-- BILD VOM AUFGABENPAKET -->
-                  <% if (challenge.aufgabenpaket_icon) { %>
-                    <img src="<%= challenge.aufgabenpaket_icon %>" class="card-img-top"
-                      alt="<%= challenge.aufgabenpaket_title %>" style="height: 150px; object-fit: cover;">
-                    <% } else { %>
-                      <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                        style="height: 150px;">
-                        <span class="text-muted">Kein Bild</span>
-                      </div>
-                      <% } %>
-
-                        <div class="card-body">
-                          <!-- AUFGABENPAKET NAME -->
-                          <div class="mb-3">
-                            <strong class="d-block">Aufgabenpaket:</strong>
-                            <span class="fw-medium">
-                              <%= challenge.aufgabenpaket_title || 'Kein Aufgabenpaket' %>
-                            </span>
-                          </div>
-
-                          <!-- KATEGORIE -->
-                          <div class="mb-3">
-                            <strong class="d-block">Kategorie:</strong>
-                            <span class="badge bg-secondary">
-                              <%= challenge.kategorie %>
-                            </span>
-                          </div>
-
-                          <!-- TEAM MIT MITGLIEDERN -->
-                          <div class="mb-3">
-                            <strong class="d-block">Team:</strong>
-                            <% if (challenge.team_name) { %>
-                              <div class="text-muted">
-                                <%= challenge.team_name %>
-                              </div>
-                              <small class="text-body-secondary">
-                                <%= challenge.team_mitglieder_names || 'Keine Mitglieder' %>
-                              </small>
-                              <% } else { %>
-                                <span class="text-muted">Kein Team</span>
-                                <% } %>
-                          </div>
-
-                          <!-- ABGABETERMIN -->
-                          <div class="mb-3">
-                            <strong class="d-block">Abgabetermin:</strong>
-                            <span class="text-body-secondary">
-                              <% if (challenge.abgabedatum) { %>
-                                <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
-                                  <% } else { %>
-                                    <span class="text-muted">Nicht festgelegt</span>
-                                    <% } %>
-                            </span>
-                          </div>
+                  <div class="card h-100 shadow-sm">
+                    <!-- BILD VOM AUFGABENPAKET -->
+                    <% if (challenge.aufgabenpaket_icon) { %>
+                      <img src="<%= challenge.aufgabenpaket_icon %>" class="card-img-top"
+                        alt="<%= challenge.aufgabenpaket_title %>" style="height: 150px; object-fit: cover;">
+                      <% } else { %>
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                          style="height: 150px;">
+                          <span class="text-muted">Kein Bild</span>
                         </div>
+                        <% } %>
 
-                        <!-- AKTIONEN -->
-                        <div class="card-footer bg-transparent">
-                          <div class="d-flex justify-content-between align-items-center">
-                            <a href="/challenges/detail/<%= challenge.id %>"
-                              class="btn btn-custom-details btn-sm">Details</a>
-                            <div class="d-flex gap-2">
-                              <a href="/challenges/<%= challenge.id %>/edit"
-                                class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
-                              <button type="button" class="btn btn-custom-delete btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
+                          <div class="card-body">
+                            <!-- AUFGABENPAKET NAME -->
+                            <div class="mb-3">
+                              <strong class="d-block">Aufgabenpaket:</strong>
+                              <span class="fw-medium">
+                                <%= challenge.aufgabenpaket_title || 'Kein Aufgabenpaket' %>
+                              </span>
+                            </div>
+
+                            <!-- KATEGORIE -->
+                            <div class="mb-3">
+                              <strong class="d-block">Kategorie:</strong>
+                              <span class="badge bg-secondary">
+                                <%= challenge.kategorie %>
+                              </span>
+                            </div>
+
+                            <!-- TEAM MIT MITGLIEDERN -->
+                            <div class="mb-3">
+                              <strong class="d-block">Team:</strong>
+                              <% if (challenge.team_name) { %>
+                                <div class="text-muted">
+                                  <%= challenge.team_name %>
+                                </div>
+                                <small class="text-body-secondary">
+                                  <%= challenge.team_mitglieder_names || 'Keine Mitglieder' %>
+                                </small>
+                                <% } else { %>
+                                  <span class="text-muted">Kein Team</span>
+                                  <% } %>
+                            </div>
+
+                            <!-- ABGABETERMIN -->
+                            <div class="mb-3">
+                              <strong class="d-block">Abgabetermin:</strong>
+                              <span class="text-body-secondary">
+                                <% if (challenge.abgabedatum) { %>
+                                  <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
+                                    <% } else { %>
+                                      <span class="text-muted">Nicht festgelegt</span>
+                                      <% } %>
+                              </span>
                             </div>
                           </div>
-                        </div>
-                </div>
-              </div>
-              <% }) %>
-                <% } %>
-    </div>
-  </div>
 
-  <!-- Pop Up Löschen Fenster -->
-  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header custom-delete-header">
-          <h5 class="modal-title">Löschen bestätigen</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Bist du sicher, dass du diese Challenge löschen möchtest?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-          <form id="deleteConfirmForm" method="POST">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="btn btn-custom-delete">Ja, löschen</button>
-          </form>
+                          <!-- AKTIONEN -->
+                          <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <a href="/challenges/detail/<%= challenge.id %>"
+                                class="btn btn-custom-details btn-sm">Details</a>
+                              <div class="d-flex gap-2">
+                                <a href="/challenges/<%= challenge.id %>/edit"
+                                  class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
+                                <button type="button" class="btn btn-custom-delete btn-sm" data-bs-toggle="modal"
+                                  data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
+                              </div>
+                            </div>
+                          </div>
+                  </div>
+                </div>
+                <% }) %>
+                  <% } %>
+      </div>
+    </div>
+
+    <!-- Pop Up Löschen Fenster -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header custom-delete-header">
+            <h5 class="modal-title">Löschen bestätigen</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bist du sicher, dass du diese Challenge löschen möchtest?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <form id="deleteConfirmForm" method="POST">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit" class="btn btn-custom-delete">Ja, löschen</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Suchfunktionalität für Challenges - MIT LIVE-FILTERING
-      const searchContainer = document.getElementById('searchContainer');
-      const searchInput = document.getElementById('challengesSearch');
-      const searchTermText = document.getElementById('searchTermText');
-      const clearSearch = document.getElementById('clearSearch');
-      const searchBadge = document.getElementById('searchBadge');
-      const kategorienFilter = document.getElementById('kategorienFilter');
-      const schuljahrFilter = document.getElementById('schuljahrFilter');
-      const challengeCards = document.querySelectorAll('.challenge-card');
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Suchfunktionalität für Challenges - MIT LIVE-FILTERING
+        const searchContainer = document.getElementById('searchContainer');
+        const searchInput = document.getElementById('challengesSearch');
+        const searchTermText = document.getElementById('searchTermText');
+        const clearSearch = document.getElementById('clearSearch');
+        const searchBadge = document.getElementById('searchBadge');
+        const kategorienFilter = document.getElementById('kategorienFilter');
+        const schuljahrFilter = document.getElementById('schuljahrFilter');
+        const challengeCards = document.querySelectorAll('.challenge-card');
 
-      let searchTimeout;
+        let searchTimeout;
 
-      console.log('✅ Suchfunktion initialisiert - Gefundene Cards:', challengeCards.length);
+        console.log('✅ Suchfunktion initialisiert - Gefundene Cards:', challengeCards.length);
 
-      // Filter bei Änderung anwenden
-      kategorienFilter.addEventListener('change', function () {
-        console.log('🔍 Kategorie Filter geändert:', this.value);
-        applyFilters();
-      });
-
-      // Schuljahr Filter bei Änderung
-      schuljahrFilter.addEventListener('change', function () {
-        console.log('🔍 Schuljahr Filter geändert:', this.value);
-        applyFilters();
-      });
-
-      // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
-      searchInput.addEventListener('input', function () {
-        clearTimeout(searchTimeout);
-        const query = this.value.trim().toLowerCase();
-
-        console.log('🔍 Sucheingabe:', query);
-
-        // Sofortige Filterung anwenden
-        searchTimeout = setTimeout(() => {
+        // Filter bei Änderung anwenden
+        kategorienFilter.addEventListener('change', function () {
+          console.log('🔍 Kategorie Filter geändert:', this.value);
           applyFilters();
-
-          // Zeige Such-Badge nur bei Suchbegriff
-          if (query.length >= 2) {
-            searchTermText.textContent = query;
-            searchBadge.style.display = 'flex';
-          } else {
-            searchBadge.style.display = 'none';
-          }
-        }, 300);
-      });
-
-      // Filter anwenden - LIVE-FILTERING
-      function applyFilters() {
-        const kategorieValue = kategorienFilter.value.toLowerCase();
-        const schuljahrValue = schuljahrFilter.value.toLowerCase();
-        const searchValue = searchInput.value.trim().toLowerCase();
-
-        console.log('🔄 Filter anwenden:', {
-          kategorie: kategorieValue,
-          schuljahr: schuljahrValue,
-          search: searchValue
         });
 
-        let visibleCount = 0;
-
-        challengeCards.forEach(card => {
-          const aufgabenpaket = card.getAttribute('data-aufgabenpaket') || '';
-          const team = card.getAttribute('data-team') || '';
-          const kategorie = card.getAttribute('data-kategorie') || '';
-          const schuljahr = card.getAttribute('data-schuljahr') || '';
-          const teammitglieder = card.getAttribute('data-teammitglieder') || '';
-
-          const matchesKategorie = kategorieValue === 'alle' || kategorie === kategorieValue;
-          const matchesSchuljahr = schuljahrValue === 'alle' || schuljahr === schuljahrValue;
-          const matchesSearch = !searchValue ||
-            aufgabenpaket.includes(searchValue) ||
-            team.includes(searchValue) ||
-            kategorie.includes(searchValue) ||
-            schuljahr.includes(searchValue) ||
-            teammitglieder.includes(searchValue);
-
-          if (matchesKategorie && matchesSchuljahr && matchesSearch) {
-            card.style.display = '';
-            visibleCount++;
-          } else {
-            card.style.display = 'none';
-          }
+        // Schuljahr Filter bei Änderung
+        schuljahrFilter.addEventListener('change', function () {
+          console.log('🔍 Schuljahr Filter geändert:', this.value);
+          applyFilters();
         });
 
-        console.log('📊 Sichtbare Cards:', visibleCount);
+        // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
+        searchInput.addEventListener('input', function () {
+          clearTimeout(searchTimeout);
+          const query = this.value.trim().toLowerCase();
 
-        // Zeige "Keine Ergebnisse" wenn nötig
-        const container = document.getElementById('challengesCardContainer');
-        let noResultsMsg = container.querySelector('.no-results-msg');
+          console.log('🔍 Sucheingabe:', query);
 
-        if (visibleCount === 0) {
-          if (!noResultsMsg) {
-            noResultsMsg = document.createElement('div');
-            noResultsMsg.className = 'col-12 no-results-msg';
-            noResultsMsg.innerHTML = `
+          // Sofortige Filterung anwenden
+          searchTimeout = setTimeout(() => {
+            applyFilters();
+
+            // Zeige Such-Badge nur bei Suchbegriff
+            if (query.length >= 2) {
+              searchTermText.textContent = query;
+              searchBadge.style.display = 'flex';
+            } else {
+              searchBadge.style.display = 'none';
+            }
+          }, 300);
+        });
+
+        // Filter anwenden - LIVE-FILTERING
+        function applyFilters() {
+          const kategorieValue = kategorienFilter.value.toLowerCase();
+          const schuljahrValue = schuljahrFilter.value.toLowerCase();
+          const searchValue = searchInput.value.trim().toLowerCase();
+
+          console.log('🔄 Filter anwenden:', {
+            kategorie: kategorieValue,
+            schuljahr: schuljahrValue,
+            search: searchValue
+          });
+
+          let visibleCount = 0;
+
+          challengeCards.forEach(card => {
+            const aufgabenpaket = card.getAttribute('data-aufgabenpaket') || '';
+            const team = card.getAttribute('data-team') || '';
+            const kategorie = card.getAttribute('data-kategorie') || '';
+            const schuljahr = card.getAttribute('data-schuljahr') || '';
+            const teammitglieder = card.getAttribute('data-teammitglieder') || '';
+
+            const matchesKategorie = kategorieValue === 'alle' || kategorie === kategorieValue;
+            const matchesSchuljahr = schuljahrValue === 'alle' || schuljahr === schuljahrValue;
+            const matchesSearch = !searchValue ||
+              aufgabenpaket.includes(searchValue) ||
+              team.includes(searchValue) ||
+              kategorie.includes(searchValue) ||
+              schuljahr.includes(searchValue) ||
+              teammitglieder.includes(searchValue);
+
+            if (matchesKategorie && matchesSchuljahr && matchesSearch) {
+              card.style.display = '';
+              visibleCount++;
+            } else {
+              card.style.display = 'none';
+            }
+          });
+
+          console.log('📊 Sichtbare Cards:', visibleCount);
+
+          // Zeige "Keine Ergebnisse" wenn nötig
+          const container = document.getElementById('challengesCardContainer');
+          let noResultsMsg = container.querySelector('.no-results-msg');
+
+          if (visibleCount === 0) {
+            if (!noResultsMsg) {
+              noResultsMsg = document.createElement('div');
+              noResultsMsg.className = 'col-12 no-results-msg';
+              noResultsMsg.innerHTML = `
           <div class="card text-center py-4 text-muted">
             <div class="card-body">
               Keine Challenges gefunden für die ausgewählten Filter
             </div>
           </div>
         `;
-            container.appendChild(noResultsMsg);
+              container.appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = '';
+          } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
           }
-          noResultsMsg.style.display = '';
-        } else if (noResultsMsg) {
-          noResultsMsg.style.display = 'none';
         }
-      }
 
-      // Search beenden
-      clearSearch.addEventListener('click', function (e) {
-        e.preventDefault();
-        searchInput.value = '';
-        searchBadge.style.display = 'none';
-        applyFilters();
+        // Search beenden
+        clearSearch.addEventListener('click', function (e) {
+          e.preventDefault();
+          searchInput.value = '';
+          searchBadge.style.display = 'none';
+          applyFilters();
+        });
+
+        // Eventlistener für modales Fenster beim Delete
+        const deleteModal = document.getElementById('confirmDeleteModal');
+        const deleteForm = document.getElementById('deleteConfirmForm');
+
+        deleteModal.addEventListener('show.bs.modal', event => {
+          const button = event.relatedTarget;
+          const itemId = button.getAttribute('data-id');
+          deleteForm.action = `/challenges/${itemId}?_method=DELETE`;
+        });
+
+        // Initial Filter anwenden falls Suchbegriff vorhanden
+        if (searchInput.value) {
+          console.log('🚀 Initiale Suche anwenden:', searchInput.value);
+          applyFilters();
+        }
+
+        console.log('🎯 Suchfunktion vollständig geladen');
       });
-
-      // Eventlistener für modales Fenster beim Delete
-      const deleteModal = document.getElementById('confirmDeleteModal');
-      const deleteForm = document.getElementById('deleteConfirmForm');
-
-      deleteModal.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget;
-        const itemId = button.getAttribute('data-id');
-        deleteForm.action = `/challenges/${itemId}?_method=DELETE`;
-      });
-
-      // Initial Filter anwenden falls Suchbegriff vorhanden
-      if (searchInput.value) {
-        console.log('🚀 Initiale Suche anwenden:', searchInput.value);
-        applyFilters();
-      }
-
-      console.log('🎯 Suchfunktion vollständig geladen');
-    });
-  </script>
+    </script>

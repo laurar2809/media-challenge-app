@@ -27,211 +27,205 @@
     <div class="col-md-6">
       <!-- Suchleiste -->
       <div class="position-relative" id="searchContainer">
-        <input type="text" id="aufgabenpaketeSearch" class="form-control" placeholder="🔍 Aufgabenpakete suchen..."
-          value="<%= searchTerm || '' %>" autocomplete="off">
+        <div class="input-group mb-3">
+          <span class="input-group-text">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" id="aufgabenpaketeSearch" class="form-control p-1 border-start-0"
+            placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Such-Badge -->
-  <div id="searchBadge" class="mb-2" <% if (!searchTerm) { %>style="display: none;"<% } %>>
-      <span class="badge bg-primary d-inline-flex align-items-center">
-        Suchergebnisse für: <span id="searchTermText" class="ms-1">
-          <%= searchTerm || '' %>
-        </span>
-        <a href="/aufgabenpakete" id="clearSearch" class="text-white ms-2 text-decoration-none">×</a>
-      </span>
-  </div>
+    <!-- CARDS LAYOUT - NUR DATENSÄTZE -->
+    <div class="row" id="aufgabenpaketeCardsContainer">
+      <% if (aufgabenpakete.length===0) { %>
+        <div class="col-12">
+          <div class="text-center py-4 text-muted">
+            <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
+              Keine Aufgabenpakete gefunden für die ausgewählten Filter
+              <% } else { %>
+                Noch keine Aufgabenpakete vorhanden
+                <% } %>
+          </div>
+        </div>
+        <% } else { %>
+          <% aufgabenpakete.forEach(paket=> { %>
+            <div class="col-md-6 col-lg-4 mb-4 aufgabenpaket-card" data-id="<%= paket.id %>"
+              data-title="<%= paket.title.toLowerCase() %>" data-description="<%= paket.description.toLowerCase() %>"
+              data-kategorie="<%= paket.kategorie.toLowerCase() %>">
 
-  <!-- CARDS LAYOUT - NUR DATENSÄTZE -->
-  <div class="row" id="aufgabenpaketeCardsContainer">
-    <% if (aufgabenpakete.length===0) { %>
-      <div class="col-12">
-        <div class="text-center py-4 text-muted">
-          <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
-            Keine Aufgabenpakete gefunden für die ausgewählten Filter
-            <% } else { %>
-              Noch keine Aufgabenpakete vorhanden
+              <div class="card h-100">
+                <!-- BILD -->
+                <% if (paket.icon) { %>
+                  <img src="<%= paket.icon %>" class="card-img-top" alt="<%= paket.title %>"
+                    style="height: 200px; object-fit: cover;">
+                  <% } else { %>
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                      style="height: 200px;">
+                      <span class="text-muted">Kein Bild</span>
+                    </div>
+                    <% } %>
+
+                      <div class="card-body">
+                        <!-- Titel -->
+                        <h5 class="card-title">
+                          <%= paket.title %>
+                        </h5>
+
+                        <!-- Kategorie -->
+                        <div class="mb-2">
+                          <span class="badge bg-secondary">
+                            <%= paket.kategorie %>
+                          </span>
+                        </div>
+
+                        <!-- Beschreibung -->
+                        <p class="card-text">
+                          <%= paket.description %>
+                        </p>
+                      </div>
+
+                      <!-- Aktionen -->
+                      <div class="card-footer bg-transparent">
+                        <div class="d-flex gap-2">
+                          <a href="/aufgabenpakete/<%= paket.id %>" class="btn btn-custom-details btn-sm">Details</a>
+                          <a href="/aufgabenpakete/<%= paket.id %>/edit"
+                            class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
+                          <button type="button" class="btn btn-custom-delete btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#confirmDeleteModal" data-id="<%= paket.id %>">Löschen</button>
+                        </div>
+                      </div>
+              </div>
+            </div> <!-- HIER schließt die col-div -->
+            <% }) %>
               <% } %>
-        </div>
-      </div>
-      <% } else { %>
-        <% aufgabenpakete.forEach(paket=> { %>
-          <div class="col-md-6 col-lg-4 mb-4 aufgabenpaket-card" data-id="<%= paket.id %>"
-            data-title="<%= paket.title.toLowerCase() %>" data-description="<%= paket.description.toLowerCase() %>"
-            data-kategorie="<%= paket.kategorie.toLowerCase() %>">
+    </div> <!-- HIER schließt die row -->
 
-            <div class="card h-100">
-              <!-- BILD -->
-              <% if (paket.icon) { %>
-                <img src="<%= paket.icon %>" class="card-img-top" alt="<%= paket.title %>"
-                  style="height: 200px; object-fit: cover;">
-                <% } else { %>
-                  <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                    style="height: 200px;">
-                    <span class="text-muted">Kein Bild</span>
-                  </div>
-                  <% } %>
-
-                    <div class="card-body">
-                      <!-- Titel -->
-                      <h5 class="card-title">
-                        <%= paket.title %>
-                      </h5>
-
-                      <!-- Kategorie -->
-                      <div class="mb-2">
-                        <span class="badge bg-secondary">
-                          <%= paket.kategorie %>
-                        </span>
-                      </div>
-
-                      <!-- Beschreibung -->
-                      <p class="card-text">
-                        <%= paket.description %>
-                      </p>
-                    </div>
-
-                    <!-- Aktionen -->
-                    <div class="card-footer bg-transparent">
-                      <div class="d-flex gap-2">
-                        <a href="/aufgabenpakete/<%= paket.id %>" class="btn btn-custom-details btn-sm">Details</a>
-                        <a href="/aufgabenpakete/<%= paket.id %>/edit"
-                          class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
-                        <button type="button" class="btn btn-custom-delete btn-sm" data-bs-toggle="modal"
-                          data-bs-target="#confirmDeleteModal" data-id="<%= paket.id %>">Löschen</button>
-                      </div>
-                    </div>
-            </div>
-          </div> <!-- HIER schließt die col-div -->
-          <% }) %>
-            <% } %>
-  </div> <!-- HIER schließt die row -->
-
-  <!-- Pop Up Löschen Fenster - NUR EINMAL AUSSERHALB DER LOOP -->
-  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header custom-delete-header">
-          <h5 class="modal-title">Löschen bestätigen</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Bist du sicher, dass du diesen Datensatz löschen möchtest?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-          <form id="deleteConfirmForm" method="POST">
-            <input type="hidden" name="_method" value="DELETE">
-            <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
-          </form>
+    <!-- Pop Up Löschen Fenster - NUR EINMAL AUSSERHALB DER LOOP -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header custom-delete-header">
+            <h5 class="modal-title">Löschen bestätigen</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bist du sicher, dass du diesen Datensatz löschen möchtest?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <form id="deleteConfirmForm" method="POST">
+              <input type="hidden" name="_method" value="DELETE">
+              <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    // Suchfunktionalität für Aufgabenpakete - MIT LIVE-FILTERING
-    const searchInput = document.getElementById('aufgabenpaketeSearch');
-    const searchTermText = document.getElementById('searchTermText');
-    const clearSearch = document.getElementById('clearSearch');
-    const searchBadge = document.getElementById('searchBadge');
-    const kategorienFilter = document.getElementById('kategorienFilter');
-    const aufgabenpaketeCards = document.querySelectorAll('.aufgabenpaket-card');
+    <script>
+      // Suchfunktionalität für Aufgabenpakete - MIT LIVE-FILTERING
+      const searchInput = document.getElementById('aufgabenpaketeSearch');
+      const searchTermText = document.getElementById('searchTermText');
+      const clearSearch = document.getElementById('clearSearch');
+      const searchBadge = document.getElementById('searchBadge');
+      const kategorienFilter = document.getElementById('kategorienFilter');
+      const aufgabenpaketeCards = document.querySelectorAll('.aufgabenpaket-card');
 
-    let searchTimeout;
+      let searchTimeout;
 
-    // Filter bei Änderung anwenden
-    kategorienFilter.addEventListener('change', function () {
-      applyFilters();
-    });
-
-    // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
-    searchInput.addEventListener('input', function () {
-      clearTimeout(searchTimeout);
-      const query = this.value.trim().toLowerCase();
-
-      // Sofortige Filterung anwenden
-      searchTimeout = setTimeout(() => {
+      // Filter bei Änderung anwenden
+      kategorienFilter.addEventListener('change', function () {
         applyFilters();
-
-        // Zeige Such-Badge nur bei Suchbegriff
-        if (query.length >= 2) {
-          searchTermText.textContent = query;
-          searchBadge.style.display = 'flex';
-        } else {
-          searchBadge.style.display = 'none';
-        }
-      }, 300);
-    });
-
-    // Filter anwenden - LIVE-FILTERING
-    function applyFilters() {
-      const kategorieValue = kategorienFilter.value.toLowerCase();
-      const searchValue = searchInput.value.trim().toLowerCase();
-
-      let visibleCount = 0;
-
-      aufgabenpaketeCards.forEach(card => {
-        const title = card.getAttribute('data-title');
-        const description = card.getAttribute('data-description');
-        const kategorie = card.getAttribute('data-kategorie');
-
-        const matchesKategorie = kategorieValue === 'alle' || kategorie === kategorieValue;
-        const matchesSearch = !searchValue ||
-          title.includes(searchValue) ||
-          description.includes(searchValue) ||
-          kategorie.includes(searchValue);
-
-        if (matchesKategorie && matchesSearch) {
-          card.style.display = 'block';
-          visibleCount++;
-        } else {
-          card.style.display = 'none';
-        }
       });
 
-      // Zeige "Keine Ergebnisse" wenn nötig
-      const container = document.getElementById('aufgabenpaketeCardsContainer');
-      let noResultsDiv = container.querySelector('.no-results-message');
+      // LIVE-SUCHE bei Eingabe - Filtert sofort die Liste
+      searchInput.addEventListener('input', function () {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim().toLowerCase();
 
-      if (visibleCount === 0) {
-        if (!noResultsDiv) {
-          noResultsDiv = document.createElement('div');
-          noResultsDiv.className = 'col-12 no-results-message';
-          noResultsDiv.innerHTML = `
+        // Sofortige Filterung anwenden
+        searchTimeout = setTimeout(() => {
+          applyFilters();
+
+          // Zeige Such-Badge nur bei Suchbegriff
+          if (query.length >= 2) {
+            searchTermText.textContent = query;
+            searchBadge.style.display = 'flex';
+          } else {
+            searchBadge.style.display = 'none';
+          }
+        }, 300);
+      });
+
+      // Filter anwenden - LIVE-FILTERING
+      function applyFilters() {
+        const kategorieValue = kategorienFilter.value.toLowerCase();
+        const searchValue = searchInput.value.trim().toLowerCase();
+
+        let visibleCount = 0;
+
+        aufgabenpaketeCards.forEach(card => {
+          const title = card.getAttribute('data-title');
+          const description = card.getAttribute('data-description');
+          const kategorie = card.getAttribute('data-kategorie');
+
+          const matchesKategorie = kategorieValue === 'alle' || kategorie === kategorieValue;
+          const matchesSearch = !searchValue ||
+            title.includes(searchValue) ||
+            description.includes(searchValue) ||
+            kategorie.includes(searchValue);
+
+          if (matchesKategorie && matchesSearch) {
+            card.style.display = 'block';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        // Zeige "Keine Ergebnisse" wenn nötig
+        const container = document.getElementById('aufgabenpaketeCardsContainer');
+        let noResultsDiv = container.querySelector('.no-results-message');
+
+        if (visibleCount === 0) {
+          if (!noResultsDiv) {
+            noResultsDiv = document.createElement('div');
+            noResultsDiv.className = 'col-12 no-results-message';
+            noResultsDiv.innerHTML = `
           <div class="text-center py-4 text-muted">
             Keine Aufgabenpakete gefunden für die ausgewählten Filter
           </div>
         `;
-          container.appendChild(noResultsDiv);
+            container.appendChild(noResultsDiv);
+          }
+          noResultsDiv.style.display = 'block';
+        } else if (noResultsDiv) {
+          noResultsDiv.style.display = 'none';
         }
-        noResultsDiv.style.display = 'block';
-      } else if (noResultsDiv) {
-        noResultsDiv.style.display = 'none';
       }
-    }
 
-    // Search beenden
-    clearSearch.addEventListener('click', function (e) {
-      e.preventDefault();
-      searchInput.value = '';
-      searchBadge.style.display = 'none';
-      applyFilters();
-    });
+      // Search beenden
+      clearSearch.addEventListener('click', function (e) {
+        e.preventDefault();
+        searchInput.value = '';
+        searchBadge.style.display = 'none';
+        applyFilters();
+      });
 
-    // Eventlistener für modales Fenster beim Delete
-    const deleteModal = document.getElementById('confirmDeleteModal');
-    const deleteForm = document.getElementById('deleteConfirmForm');
+      // Eventlistener für modales Fenster beim Delete
+      const deleteModal = document.getElementById('confirmDeleteModal');
+      const deleteForm = document.getElementById('deleteConfirmForm');
 
-    deleteModal.addEventListener('show.bs.modal', event => {
-      const button = event.relatedTarget;
-      const itemId = button.getAttribute('data-id');
-      deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
-    });
+      deleteModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget;
+        const itemId = button.getAttribute('data-id');
+        deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
+      });
 
-    // Initial Filter anwenden falls Suchbegriff vorhanden
-    if (searchInput.value) {
-      applyFilters();
-    }
-  </script>
+      // Initial Filter anwenden falls Suchbegriff vorhanden
+      if (searchInput.value) {
+        applyFilters();
+      }
+    </script>

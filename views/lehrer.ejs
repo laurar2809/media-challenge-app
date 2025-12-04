@@ -5,15 +5,18 @@
     <a href="/lehrer/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Lehrer</a>
   </div>
 
-  <!-- Suchleiste -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="position-relative">
-        <input type="text" id="lehrerSearch" class="form-control" placeholder="🔍 Lehrer suchen..."
-          value="<%= searchTerm %>" autocomplete="off">
+  <div class="col-md-6">
+      <!-- Suchleiste -->
+      <div class="position-relative" id="searchContainer">
+        <div class="input-group mb-3">
+          <span class="input-group-text">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" id="lehrerSearch" class="form-control p-1 border-start-0"
+            placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
+        </div>
       </div>
     </div>
-  </div>
 
   <!-- Such-Badge -->
   <div class="table-responsive">

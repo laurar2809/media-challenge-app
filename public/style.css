@@ -167,3 +167,19 @@ table td, table th { vertical-align: middle; }
 .custom-selected-count {
     color: #0082ba !important; 
 }
+
+/*Focus um die Suchleiste - nicht mehr blau leuchtend*/
+.form-select:focus {
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15) !important;
+    border-color: #bbb !important;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+    border-radius: 0.375rem; /* gleiche Rundung wie Bootstrap Inputs */
+}
+
+input.form-control:focus {
+    border-color: #bbb !important;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) !important;
+}
