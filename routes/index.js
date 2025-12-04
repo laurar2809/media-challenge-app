@@ -6,16 +6,16 @@ const { db } = require('../db');
 router.get('/', async (req, res) => {
   try {
     const categories = await db('categories').select('*').orderBy('title', 'asc');
-    res.render('kategorien', { 
-      categories, 
-      activePage: 'kategorien' 
+    res.render('kategorien', {
+      categories,
+      activePage: 'kategorien'
     });
   } catch (error) {
     console.error('Fehler beim Laden der Kategorien:', error);
     req.flash('error', 'Fehler beim Laden der Kategorien');
-    res.render('index', { 
-      categories: [], 
-      activePage: 'kategorien' 
+    res.render('index', {
+      categories: [],
+      activePage: 'kategorien'
     });
   }
 });

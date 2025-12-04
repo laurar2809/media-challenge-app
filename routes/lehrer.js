@@ -6,23 +6,23 @@ const { db } = require('../db');
 router.get('/', async (req, res) => {
   try {
     const { search } = req.query;
-    
+
     let query = db('users')
       .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
       .where('users.user_role_id', 2); // Nur Lehrer (role_id = 2)
 
     // Suche
     if (search && search.length >= 2) {
-      query = query.where(function() {
+      query = query.where(function () {
         this.where('users.vorname', 'like', `%${search}%`)
-             .orWhere('users.nachname', 'like', `%${search}%`);
+          .orWhere('users.nachname', 'like', `%${search}%`);
       });
     }
 
     const lehrer = await query
       .select(
         'users.id',
-        'users.vorname', 
+        'users.vorname',
         'users.nachname',
         'user_roles.rolle'
       )
@@ -55,18 +55,18 @@ router.get('/new', async (req, res) => {
 // Lehrer speichern
 router.post('/', async (req, res) => {
   const { vorname, nachname } = req.body;
-  
+
   if (!vorname || !nachname) {
     req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
     return res.redirect('/lehrer/new');
   }
-  
+
   await db('users').insert({
     vorname: vorname.trim(),
     nachname: nachname.trim(),
     user_role_id: 2 // Lehrer-Rolle
   });
-  
+
   req.flash('success', 'Lehrer erfolgreich angelegt.');
   res.redirect('/lehrer');
 });
@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
 router.get('/:id/edit', async (req, res) => {
   try {
     const lehrer = await db('users')
-      .where({ 
+      .where({
         id: req.params.id,
         user_role_id: 2 // Nur Lehrer
       })
@@ -102,15 +102,15 @@ router.get('/:id/edit', async (req, res) => {
 // Lehrer aktualisieren
 router.put('/:id', async (req, res) => {
   const { vorname, nachname } = req.body;
-  
+
   if (!vorname || !nachname) {
     req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
     return res.redirect(`/lehrer/${req.params.id}/edit`);
   }
-  
+
   try {
     await db('users')
-      .where({ 
+      .where({
         id: req.params.id,
         user_role_id: 2 // Nur Lehrer aktualisieren
       })
@@ -118,7 +118,7 @@ router.put('/:id', async (req, res) => {
         vorname: vorname.trim(),
         nachname: nachname.trim()
       });
-    
+
     req.flash('success', 'Änderungen gespeichert.');
     res.redirect('/lehrer');
   } catch (error) {
@@ -131,12 +131,12 @@ router.put('/:id', async (req, res) => {
 // Lehrer löschen
 router.delete('/:id', async (req, res) => {
   await db('users')
-    .where({ 
+    .where({
       id: req.params.id,
       user_role_id: 2 // Nur Lehrer löschen
     })
     .del();
-    
+
   req.flash('success', 'Lehrer erfolgreich gelöscht.');
   res.redirect('/lehrer');
 });

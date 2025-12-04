@@ -16,7 +16,8 @@
         <div class="text-center mb-4">
           <img src="<%= aufgabenpaket.icon %>" class="img-fluid rounded" style="max-height: 200px;">
         </div>
-        <% } else if (aufgabenpaket.icon && (aufgabenpaket.icon.startsWith('http') || aufgabenpaket.icon.startsWith('data:'))) { %>
+        <% } else if (aufgabenpaket.icon && (aufgabenpaket.icon.startsWith('http') ||
+          aufgabenpaket.icon.startsWith('data:'))) { %>
           <!-- EXTERNE URL ODER DATA-URI -->
           <div class="text-center mb-4">
             <img src="<%= aufgabenpaket.icon %>" class="img-fluid rounded" style="max-height: 200px;">
@@ -49,13 +50,13 @@
                 <div class="row text-muted small">
                   <div class="col-md-6">
                     <strong>Erstellt:</strong>
-                    <%= aufgabenpaket.created_at ? new Date(aufgabenpaket.created_at).toLocaleDateString('de-DE') : 'Unbekannt'
-                      %>
+                    <%= aufgabenpaket.created_at ? new Date(aufgabenpaket.created_at).toLocaleDateString('de-DE')
+                      : 'Unbekannt' %>
                   </div>
                   <div class="col-md-6">
                     <strong>Geändert:</strong>
-                    <%= aufgabenpaket.updated_at ? new Date(aufgabenpaket.updated_at).toLocaleDateString('de-DE') : 'Unbekannt'
-                      %>
+                    <%= aufgabenpaket.updated_at ? new Date(aufgabenpaket.updated_at).toLocaleDateString('de-DE')
+                      : 'Unbekannt' %>
                   </div>
                 </div>
     </div>

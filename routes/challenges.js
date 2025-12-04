@@ -8,15 +8,15 @@ const { requireAuth } = require('../middleware/auth');
 router.get('/', requireAuth, async (req, res) => {
   try {
     let challenges;
-    
+
     if (req.currentUser.user_role_id === 1) { // Schüler
       console.log(` Lade Challenges für Schüler ${req.currentUser.vorname}`);
-      
+
       // Schüler-Logik - nur eigene Challenges
       const userTeams = await req.db('team_mitglieder')
         .where('user_id', req.currentUser.id)
         .pluck('team_id');
-      
+
       if (userTeams.length > 0) {
         challenges = await req.db('challenges')
           .whereIn('team_id', userTeams)
@@ -25,17 +25,17 @@ router.get('/', requireAuth, async (req, res) => {
       } else {
         challenges = [];
       }
-      
+
       // Schüler bekommt die einfache View
       res.render('challenges/index', {
         title: 'Challenges',
         activePage: 'challenges',
         challenges
       });
-        
+
     } else { // Lehrer/Admin - KOMPLETTE FUNKTION MIT ALLEN JOINS
       console.log(`👨‍🏫 Lade ALLE Challenges für ${req.currentUser.rolle}`);
-      
+
       // VOLLSTÄNDIGE QUERY MIT ALLEN JOINS
       let challengesQuery = req.db('challenges')
         .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
@@ -50,10 +50,10 @@ router.get('/', requireAuth, async (req, res) => {
           'schuljahre.name as schuljahr_name'
         )
         .orderBy('challenges.created_at', 'desc');
-      
+
       // Hole zusätzlich Team-Mitglieder für jede Challenge
       const allChallenges = await challengesQuery;
-      
+
       // Für jede Challenge die Team-Mitglieder laden
       const challengesWithMembers = await Promise.all(
         allChallenges.map(async (challenge) => {
@@ -65,7 +65,7 @@ router.get('/', requireAuth, async (req, res) => {
                 'users.vorname',
                 'users.nachname'
               );
-            
+
             // Namen der Mitglieder als String zusammenfassen
             challenge.team_mitglieder_names = mitglieder
               .map(m => `${m.vorname} ${m.nachname}`)
@@ -73,40 +73,40 @@ router.get('/', requireAuth, async (req, res) => {
           } else {
             challenge.team_mitglieder_names = '';
           }
-          
+
           return challenge;
         })
       );
-      
+
       // Hole Filter-Daten
       const [kategorien, schuljahre, teams] = await Promise.all([
         req.db('categories').select('*'),
         req.db('schuljahre').select('*'),
         req.db('teams').select('*')
       ]);
-      
+
       // Setze ALLE Filter-Werte (mit Defaults)
       const activeKategorie = req.query.kategorie || 'alle';
       const activeSchuljahr = req.query.schuljahr || 'alle';
       const searchTerm = req.query.search || '';
-      
+
       // Filtere Challenges
       let gefilterteChallenges = challengesWithMembers;
-      
+
       // Kategorie-Filter
       if (activeKategorie !== 'alle') {
         gefilterteChallenges = gefilterteChallenges.filter(c => c.kategorie === activeKategorie);
       }
-      
+
       // Schuljahr-Filter
       if (activeSchuljahr !== 'alle') {
         gefilterteChallenges = gefilterteChallenges.filter(c => c.schuljahr_name === activeSchuljahr);
       }
-      
+
       // Such-Filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        gefilterteChallenges = gefilterteChallenges.filter(c => 
+        gefilterteChallenges = gefilterteChallenges.filter(c =>
           c.title.toLowerCase().includes(searchLower) ||
           c.beschreibung.toLowerCase().includes(searchLower) ||
           c.kategorie.toLowerCase().includes(searchLower) ||
@@ -115,9 +115,9 @@ router.get('/', requireAuth, async (req, res) => {
           (c.team_mitglieder_names && c.team_mitglieder_names.toLowerCase().includes(searchLower))
         );
       }
-      
+
       console.log(` Gefundene Challenges: ${gefilterteChallenges.length} (gefiltert von ${allChallenges.length})`);
-      
+
       // Debug: Zeige erste Challenge mit allen Daten
       if (gefilterteChallenges.length > 0) {
         console.log('🔍 Erste Challenge mit allen Daten:', {
@@ -129,7 +129,7 @@ router.get('/', requireAuth, async (req, res) => {
           aufgabenpaket_icon: gefilterteChallenges[0].aufgabenpaket_icon
         });
       }
-      
+
       // Admin/Lehrer bekommt die ORIGINALE View mit ALLEN Funktionen
       res.render('challenges', {
         title: 'Challenges',
@@ -143,7 +143,7 @@ router.get('/', requireAuth, async (req, res) => {
         searchTerm
       });
     }
-    
+
   } catch (error) {
     console.error('Challenges Fehler:', error);
     res.status(500).send('Server Fehler');
@@ -154,7 +154,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { kategorie, search, schuljahr } = req.query;
-    
+
     let query = db('challenges')
       .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
       .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
@@ -169,10 +169,10 @@ router.get('/', async (req, res) => {
     }
 
     if (search && search.length >= 2) {
-      query = query.where(function() {
+      query = query.where(function () {
         this.where('aufgabenpakete.title', 'like', `%${search}%`)
-             .orWhere('teams.name', 'like', `%${search}%`)
-             .orWhere('aufgabenpakete.kategorie', 'like', `%${search}%`);
+          .orWhere('teams.name', 'like', `%${search}%`)
+          .orWhere('aufgabenpakete.kategorie', 'like', `%${search}%`);
       });
     }
 
@@ -197,11 +197,11 @@ router.get('/', async (req, res) => {
           .where('users.user_role_id', 1)
           .select(
             'users.id',
-            'users.vorname', 
+            'users.vorname',
             'users.nachname',
             'klassen.name as klasse_name'
           );
-        
+
         challenge.team_mitglieder_names = mitglieder
           .map(m => `${m.vorname} ${m.nachname}`)
           .join(', ');
@@ -227,7 +227,7 @@ router.get('/', async (req, res) => {
     console.error("Fehler beim Laden der challenges:", error);
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-    
+
     res.render('challenges', {
       challenges: [],
       kategorien,
@@ -274,13 +274,13 @@ router.get('/new', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { aufgabenpaket_id, teams_data, zusatzinfos, abgabedatum, schuljahr_id } = req.body;
-    
+
     // Validierung
     if (!aufgabenpaket_id || !teams_data || !schuljahr_id) {
       req.flash('error', 'Aufgabenpaket, Teams und Schuljahr sind erforderlich.');
       return res.redirect('/challenges/new');
     }
-    
+
     let teams;
     try {
       teams = JSON.parse(teams_data);
@@ -288,37 +288,37 @@ router.post('/', async (req, res) => {
       req.flash('error', 'Ungültige Team-Daten.');
       return res.redirect('/challenges/new');
     }
-    
+
     if (!Array.isArray(teams) || teams.length === 0) {
       req.flash('error', 'Mindestens ein Team ist erforderlich.');
       return res.redirect('/challenges/new');
     }
-    
+
     const aufgabenpaket = await db('aufgabenpakete').where({ id: aufgabenpaket_id }).first();
     if (!aufgabenpaket) {
       req.flash('error', 'Ausgewähltes Aufgabenpaket nicht gefunden.');
       return res.redirect('/challenges/new');
     }
-    
+
     // TRANSACTION START
     const trx = await db.transaction();
-    
+
     try {
       for (const teamData of teams) {
         // 1. Team erstellen - NUR name
         const [teamId] = await trx('teams').insert({
           name: teamData.name
         });
-        
+
         // 2. Schüler dem Team zuweisen
         const teamMitglieder = teamData.mitglieder.map((mitglied, index) => ({
           team_id: teamId,
           user_id: mitglied.id,
           rolle: index === 0 ? 'teamleiter' : 'mitglied'
         }));
-        
+
         await trx('team_mitglieder').insert(teamMitglieder);
-        
+
         // 3. Challenge erstellen
         await trx('challenges').insert({
           title: aufgabenpaket.title,
@@ -332,13 +332,13 @@ router.post('/', async (req, res) => {
           schuljahr_id: schuljahr_id
         });
       }
-      
+
       // Alles erfolgreich - Commit
       await trx.commit();
-      
+
       req.flash('success', ` Erfolgreich eine Challenge mit ${teams.length} Team(s) erstellt!`);
       res.redirect('/challenges');
-      
+
     } catch (error) {
       // Bei Fehler - Rollbackö
       await trx.rollback();
@@ -346,7 +346,7 @@ router.post('/', async (req, res) => {
       req.flash('error', 'Datenbank-Fehler: ' + error.message);
       res.redirect('/challenges/new');
     }
-    
+
   } catch (error) {
     console.error(' Allgemeiner Fehler:', error);
     req.flash('error', 'Fehler beim Erstellen: ' + error.message);
@@ -358,7 +358,7 @@ router.post('/', async (req, res) => {
 router.get('/detail/:id', async (req, res) => {
   try {
     const challengeId = req.params.id;
-    
+
     const challenge = await db('challenges')
       .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
       .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
@@ -394,7 +394,7 @@ router.get('/detail/:id', async (req, res) => {
           'klassen.name as klasse_name',
           'team_mitglieder.rolle'
         );
-      
+
       challenge.team_mitglieder = mitglieder;
       challenge.team_mitglieder_names = mitglieder
         .map(m => `${m.vorname} ${m.nachname}`)
@@ -421,12 +421,12 @@ router.get('/:id/edit', async (req, res) => {
       .leftJoin('teams', 'challenges.team_id', 'teams.id')
       .where('challenges.id', req.params.id)
       .first();
-    
+
     if (!challenge) {
       req.flash('error', 'Challenge nicht gefunden.');
       return res.redirect('/challenges');
     }
-    
+
     // Team-Mitglieder laden
     const teamMitglieder = await db('team_mitglieder')
       .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
@@ -439,7 +439,7 @@ router.get('/:id/edit', async (req, res) => {
         'users.nachname',
         'klassen.name as klasse_name'
       );
-    
+
     // Team-Struktur für das Formular erstellen - OHNE beschreibung
     const existingTeam = {
       id: 'existing-team-1',
@@ -452,7 +452,7 @@ router.get('/:id/edit', async (req, res) => {
         rolle: m.rolle
       }))
     };
-    
+
     const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
     const schueler = await db('users')
       .where('user_role_id', 1)
@@ -460,7 +460,7 @@ router.get('/:id/edit', async (req, res) => {
       .select('users.*', 'klassen.name as klasse_name')
       .orderBy('users.nachname', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-    
+
     res.render('formChallenges', {
       item: {
         id: challenge.id,
@@ -479,7 +479,7 @@ router.get('/:id/edit', async (req, res) => {
       title: 'Challenge bearbeiten',
       activePage: 'challenges'
     });
-    
+
   } catch (error) {
     console.error("Fehler beim Laden der Challenge:", error);
     req.flash('error', 'Fehler beim Laden der Challenge.');
@@ -491,7 +491,7 @@ router.get('/:id/edit', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { aufgabenpaket_id, zusatzinfos, abgabedatum, schuljahr_id, teams_data } = req.body;
-    
+
     // Validierung
     if (!aufgabenpaket_id || !teams_data || !schuljahr_id) {
       req.flash('error', 'Aufgabenpaket, Teams und Schuljahr sind erforderlich.');
@@ -515,10 +515,10 @@ router.put('/:id', async (req, res) => {
 
     // TRANSACTION START
     const trx = await db.transaction();
-    
+
     try {
       const challenge = await trx('challenges').where({ id: req.params.id }).first();
-      
+
       if (!challenge) {
         await trx.rollback();
         req.flash('error', 'Challenge nicht gefunden.');
@@ -539,7 +539,7 @@ router.put('/:id', async (req, res) => {
         user_id: mitglied.id,
         rolle: index === 0 ? 'teamleiter' : 'mitglied'
       }));
-      
+
       await trx('team_mitglieder').insert(teamMitglieder);
 
       // Challenge aktualisieren
@@ -554,14 +554,14 @@ router.put('/:id', async (req, res) => {
 
       req.flash('success', '✅ Challenge erfolgreich aktualisiert.');
       res.redirect('/challenges');
-      
+
     } catch (error) {
       await trx.rollback();
       console.error('❌ Transaction Error:', error);
       req.flash('error', 'Fehler beim Aktualisieren: ' + error.message);
       res.redirect(`/challenges/${req.params.id}/edit`);
     }
-    
+
   } catch (error) {
     console.error('❌ Allgemeiner Fehler:', error);
     req.flash('error', 'Fehler beim Aktualisieren: ' + error.message);
@@ -573,34 +573,34 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const challengeId = parseInt(req.params.id);
-    
+
     const trx = await db.transaction();
-    
+
     try {
       const challenge = await trx('challenges').where({ id: challengeId }).first();
-      
+
       if (!challenge) {
         await trx.rollback();
         req.flash('error', 'Challenge nicht gefunden.');
         return res.redirect('/challenges');
       }
-      
+
       const teamId = challenge.team_id;
-      
+
       await trx('challenges').where({ id: challengeId }).del();
       await trx('team_mitglieder').where({ team_id: teamId }).del();
       await trx('teams').where({ id: teamId }).del();
-      
+
       await trx.commit();
-      
+
       req.flash('success', '✅ Challenge und Team erfolgreich gelöscht.');
       res.redirect('/challenges');
-      
+
     } catch (error) {
       await trx.rollback();
       throw error;
     }
-    
+
   } catch (error) {
     console.error('❌ Fehler beim Löschen:', error);
     req.flash('error', 'Fehler beim Löschen: ' + error.message);

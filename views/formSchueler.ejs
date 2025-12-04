@@ -1,47 +1,46 @@
 <% pageTitle=title %>
-<h1 class="h4 mb-3">
-  <%= title %>
-</h1>
-<form action="<%= action %>" method="POST">
-  <div class="mb-3">
-    <label class="form-label">Vorname *</label>
-    <input type="text" name="vorname" class="form-control" required value="<%= item.vorname || '' %>">
-  </div>
-  
-  <div class="mb-3">
-    <label class="form-label">Nachname *</label>
-    <input type="text" name="nachname" class="form-control" required value="<%= item.nachname || '' %>">
-  </div>
-  
-  <div class="mb-3">
-    <label class="form-label">Klasse</label>
-    <select name="klasse_id" class="form-control">
-      <option value="">Keine Klasse</option>
-      <% if (klassen && klassen.length > 0) { %>
-        <% klassen.forEach(klasse => { %>
-          <option value="<%= klasse.id %>" 
-            <%= (item.klasse_id == klasse.id) ? 'selected' : '' %>>
-            <%= klasse.name %>
+  <h1 class="h4 mb-3">
+    <%= title %>
+  </h1>
+
+  <form action="<%= action %>" method="POST">
+    <div class="input-group mb-3">
+      <span class="input-group-text">Vorname *</span>
+      <input type="text" name="vorname" class="form-control" required value="<%= item.vorname || '' %>">
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text">Nachname *</span>
+      <input type="text" name="nachname" class="form-control" required value="<%= item.nachname || '' %>">
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text">Klasse</span>
+      <select name="klasse_id" class="form-control">
+        <option value="">Keine Klasse</option>
+        <% if (klassen && klassen.length> 0) { %>
+          <% klassen.forEach(klasse=> { %>
+            <option value="<%= klasse.id %>" <%=(item.klasse_id==klasse.id) ? 'selected' : '' %>>
+              <%= klasse.name %>
+            </option>
+            <% }) %>
+              <% } %>
+      </select>
+    </div>
+
+    <!-- SCHULJAHR AUSWAHL -->
+    <div class="input-group mb-3">
+      <label class="input-group-text">Schuljahr *</label>
+      <select name="schuljahr_id" class="form-control" required>
+        <option value="">Schuljahr wählen</option>
+        <% schuljahre.forEach(jahr=> { %>
+          <option value="<%= jahr.id %>" <%=(item.schuljahr_id==jahr.id) ? 'selected' : '' %>>
+            <%= jahr.name %>
           </option>
-        <% }) %>
-      <% } %>
-    </select>
-  </div>
+          <% }) %>
+      </select>
+    </div>
 
-  <!-- SCHULJAHR AUSWAHL -->
-  <div class="mb-3">
-    <label class="form-label">Schuljahr *</label>
-    <select name="schuljahr_id" class="form-control" required>
-      <option value="">Schuljahr wählen</option>
-      <% schuljahre.forEach(jahr => { %>
-        <option value="<%= jahr.id %>" 
-                <%= (item.schuljahr_id == jahr.id) ? 'selected' : '' %>>
-          <%= jahr.name %>
-        </option>
-      <% }) %>
-    </select>
-  </div>
-
-  <button type="submit" class="btn btn-custom-safe">Speichern</button>
-  <a href="/schueler" class="btn btn-secondary">Abbrechen</a>
-</form>
+    <button type="submit" class="btn btn-custom-safe">Speichern</button>
+    <a href="/schueler" class="btn btn-secondary">Abbrechen</a>
+  </form>

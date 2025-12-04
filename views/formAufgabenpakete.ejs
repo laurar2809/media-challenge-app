@@ -1,137 +1,138 @@
 <% pageTitle=title %>
-<h1 class="h4 mb-3">
-  <%= title %>
-</h1>
-<form action="<%= action %>" method="POST" enctype="multipart/form-data" id="aufgabenpaketForm">
-  <div class="dropdown mb-3">
-    <button class="btn btn-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown"
-      aria-expanded="false">
-      <%= item.kategorie || 'Kategorien' %>
-    </button>
-    <ul class="dropdown-menu">
-      <% kategorien.forEach(kategorie=> { %>
-        <li><a class="dropdown-item" href="#" data-value="<%= kategorie.title %>">
-            <%= kategorie.title %>
-          </a></li>
-        <% }) %>
-    </ul>
-  </div>
-  
-  <input type="hidden" name="kategorie" id="selectedKategorie" value="<%= item.kategorie || '' %>" required>
+  <h1 class="h4 mb-3">
+    <%= title %>
+  </h1>
+  <form action="<%= action %>" method="POST" enctype="multipart/form-data" id="aufgabenpaketForm">
+    <div class="dropdown mb-3">
+      <button class="btn btn-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <%= item.kategorie || 'Kategorien' %>
+      </button>
+      <ul class="dropdown-menu">
+        <% kategorien.forEach(kategorie=> { %>
+          <li><a class="dropdown-item" href="#" data-value="<%= kategorie.title %>">
+              <%= kategorie.title %>
+            </a></li>
+          <% }) %>
+      </ul>
+    </div>
 
-  <!-- Titel Feld -->
-  <div class="mb-3">
-    <label class="form-label">Titel des Aufgabenpaketes *</label>
-    <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
-  </div>
+    <input type="hidden" name="kategorie" id="selectedKategorie" value="<%= item.kategorie || '' %>" required>
 
-  <div class="mb-3">
-    <label class="form-label">Beschreibung *</label>
-    <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
-  </div>
+    <!-- Titel Feld -->
+    <div class="mb-3">
+      <label class="form-label">Titel des Aufgabenpaketes *</label>
+      <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
+    </div>
 
-  <div class="mb-3">
-    <label class="form-label">Bild (Bild hochladen) </label>
+    <div class="mb-3">
+      <label class="form-label">Beschreibung *</label>
+      <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
+    </div>
 
-    <!-- Bild sichtbar, wenn hochgeladen MIT LÖSCH-BUTTON -->
-    <% if (item.icon) { %>
-      <div class="mb-2 p-3 border rounded bg-light">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <p class="text-muted mb-0"><strong>Aktuelles Bild:</strong></p>
-          <button type="button" class="btn btn-outline-danger btn-sm" id="deleteImageBtn">
-            🗑️ Bild löschen
-          </button>
+    <div class="mb-3">
+      <label class="form-label">Bild (Bild hochladen) </label>
+
+      <!-- Bild sichtbar, wenn hochgeladen MIT LÖSCH-BUTTON -->
+      <% if (item.icon) { %>
+        <div class="mb-2 p-3 border rounded bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <p class="text-muted mb-0"><strong>Aktuelles Bild:</strong></p>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="deleteImageBtn">
+              🗑️ Bild löschen
+            </button>
+          </div>
+          <img src="<%= item.icon %>" alt="Current image" style="max-height: 150px;"
+            class="img-thumbnail d-block mx-auto">
+          <input type="hidden" name="keep_existing_image" value="true" id="keepExistingImage">
         </div>
-        <img src="<%= item.icon %>" alt="Current image" style="max-height: 150px;" class="img-thumbnail d-block mx-auto">
-        <input type="hidden" name="keep_existing_image" value="true" id="keepExistingImage">
-      </div>
-    <% } %>
+        <% } %>
 
-    <!-- Neues Bild hochladen -->
-    <div id="newImageUpload" <% if (item.icon) { %>style="display: none;"<% } %>>
-      <input type="file" name="iconFile" class="form-control" id="iconFileInput">
-      <div class="form-text">Optional. Lade ein Bild für diese Aufgabenpaket hoch</div>
+          <!-- Neues Bild hochladen -->
+          <div id="newImageUpload" <% if (item.icon) { %>style="display: none;"<% } %>>
+              <input type="file" name="iconFile" class="form-control" id="iconFileInput">
+              <div class="form-text">Optional. Lade ein Bild für diese Aufgabenpaket hoch</div>
+          </div>
+
+          <!-- Bild-Vorschau für neues Bild -->
+          <div id="imagePreview" class="mt-2" style="display: none;">
+            <p class="text-muted mb-1"><strong>Neue Bild-Vorschau:</strong></p>
+            <img id="preview" src="#" alt="Vorschau" style="max-height: 150px; display: none;" class="img-thumbnail">
+          </div>
     </div>
 
-    <!-- Bild-Vorschau für neues Bild -->
-    <div id="imagePreview" class="mt-2" style="display: none;">
-      <p class="text-muted mb-1"><strong>Neue Bild-Vorschau:</strong></p>
-      <img id="preview" src="#" alt="Vorschau" style="max-height: 150px; display: none;" class="img-thumbnail">
-    </div>
-  </div>
+    <button type="submit" class="btn btn-custom-safe">Speichern</button>
+    <a href="/aufgabenpakete" class="btn btn-secondary">Abbrechen</a>
+  </form>
 
-  <button type="submit" class="btn btn-custom-safe">Speichern</button>
-  <a href="/aufgabenpakete" class="btn btn-secondary">Abbrechen</a>
-</form>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const dropdowncategories = document.querySelectorAll(".dropdown-item");
+      const dropdownButton = document.querySelector(".dropdown-toggle");
+      const hiddenInput = document.getElementById("selectedKategorie");
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const dropdowncategories = document.querySelectorAll(".dropdown-item");
-    const dropdownButton = document.querySelector(".dropdown-toggle");
-    const hiddenInput = document.getElementById("selectedKategorie");
-
-    // Dropdown Funktion
-    dropdowncategories.forEach(item => {
-      item.addEventListener("click", (e) => {
-        e.preventDefault();
-        const selectedValue = item.getAttribute("data-value");
-        dropdownButton.textContent = selectedValue;
-        hiddenInput.value = selectedValue;
+      // Dropdown Funktion
+      dropdowncategories.forEach(item => {
+        item.addEventListener("click", (e) => {
+          e.preventDefault();
+          const selectedValue = item.getAttribute("data-value");
+          dropdownButton.textContent = selectedValue;
+          hiddenInput.value = selectedValue;
+        });
       });
-    });
 
-    // BILD LÖSCHEN FUNKTION
-    const deleteImageBtn = document.getElementById('deleteImageBtn');
-    const keepExistingImage = document.getElementById('keepExistingImage');
-    const newImageUpload = document.getElementById('newImageUpload');
-    const iconFileInput = document.getElementById('iconFileInput');
-    const imagePreview = document.getElementById('imagePreview');
-    const preview = document.getElementById('preview');
+      // BILD LÖSCHEN FUNKTION
+      const deleteImageBtn = document.getElementById('deleteImageBtn');
+      const keepExistingImage = document.getElementById('keepExistingImage');
+      const newImageUpload = document.getElementById('newImageUpload');
+      const iconFileInput = document.getElementById('iconFileInput');
+      const imagePreview = document.getElementById('imagePreview');
+      const preview = document.getElementById('preview');
 
-    if (deleteImageBtn) {
-      deleteImageBtn.addEventListener('click', function() {
-        if (confirm('Möchten Sie das aktuelle Bild wirklich löschen?')) {
-          // Verstecke aktuelles Bild und zeige Upload-Feld
-          this.closest('.bg-light').style.display = 'none';
-          newImageUpload.style.display = 'block';
-          
-          // Setze hidden field um bestehendes Bild zu löschen
-          keepExistingImage.value = 'false';
-        }
-      });
-    }
+      if (deleteImageBtn) {
+        deleteImageBtn.addEventListener('click', function () {
+          if (confirm('Möchten Sie das aktuelle Bild wirklich löschen?')) {
+            // Verstecke aktuelles Bild und zeige Upload-Feld
+            this.closest('.bg-light').style.display = 'none';
+            newImageUpload.style.display = 'block';
 
-    // BILD-VORSCHAU für neues Bild
-    if (iconFileInput) {
-      iconFileInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-            imagePreview.style.display = 'block';
+            // Setze hidden field um bestehendes Bild zu löschen
+            keepExistingImage.value = 'false';
           }
-          reader.readAsDataURL(file);
-        } else {
-          preview.style.display = 'none';
-          imagePreview.style.display = 'none';
+        });
+      }
+
+      // BILD-VORSCHAU für neues Bild
+      if (iconFileInput) {
+        iconFileInput.addEventListener('change', function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              preview.src = e.target.result;
+              preview.style.display = 'block';
+              imagePreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+          } else {
+            preview.style.display = 'none';
+            imagePreview.style.display = 'none';
+          }
+        });
+      }
+
+      // FORM VALIDATION
+      const form = document.getElementById('aufgabenpaketForm');
+      form.addEventListener('submit', function (e) {
+        const kategorie = hiddenInput.value;
+        const title = document.querySelector('input[name="title"]').value;
+        const description = document.querySelector('textarea[name="description"]').value;
+
+        if (!kategorie || !title.trim() || !description.trim()) {
+          e.preventDefault();
+          alert('Bitte füllen Sie alle Pflichtfelder aus (Titel, Kategorie und Beschreibung).');
+          return false;
         }
       });
-    }
-
-    // FORM VALIDATION
-    const form = document.getElementById('aufgabenpaketForm');
-    form.addEventListener('submit', function(e) {
-      const kategorie = hiddenInput.value;
-      const title = document.querySelector('input[name="title"]').value;
-      const description = document.querySelector('textarea[name="description"]').value;
-
-      if (!kategorie || !title.trim() || !description.trim()) {
-        e.preventDefault();
-        alert('Bitte füllen Sie alle Pflichtfelder aus (Titel, Kategorie und Beschreibung).');
-        return false;
-      }
     });
-  });
-</script>
+  </script>
