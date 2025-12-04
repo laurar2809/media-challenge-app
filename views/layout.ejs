@@ -70,19 +70,20 @@
               <div class="navbar-nav align-items-center">
                 <% if (currentUser) { %>
                   <!-- EINGELOGGT: User Info + Logout -->
-                  <span class="navbar-text me-3">
+                  <span class="navbar-text me-3"><i class="bi bi-person"></i>
                     <%= currentUser.vorname %> <%= currentUser.nachname %>
                     <small class="text">(<%= currentUser.rolle %>)</small>
                   </span>
                   <form action="/auth/logout" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout<i class="bi bi-box-arrow-right ms-2"></i></button>
                   </form>
                 <% } else { %>
                   <!-- NICHT EINGELOGGT: Login Button -->
-                  <a href="/auth/login" class="btn btn-outline-light btn-sm">Login</a>
+                  <a href="/auth/login" class="btn btn-outline-light btn-sm">Login<i class="bi bi-box-arrow-in-right ms-2"></i></a>
                   <% } %>
             </div>
-            <a href="/api/categories" class="btn btn-outline-light btn-sm ms-2">API JSON</a>
+            <!--API-JSON Button
+            <a href="/api/categories" class="btn btn-outline-light btn-sm ms-2">API JSON</a>-->
           </div>
         </div>
         </div>
