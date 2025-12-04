@@ -71,6 +71,7 @@ app.use('/categories', require('./routes/categories'));
 app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
 app.use('/auth', require('./routes/auth'));  // AUCH DIE AUTH ROUTE!
+app.use('/', require('./routes/upload'));
 
 
 // 404 Handler
