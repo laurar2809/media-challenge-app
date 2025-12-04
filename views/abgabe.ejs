@@ -1,0 +1,20 @@
+<% pageTitle = 'Abgabe einreichen' %>
+
+<div class="container">
+  <h1>TEST: Abgabe für <%= challenge.title %></h1>
+  
+  <p>Team: <%= team.name %></p>
+  
+  <p>Mitglieder:</p>
+  <ul>
+    <% team.mitglieder.forEach(mitglied => { %>
+      <li><%= mitglied.vorname %> <%= mitglied.nachname %> (<%= mitglied.klasse_name %>)</li>
+    <% }); %>
+  </ul>
+  
+  <div class="alert alert-info">
+    Hier kommt später das Upload-Formular hin.
+  </div>
+  
+  <a href="/challenges" class="btn btn-secondary">Zurück</a>
+</div>

@@ -8,6 +8,8 @@ const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 
+
+
 const {db, init } = require('./db');
 
 const app = express();
@@ -69,6 +71,7 @@ app.use('/categories', require('./routes/categories'));
 app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
 app.use('/auth', require('./routes/auth'));  // AUCH DIE AUTH ROUTE!
+
 
 // 404 Handler
 app.use((req, res) => {

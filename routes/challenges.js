@@ -744,4 +744,70 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+// Abgabe-Seite anzeigen - EINFACHE VERSION
+router.get('/:id/abgabe', async (req, res) => {
+  try {
+    const challengeId = req.params.id;
+    
+    // 1. Challenge-Daten laden
+    const challenge = await req.db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .where('challenges.id', challengeId)
+      .select(
+        'challenges.*',
+        'aufgabenpakete.title as aufgabenpaket_title',
+        'aufgabenpakete.description as aufgabenpaket_description',
+        'teams.name as team_name',
+        'teams.id as team_id'
+      )
+      .first();
+    
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+    
+    // 2. TEAM-Mitglieder laden
+    const teamMitglieder = await req.db('team_mitglieder')
+      .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
+      .where('team_mitglieder.team_id', challenge.team_id)
+      .select(
+        'users.id',
+        'users.vorname',
+        'users.nachname',
+        'klassen.name as klasse_name'
+      );
+    
+    // 3. Abgabe-Daten laden (falls bereits existiert)
+    let abgabe = await req.db('challenge_abgaben')
+      .where({
+        challenge_id: challengeId,
+        team_id: challenge.team_id
+      })
+      .first();
+    
+    // 4. Sehr einfache HTML-Seite rendern (TEST)
+    res.render('abgabe', {
+      title: 'Abgabe einreichen',
+      challenge: challenge,
+      team: {
+        name: challenge.team_name,
+        mitglieder: teamMitglieder
+      },
+      abgabe: abgabe || null,
+      daysLeft: 7, // Testwert
+      currentUser: req.currentUser
+    });
+    
+  } catch (error) {
+    console.error('Fehler Abgabe-Seite:', error);
+    req.flash('error', 'Fehler beim Laden der Abgabe-Seite.');
+    res.redirect('/challenges');
+  }
+});
+
+
 module.exports = router;
