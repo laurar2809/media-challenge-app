@@ -165,6 +165,7 @@
 
 
 
+
     <button type="submit" class="btn btn-custom-safe">Challenge speichern</button>
     <a href="/challenges" class="btn btn-secondary">Abbrechen</a>
 
@@ -190,7 +191,7 @@
       const onlyAvailableFilter = document.getElementById('onlyAvailableFilter');
 
       document.getElementById('teamModal')?.addEventListener('hidden.bs.modal', () => {
-        console.log('🔥 Modal wurde vollständig geschlossen!');
+        console.log(' Modal wurde vollständig geschlossen!');
       });
 
       if (calendarTrigger && dateInput) {
@@ -208,6 +209,19 @@
       const existingTeamsInput = document.getElementById('existingTeamsData');
       const existingTeamsJSON = existingTeamsInput ? existingTeamsInput.value : '[]';
 
+
+      // ✅✅✅ FÜGE DIESEN DEBUG-CODE HIER EIN: ✅✅✅
+      console.log('=== DEBUG EXISTING TEAMS ===');
+      console.log('1. existingTeamsInput gefunden:', !!existingTeamsInput);
+      console.log('2. existingTeamsInput.value:', existingTeamsInput ? existingTeamsInput.value : 'N/A');
+      console.log('3. Wert ist "[]"?:', existingTeamsJSON === '[]');
+      console.log('4. Wert Länge:', existingTeamsJSON.length);
+      console.log('5. Raw HTML Input:');
+      if (existingTeamsInput) {
+        console.log(existingTeamsInput.outerHTML);
+      }
+
+
       // Schüler-Daten aus dem versteckten Container lesen
       const schuelerDataElement = document.getElementById('schuelerData');
       const schuelerListe = schuelerDataElement ? JSON.parse(schuelerDataElement.dataset.schueler) : [];
@@ -215,22 +229,28 @@
       let teams = [];
       let teamCounter = 1;
 
-      // Teams Daten für Formular aktualisieren (GANZ EINFACH)
+      //  KORREKT: Teams Daten für Formular aktualisieren
       function updateTeamsData() {
-        teamsDataInput.value = JSON.stringify(teams);
+        const teamsDataInput = document.getElementById('teamsData'); //  JETZT definiert
+        if (teamsDataInput) {
+          teamsDataInput.value = JSON.stringify(teams);
+          console.log('teams_data aktualisiert:', teams.length, 'Team(s)');
+        } else {
+          console.error(' teamsData Input-Feld nicht gefunden!');
+        }
       }
 
+      //  KORREKT: Initialisierung
       if (existingTeamsJSON && existingTeamsJSON !== '[]') {
         try {
           teams = JSON.parse(existingTeamsJSON);
           teamCounter = teams.length + 1;
-          renderTeams();
-          updateTeamsData(); // AUFRUF 1: Beim Laden
-          console.log(' Vorhandene Teams geladen:', teams);
+          console.log('📋 Vorhandene Teams geladen:', teams);
         } catch (e) {
           console.error('Fehler beim Parsen der Teams:', e);
         }
       }
+
       renderTeams();
 
       // Drag & Drop Funktionem
@@ -308,44 +328,63 @@
         }
       }
 
-      //Team erstellen
+      // Team erstellen - KORRIGIERTE VERSION
       createTeamBtn.addEventListener('click', function () {
         const teamName = newTeamName.value.trim();
 
         // Validierung
         if (!teamName) {
           alert('Bitte geben Sie einen Team Namen ein!');
-          // Modal nicht schließen bei Fehler
           return;
         }
 
         const members = Array.from(teamDropZone.querySelectorAll('.drag-item[data-id]'));
         if (members.length === 0) {
           alert('Bitte fügen Sie mindestens ein Teammitglied hinzu!');
-          // Modal nicht schließen bei Fehler
           return;
         }
 
-        // Team erstellen
-        const team = {
-          id: 'team-' + teamCounter++,
-          name: teamName,
-          mitglieder: members.map(member => ({
-            id: parseInt(member.dataset.id),
-            vorname: member.dataset.vorname,
-            nachname: member.dataset.nachname,
-            klasse: member.dataset.klasse
-          }))
-        };
+        // ❗ WICHTIG: Prüfe ob wir im BEARBEITEN-Modus sind
+        const isEditMode = window.location.pathname.includes('/edit');
+
+        let team;
+
+        if (isEditMode) {
+          // 📌 BEARBEITEN-MODUS: Neue Teams für bestehende Challenge
+          console.log('✏️ Bearbeiten-Modus: Füge neues Team hinzu');
+          team = {
+            id: 'new-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9), // ❗ EINDEUTIGE new- ID
+            name: teamName,
+            mitglieder: members.map(member => ({
+              id: parseInt(member.dataset.id),
+              vorname: member.dataset.vorname,
+              nachname: member.dataset.nachname,
+              klasse: member.dataset.klasse
+            }))
+          };
+        } else {
+          // 📌 ERSTELLEN-MODUS: Normale Team-Erstellung
+          console.log('🆕 Erstellen-Modus: Erstelle neues Team');
+          team = {
+            id: 'team-' + teamCounter++, // Normale team- ID
+            name: teamName,
+            mitglieder: members.map(member => ({
+              id: parseInt(member.dataset.id),
+              vorname: member.dataset.vorname,
+              nachname: member.dataset.nachname,
+              klasse: member.dataset.klasse
+            }))
+          };
+        }
 
         teams.push(team);
+        console.log('✅ Team hinzugefügt:', team);
         renderTeams();
         clearTeamForm();
-        updateTeamsData();
+        // updateTeamsData(); // ❗ WIRD BEREITS IN renderTeams() AUFGERUFEN!
 
       });
 
-      // Teams anzeigen
       function renderTeams() {
         const teamsContainer = document.getElementById('teamsContainer');
         const noTeamsMessage = document.getElementById('noTeamsMessage');
@@ -363,20 +402,20 @@
             const teamCard = document.createElement('div');
             teamCard.className = 'card mb-2';
             teamCard.innerHTML = `
-        <div class="card-body p-2">
-          <div class="d-flex justify-content-between align-items-center">
-            <h6 class="card-title mb-0">${team.name}</h6>
-            <button type="button" class="btn btn-sm remove-team" data-index="${index}">
-              <i class="bi bi-x-circle"></i>
-            </button>
-          </div>
-          <div class="mt-1">
-            ${team.mitglieder.map(m =>
+              <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="card-title mb-0">${team.name}</h6>
+                  <button type="button" class="btn btn-sm remove-team" data-index="${index}">
+                    <i class="bi bi-x-circle"></i>
+                  </button>
+                </div>
+                <div class="mt-1">
+                  ${team.mitglieder.map(m =>
               `<span class="badge bg-secondary me-1">${m.vorname} ${m.nachname}</span>`
             ).join('')}
-          </div>
-        </div>
-      `;
+                </div>
+              </div>
+            `;
             teamsContainer.appendChild(teamCard);
           });
 
@@ -385,9 +424,9 @@
             btn.addEventListener('click', function () {
               const index = parseInt(this.dataset.index);
               teams.splice(index, 1);
-              renderTeams();
-              updateTeamsData();
-              filterMembers();
+              renderTeams(); // ✅ Das ruft updateTeamsData() UND filterMembers()
+              // updateTeamsData(); // ❌ ENTFERNEN
+              // filterMembers(); // ❌ ENTFERNEN
             });
           });
         } else {
@@ -398,7 +437,10 @@
           teamsContainer.innerHTML = '';
         }
 
-        filterMembers();
+        filterMembers(); // ✅ Wird immer aufgerufen
+        updateTeamsData(); // ✅ Wird immer aufgerufen
+
+        console.log('✅ renderTeams abgeschlossen');
       }
 
       // Team Formular zurücksetzen

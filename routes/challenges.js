@@ -413,46 +413,77 @@ router.get('/detail/:id', async (req, res) => {
   }
 });
 
-// Challenge bearbeiten Formular - OHNE beschreibung
+// IN challenges.js - DIESE GET ROUTE KORRIGIEREN:
 router.get('/:id/edit', async (req, res) => {
   try {
+    const challengeId = req.params.id;
+    
+    // 1. ERST die Challenge ohne JOIN holen (um team_id zu sehen)
     const challenge = await db('challenges')
-      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
-      .leftJoin('teams', 'challenges.team_id', 'teams.id')
-      .where('challenges.id', req.params.id)
+      .where('id', challengeId)
       .first();
-
-    if (!challenge) {
-      req.flash('error', 'Challenge nicht gefunden.');
-      return res.redirect('/challenges');
+    
+    console.log('🔍 RAW Challenge from DB:', {
+      id: challenge.id,
+      team_id: challenge.team_id,
+      has_team: !!challenge.team_id
+    });
+    
+    let existingTeams = [];
+    
+    // 2. NUR WENN team_id EXISTIERT
+    if (challenge.team_id) {
+      console.log('✅ Challenge hat Team ID:', challenge.team_id);
+      
+      // Team-Daten holen
+      const team = await db('teams')
+        .where('id', challenge.team_id)
+        .first();
+      
+      console.log('✅ Team gefunden:', team ? team.name : 'NEIN');
+      
+      // Team-Mitglieder holen
+      const teamMitglieder = await db('team_mitglieder')
+        .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+        .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
+        .where('team_mitglieder.team_id', challenge.team_id)
+        .select(
+          'team_mitglieder.user_id',
+          'team_mitglieder.rolle',
+          'users.vorname',
+          'users.nachname',
+          'klassen.name as klasse_name'
+        );
+      
+      console.log('✅ Team Mitglieder:', teamMitglieder.length);
+      
+      // Existing Team erstellen (NUR wenn Team existiert)
+      if (team) {
+        existingTeams = [{
+          id: 'existing-' + challenge.team_id,
+          name: team.name,
+          mitglieder: teamMitglieder.map(m => ({
+            id: m.user_id,
+            vorname: m.vorname,
+            nachname: m.nachname,
+            klasse: m.klasse_name,
+            rolle: m.rolle
+          }))
+        }];
+        
+        console.log('✅ existingTeams erstellt:', existingTeams);
+      }
+    } else {
+      console.log('❌ Challenge hat KEIN Team (team_id ist null/undefined)');
     }
-
-    // Team-Mitglieder laden
-    const teamMitglieder = await db('team_mitglieder')
-      .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
-      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
-      .where({ team_id: challenge.team_id })
-      .select(
-        'team_mitglieder.user_id',
-        'team_mitglieder.rolle',
-        'users.vorname',
-        'users.nachname',
-        'klassen.name as klasse_name'
-      );
-
-    // Team-Struktur für das Formular erstellen - OHNE beschreibung
-    const existingTeam = {
-      id: 'existing-team-1',
-      name: challenge.team_name,
-      mitglieder: teamMitglieder.map(m => ({
-        id: m.user_id,
-        vorname: m.vorname,
-        nachname: m.nachname,
-        klasse: m.klasse_name,
-        rolle: m.rolle
-      }))
-    };
-
+    
+    // 3. Debug-Ausgabe was an EJS gesendet wird
+    console.log('📤 Sende an EJS Template:');
+    console.log('- existingTeams:', existingTeams);
+    console.log('- existingTeams Länge:', existingTeams.length);
+    console.log('- existingTeams JSON:', JSON.stringify(existingTeams));
+    
+    // 4. Hole restliche Daten
     const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
     const schueler = await db('users')
       .where('user_role_id', 1)
@@ -460,7 +491,8 @@ router.get('/:id/edit', async (req, res) => {
       .select('users.*', 'klassen.name as klasse_name')
       .orderBy('users.nachname', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-
+    
+    // 5. RENDER mit KORREKTEN DATEN
     res.render('formChallenges', {
       item: {
         id: challenge.id,
@@ -468,105 +500,209 @@ router.get('/:id/edit', async (req, res) => {
         zusatzinfos: challenge.zusatzinfos,
         abgabedatum: challenge.abgabedatum,
         schuljahr_id: challenge.schuljahr_id,
-        team_name: challenge.team_name,
-        schueler_ids: teamMitglieder.map(m => m.user_id.toString())
+        team_id: challenge.team_id
       },
       aufgabenpakete,
       schueler,
       schuljahre,
-      existingTeam: [existingTeam],
+      existingTeam: existingTeams, // ✅ Jetzt sollte es gefüllt sein
       action: `/challenges/${challenge.id}?_method=PUT`,
       title: 'Challenge bearbeiten',
       activePage: 'challenges'
     });
-
+    
   } catch (error) {
-    console.error("Fehler beim Laden der Challenge:", error);
-    req.flash('error', 'Fehler beim Laden der Challenge.');
+    console.error("❌ FEHLER in GET /edit:", error);
+    req.flash('error', 'Fehler beim Laden der Challenge: ' + error.message);
     res.redirect('/challenges');
   }
 });
 
-// Challenge aktualisieren - OHNE beschreibung
+// PUT /:id - VOLLSTÄNDIG KORRIGIERT FÜR MEHRERE TEAMS
 router.put('/:id', async (req, res) => {
   try {
-    const { aufgabenpaket_id, zusatzinfos, abgabedatum, schuljahr_id, teams_data } = req.body;
-
-    // Validierung
-    if (!aufgabenpaket_id || !teams_data || !schuljahr_id) {
-      req.flash('error', 'Aufgabenpaket, Teams und Schuljahr sind erforderlich.');
+    console.log('🎯 PUT /challenges/' + req.params.id + ' - BEARBEITEN + NEUE TEAMS');
+    
+    const { 
+      aufgabenpaket_id, 
+      zusatzinfos, 
+      abgabedatum, 
+      schuljahr_id, 
+      teams_data 
+    } = req.body;
+    
+    // VALIDIERUNG
+    if (!aufgabenpaket_id || !schuljahr_id) {
+      req.flash('error', 'Aufgabenpaket und Schuljahr sind erforderlich.');
       return res.redirect(`/challenges/${req.params.id}/edit`);
     }
-
-    let teams;
-    try {
-      teams = JSON.parse(teams_data);
-    } catch (e) {
-      req.flash('error', 'Ungültige Team-Daten.');
-      return res.redirect(`/challenges/${req.params.id}/edit`);
-    }
-
-    if (!Array.isArray(teams) || teams.length === 0) {
-      req.flash('error', 'Mindestens ein Team ist erforderlich.');
-      return res.redirect(`/challenges/${req.params.id}/edit`);
-    }
-
-    const firstTeam = teams[0];
-
-    // TRANSACTION START
+    
+    // TRANSACTION
     const trx = await db.transaction();
-
+    
     try {
-      const challenge = await trx('challenges').where({ id: req.params.id }).first();
-
-      if (!challenge) {
+      // 1. AKTUELLE CHALLENGE (Nur für Vorlage-Daten)
+      const currentChallenge = await trx('challenges')
+        .where({ id: req.params.id })
+        .first();
+      
+      if (!currentChallenge) {
         await trx.rollback();
         req.flash('error', 'Challenge nicht gefunden.');
         return res.redirect('/challenges');
       }
-
-      // Team aktualisieren - NUR name
-      await trx('teams').where({ id: challenge.team_id }).update({
-        name: firstTeam.name
-      });
-
-      // Alte Team-Mitglieder löschen
-      await trx('team_mitglieder').where({ team_id: challenge.team_id }).del();
-
-      // Neue Team-Mitglieder hinzufügen
-      const teamMitglieder = firstTeam.mitglieder.map((mitglied, index) => ({
-        team_id: challenge.team_id,
-        user_id: mitglied.id,
-        rolle: index === 0 ? 'teamleiter' : 'mitglied'
-      }));
-
-      await trx('team_mitglieder').insert(teamMitglieder);
-
-      // Challenge aktualisieren
-      await trx('challenges').where({ id: req.params.id }).update({
-        aufgabenpaket_id: aufgabenpaket_id,
-        zusatzinfos: zusatzinfos || null,
-        abgabedatum: abgabedatum || null,
-        schuljahr_id: schuljahr_id
-      });
-
+      
+      // 2. TEAMS-DATEN PARSEN
+      let teams = [];
+      if (teams_data && teams_data !== '[]' && teams_data !== '') {
+        try {
+          teams = JSON.parse(teams_data);
+          console.log(`📦 ${teams.length} Team(s) zum Verarbeiten`);
+        } catch (e) {
+          await trx.rollback();
+          req.flash('error', 'Ungültige Team-Daten.');
+          return res.redirect(`/challenges/${req.params.id}/edit`);
+        }
+      }
+      
+      // 3. AUFGABENPAKET HOLEN (Vorlage)
+      const aufgabenpaket = await trx('aufgabenpakete')
+        .where({ id: aufgabenpaket_id })
+        .first();
+      
+      if (!aufgabenpaket) {
+        await trx.rollback();
+        req.flash('error', 'Aufgabenpaket nicht gefunden.');
+        return res.redirect(`/challenges/${req.params.id}/edit`);
+      }
+      
+      // 4. UNTERSCHEIDUNG: BESTEHENDE vs NEUE TEAMS
+      const existingTeams = teams.filter(t => t.id && t.id.startsWith('existing-'));
+      const newTeams = teams.filter(t => !t.id || !t.id.startsWith('existing-'));
+      
+      console.log(`🔍 ${existingTeams.length} bestehende, ${newTeams.length} neue Team(s)`);
+      
+      // 5. 🔄 BESTEHENDE TEAMS AKTUALISIEREN (nur das aktuelle!)
+      for (const teamData of existingTeams) {
+        const teamId = teamData.id.replace('existing-', '');
+        
+        // Nur das Team der aktuellen Challenge aktualisieren
+        if (parseInt(teamId) === currentChallenge.team_id) {
+          console.log(`🔄 Update Team der aktuellen Challenge: ${teamData.name}`);
+          
+          // Team-Name aktualisieren
+          await trx('teams')
+            .where({ id: teamId })
+            .update({ 
+              name: teamData.name,
+              updated_at: db.fn.now()
+            });
+          
+          // Alte Mitglieder löschen
+          await trx('team_mitglieder')
+            .where({ team_id: teamId })
+            .del();
+          
+          // Neue Mitglieder einfügen
+          if (teamData.mitglieder && teamData.mitglieder.length > 0) {
+            const mitglieder = teamData.mitglieder.map((m, index) => ({
+              team_id: teamId,
+              user_id: m.id,
+              rolle: index === 0 ? 'teamleiter' : 'mitglied'
+            }));
+            
+            await trx('team_mitglieder').insert(mitglieder);
+          }
+          
+          // Challenge-Daten aktualisieren
+          await trx('challenges')
+            .where({ id: req.params.id })
+            .update({
+              title: aufgabenpaket.title,
+              beschreibung: aufgabenpaket.description,
+              kategorie: aufgabenpaket.kategorie,
+              icon: aufgabenpaket.icon,
+              zusatzinfos: zusatzinfos || null,
+              abgabedatum: abgabedatum || null,
+              schuljahr_id: schuljahr_id,
+              updated_at: db.fn.now()
+            });
+        }
+      }
+      
+      // 6. ➕ NEUE TEAMS HINZUFÜGEN (wie beim Erstellen!)
+      for (const teamData of newTeams) {
+        console.log(`🆕 Erstelle neues Team: ${teamData.name}`);
+        
+        // Neues Team erstellen
+        const [newTeamId] = await trx('teams').insert({
+          name: teamData.name || 'Neues Team',
+          schuljahr_id: schuljahr_id,
+          created_at: db.fn.now(),
+          updated_at: db.fn.now()
+        });
+        
+        // Mitglieder einfügen
+        if (teamData.mitglieder && teamData.mitglieder.length > 0) {
+          const mitglieder = teamData.mitglieder.map((m, index) => ({
+            team_id: newTeamId,
+            user_id: m.id,
+            rolle: index === 0 ? 'teamleiter' : 'mitglied'
+          }));
+          
+          await trx('team_mitglieder').insert(mitglieder);
+        }
+        
+        // NEUE CHALLENGE KOPIE erstellen (genau wie beim Erstellen!)
+        await trx('challenges').insert({
+          title: aufgabenpaket.title,
+          beschreibung: aufgabenpaket.description,
+          kategorie: aufgabenpaket.kategorie,
+          icon: aufgabenpaket.icon,
+          zusatzinfos: zusatzinfos || null,
+          abgabedatum: abgabedatum || null,
+          team_id: newTeamId,
+          aufgabenpaket_id: aufgabenpaket_id,
+          schuljahr_id: schuljahr_id,
+          created_at: db.fn.now(),
+          updated_at: db.fn.now()
+        });
+        
+        console.log(`✅ Neue Challenge für Team ${teamData.name} erstellt`);
+      }
+      
+      // 7. COMMIT
       await trx.commit();
-
-      req.flash('success', '✅ Challenge erfolgreich aktualisiert.');
+      
+      const message = newTeams.length > 0 
+        ? `✅ Challenge aktualisiert und ${newTeams.length} neue Team(s) hinzugefügt!`
+        : '✅ Challenge aktualisiert.';
+      
+      req.flash('success', message);
       res.redirect('/challenges');
-
+      
     } catch (error) {
       await trx.rollback();
       console.error('❌ Transaction Error:', error);
-      req.flash('error', 'Fehler beim Aktualisieren: ' + error.message);
+      req.flash('error', 'Fehler: ' + error.message);
       res.redirect(`/challenges/${req.params.id}/edit`);
     }
-
+    
   } catch (error) {
     console.error('❌ Allgemeiner Fehler:', error);
-    req.flash('error', 'Fehler beim Aktualisieren: ' + error.message);
+    req.flash('error', 'Server-Fehler: ' + error.message);
     res.redirect(`/challenges/${req.params.id}/edit`);
   }
+});
+
+// In challenges.js - Testroute für Formulardaten
+router.post('/test-form', async (req, res) => {
+  console.log('Formular-Daten:', req.body);
+  console.log('teams_data:', req.body.teams_data);
+  res.json({
+    message: 'Test erfolgreich',
+    data: req.body
+  });
 });
 
 // Challenge löschen
