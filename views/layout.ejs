@@ -34,11 +34,12 @@
         <div class="collapse navbar-collapse" id="navbarNav"> <!-- Leiste linksbündig, neben CRUD LISTE -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <!--für alle sichtbar!!!:-->
+            <% if (currentUser && currentUser.user_role_id !== 1) { %>
             <li class="nav-item">
               <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>"
                 aria-current="<%= activePage === 'kategorien' ? 'page' : '' %>" href="/">Kategorien </a>
             </li>
-             <% if (currentUser && currentUser.user_role_id !== 1) { %>
+             
             <li class="nav-item">
               <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>" 
                 href="/aufgabenpakete">Aufgabenpakete</a>
