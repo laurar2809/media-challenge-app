@@ -1,20 +1,462 @@
 <% pageTitle = 'Abgabe einreichen' %>
 
 <div class="container">
-  <h1>TEST: Abgabe für <%= challenge.title %></h1>
-  
-  <p>Team: <%= team.name %></p>
-  
-  <p>Mitglieder:</p>
-  <ul>
-    <% team.mitglieder.forEach(mitglied => { %>
-      <li><%= mitglied.vorname %> <%= mitglied.nachname %> (<%= mitglied.klasse_name %>)</li>
-    <% }); %>
-  </ul>
-  
-  <div class="alert alert-info">
-    Hier kommt später das Upload-Formular hin.
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="h4 mb-1"><%= challenge.title %></h2>
+      <div class="d-flex align-items-center gap-2 text-muted">
+        <span class="badge bg-secondary"><%= challenge.kategorie %></span>
+        <span class="small">
+          <i class="bi bi-people"></i> Team: <%= team.name %>
+        </span>
+      </div>
+    </div>
+    <a href="/challenges" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Zurück
+    </a>
   </div>
-  
-  <a href="/challenges" class="btn btn-secondary">Zurück</a>
+
+  <!-- STATUS -->
+  <div class="alert alert-info mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <strong>Status:</strong>
+        <span class="badge bg-primary ms-2">
+          <%= abgabe ? 'Bereits begonnen' : 'Noch nicht gestartet' %>
+        </span>
+      </div>
+      <% if (abgabe && abgabe.updated_at) { %>
+        <small class="text-muted">
+          <i class="bi bi-clock"></i> 
+          <%= new Date(abgabe.updated_at).toLocaleDateString('de-DE') %>
+        </small>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- UPLOAD-BEREICH -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-cloud-upload"></i> Dateien hochladen
+          </h5>
+        </div>
+        <div class="card-body">
+          
+          <!-- DRAG & DROP ZONE -->
+          <div class="drop-zone border rounded p-5 text-center mb-3" id="dropZone">
+            <i class="bi bi-cloud-arrow-up display-4 text-muted"></i>
+            <h5 class="mt-3">Dateien hierher ziehen</h5>
+            <p class="text-muted mb-3">oder klicken um Dateien auszuwählen</p>
+            <input type="file" id="fileInput" multiple class="d-none" 
+                   accept="image/*,video/*,audio/*,.pdf">
+            <button class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+              <i class="bi bi-folder2-open"></i> Dateien auswählen
+            </button>
+            <div class="mt-2 small text-muted">
+              Unterstützt: Bilder (JPG, PNG), Videos (MP4), Audio (MP3), PDF
+            </div>
+          </div>
+          
+          <!-- UPLOAD-FORTSCHRITT -->
+          <div class="upload-progress d-none mb-3">
+            <div class="progress mb-2">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                   style="width: 0%"></div>
+            </div>
+            <div class="text-center small">
+              <span class="upload-status">Upload läuft...</span>
+            </div>
+          </div>
+          
+          <!-- HOCHGELADENE DATEIEN -->
+          <div class="mt-4">
+            <h6 class="mb-3">
+              <i class="bi bi-images"></i> Hochgeladene Dateien 
+              <span class="badge bg-secondary" id="fileCount">0</span>
+            </h6>
+            <div id="filesGrid" class="row g-2">
+              <!-- Wird mit JavaScript gefüllt -->
+            </div>
+            <div id="noFilesMessage" class="text-center py-4 text-muted border rounded">
+              <i class="bi bi-inbox display-6"></i>
+              <p class="mt-2">Noch keine Dateien hochgeladen</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- BESCHREIBUNG -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-chat-text"></i> Beschreibung
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Titel deiner Abgabe</label>
+            <input type="text" class="form-control" id="abgabeTitel" 
+                   placeholder="z.B. 'Meine Naturfotos'"
+                   value="<%= abgabe && abgabe.titel ? abgabe.titel : '' %>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Beschreibung (optional)</label>
+            <textarea class="form-control" id="abgabeBeschreibung" rows="3" 
+                      placeholder="Beschreibe deine Arbeit..."><%= abgabe && abgabe.beschreibung ? abgabe.beschreibung : '' %></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- RECHTE SPALTE -->
+    <div class="col-lg-4">
+      <!-- TEAM-INFO -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-people"></i> Team
+          </h5>
+        </div>
+        <div class="card-body">
+          <strong><%= team.name %></strong>
+          <div class="mt-2">
+            <% team.mitglieder.forEach((mitglied, index) => { %>
+              <div class="d-flex align-items-center mb-2">
+                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                     style="width: 28px; height: 28px; font-size: 0.8rem;">
+                  <%= mitglied.vorname.charAt(0) %>
+                </div>
+                <div class="ms-2">
+                  <div class="small">
+                    <%= mitglied.vorname %> <%= mitglied.nachname %>
+                  </div>
+                  <% if (mitglied.klasse_name) { %>
+                    <div class="text-muted" style="font-size: 0.7rem;">
+                      <%= mitglied.klasse_name %>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AKTIONS-BUTTONS -->
+      <div class="card">
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary" id="saveDraftBtn">
+              <i class="bi bi-save"></i> Entwurf speichern
+            </button>
+            <button class="btn btn-primary" id="submitBtn" 
+                    <%= abgabe && abgabe.status === 'eingereicht' ? 'disabled' : '' %>>
+              <i class="bi bi-send-check"></i> 
+              <%= abgabe && abgabe.status === 'eingereicht' ? 'Bereits eingereicht' : 'Abgabe einreichen' %>
+            </button>
+          </div>
+          <% if (abgabe && abgabe.status === 'eingereicht') { %>
+            <div class="alert alert-warning small mt-3 mb-0">
+              <i class="bi bi-exclamation-triangle"></i>
+              Die Abgabe wurde bereits eingereicht und kann nicht mehr bearbeitet werden.
+            </div>
+          <%} else { %>
+            <div class="alert alert-info small mt-3 mb-0">
+              <i class="bi bi-info-circle"></i>
+              Nach dem Einreichen können keine Änderungen mehr vorgenommen werden.
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- DATA-CONTAINER (unsichtbar) -->
+<div id="pageData" 
+     data-challenge-id="<%= challenge.id %>"
+     data-is-submitted="<%= abgabe && abgabe.status === 'eingereicht' %>"
+     data-initial-files="<%- JSON.stringify(abgabe && abgabe.medien ? abgabe.medien : []) %>"
+     style="display: none;">
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+   // 1. DATEN AUS DEM HTML AUSLESEN
+  const pageData = document.getElementById('pageData');
+  const challengeId = pageData.dataset.challengeId;
+  const isSubmitted = pageData.dataset.isSubmitted === 'true';
+  
+  // 2. INITIAL FILES PARSEN (WENN VORHANDEN)
+  let initialFiles = [];
+  try {
+    const filesJson = pageData.dataset.initialFiles || '[]';
+    initialFiles = JSON.parse(filesJson);
+  } catch (e) {
+    console.error('Fehler beim Parsen der Dateien:', e);
+    initialFiles = [];
+  }
+  
+  // 3. DEBUG AUSGABE
+  console.log('Geladene Daten:', {
+    challengeId: challengeId,
+    isSubmitted: isSubmitted,
+    initialFilesCount: initialFiles.length
+  });
+  
+  // 4. ELEMENTE
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const filesGrid = document.getElementById('filesGrid');
+  const noFilesMessage = document.getElementById('noFilesMessage');
+  const fileCount = document.getElementById('fileCount');
+  
+  // 5. UPLOADED FILES ARRAY (MIT BEREITS EXISTIERENDEN DATEIEN STARTEN)
+  let uploadedFiles = initialFiles;
+  
+  // Drag & Drop Events
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+  });
+  
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  // Highlight when dragging over
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => {
+      dropZone.classList.add('border-primary', 'bg-light');
+    }, false);
+  });
+  
+  // Remove highlight
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => {
+      dropZone.classList.remove('border-primary', 'bg-light');
+    }, false);
+  });
+  
+  // Handle drop
+  dropZone.addEventListener('drop', handleDrop, false);
+  
+  // Click to select files
+  dropZone.addEventListener('click', () => fileInput.click());
+  
+  // File input change
+  fileInput.addEventListener('change', handleFiles);
+  
+  function handleDrop(e) {
+    const files = e.dataTransfer.files;
+    handleFileList(files);
+  }
+  
+  function handleFiles(e) {
+    const files = e.target.files;
+    handleFileList(files);
+  }
+  
+  function handleFileList(files) {
+    if (isSubmitted) {
+      showMessage('Abgabe bereits eingereicht - keine neuen Dateien möglich', 'warning');
+      return;
+    }
+    
+    Array.from(files).forEach(file => {
+      uploadFile(file);
+    });
+  }
+  
+  function uploadFile(file) {
+    // Show progress
+    const progressDiv = document.querySelector('.upload-progress');
+    const progressBar = progressDiv.querySelector('.progress-bar');
+    const statusText = progressDiv.querySelector('.upload-status');
+    
+    progressDiv.classList.remove('d-none');
+    progressBar.style.width = '0%';
+    statusText.textContent = `Lade hoch: ${file.name}`;
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('challengeId', challengeId);
+    
+    // Send to server
+    fetch('/api/abgaben/upload', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        uploadedFiles.push(data.file);
+        renderFiles();
+        showMessage('✅ ' + file.name + ' hochgeladen!', 'success');
+      } else {
+        showMessage('❌ ' + data.error, 'danger');
+      }
+      progressDiv.classList.add('d-none');
+    })
+    .catch(error => {
+      console.error('Upload error:', error);
+      showMessage('❌ Upload fehlgeschlagen', 'danger');
+      progressDiv.classList.add('d-none');
+    });
+  }
+  
+  function renderFiles() {
+    if (uploadedFiles.length === 0) {
+      filesGrid.innerHTML = '';
+      noFilesMessage.classList.remove('d-none');
+      fileCount.textContent = '0';
+      return;
+    }
+    
+    noFilesMessage.classList.add('d-none');
+    fileCount.textContent = uploadedFiles.length;
+    
+    filesGrid.innerHTML = uploadedFiles.map(file => {
+      // Vorschaubild für Bilder
+      let preview = '';
+      if (file.datei_typ === 'image') {
+        preview = `<img src="${file.datei_pfad}" class="img-fluid rounded-top" style="height: 120px; object-fit: cover;">`;
+      } else if (file.datei_typ === 'video') {
+        preview = `<div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top" style="height: 120px;">
+                    <i class="bi bi-play-circle display-4"></i>
+                  </div>`;
+      } else {
+        preview = `<div class="bg-light d-flex align-items-center justify-content-center rounded-top" style="height: 120px;">
+                    <i class="bi bi-file-earmark display-4 text-muted"></i>
+                  </div>`;
+      }
+      
+      return `
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="file-card border rounded">
+            ${preview}
+            <div class="p-2">
+              <div class="small text-truncate" title="${file.original_name}">
+                ${file.original_name}
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <small class="text-muted">${formatFileSize(file.groesse_bytes)}</small>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteFile(${file.id})" 
+                        ${isSubmitted ? 'disabled' : ''}>
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' Bytes';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  
+  function showMessage(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => alert.remove(), 3000);
+  }
+  
+  // Save buttons
+  document.getElementById('saveDraftBtn').addEventListener('click', () => {
+    saveAbgabe('entwurf', 'Entwurf gespeichert!');
+  });
+  
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    if (confirm('Abgabe endgültig einreichen?\nDanach sind keine Änderungen mehr möglich!')) {
+      saveAbgabe('eingereicht', 'Abgabe erfolgreich eingereicht!');
+    }
+  });
+  
+  function saveAbgabe(status, successMessage) {
+    const data = {
+      challenge_id: challengeId,
+      titel: document.getElementById('abgabeTitel').value,
+      beschreibung: document.getElementById('abgabeBeschreibung').value,
+      status: status
+    };
+    
+    fetch('/api/abgaben/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        showMessage('✅ ' + result.message, 'success');
+        if (status === 'eingereicht') {
+          // Nach 2 Sekunden zurück zur Challenge-Liste
+          setTimeout(() => {
+            window.location.href = '/challenges';
+          }, 2000);
+        }
+      } else {
+        showMessage('❌ ' + result.error, 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Save error:', error);
+      showMessage('❌ Speichern fehlgeschlagen', 'danger');
+    });
+  }
+  
+  // Global function to delete file
+  window.deleteFile = function(fileId) {
+    if (isSubmitted) {
+      showMessage('Abgabe bereits eingereicht - keine Änderungen möglich', 'warning');
+      return;
+    }
+    
+    if (confirm('Datei wirklich löschen?')) {
+      // Hier später API-Call zum Löschen in der DB
+      showMessage('In der Live-Version würde die Datei gelöscht werden.', 'info');
+    }
+  };
+  
+  // Initial render
+  renderFiles();
+});
+</script>
+
+<style>
+.drop-zone {
+  border: 2px dashed #ced4da;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.drop-zone:hover {
+  border-color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+.file-card {
+  transition: transform 0.2s;
+}
+.file-card:hover {
+  transform: translateY(-2px);
+}
+</style>
