@@ -218,14 +218,24 @@
       const deleteModal = document.getElementById('confirmDeleteModal');
       const deleteForm = document.getElementById('deleteConfirmForm');
 
-      deleteModal.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget;
-        const itemId = button.getAttribute('data-id');
-        deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
-      });
+  
 
+            // Im <script>-Tag von aufgabenpakete.ejs
+      deleteModal.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget;
+      const itemId = button.getAttribute('data-id');
+      
+      // WICHTIG: KEIN ?_method=DELETE hier anhängen
+      deleteForm.action = `/aufgabenpakete/${itemId}`; 
+      
+      console.log('Action für Löschen gesetzt auf:', deleteForm.action);
+        });
+
+
+     
       // Initial Filter anwenden falls Suchbegriff vorhanden
       if (searchInput.value) {
         applyFilters();
       }
+      
     </script>

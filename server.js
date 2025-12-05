@@ -1,4 +1,4 @@
-// server.js - Vereinfachte Hauptdatei
+// server.js - KORRIGIERT
 require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
@@ -7,8 +7,6 @@ const flash = require('express-flash');
 const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
-
-
 
 const {db, init } = require('./db');
 
@@ -19,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(methodOverride('_method'));
+app.use(methodOverride('_method'));  // ✅ KORREKT - VOR allen Routen!
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session & Flash
@@ -32,14 +30,13 @@ app.use(flash());
 
 // DB zu allen Requests hinzufügen
 app.use((req, res, next) => {
-  req.db = db;  // Database connection zu allen Routes hinzufügen
+  req.db = db;
   next();
 });
 
-// UND die loadUser Middleware KORREKT einbinden (VOR den Routes!)
+// User laden Middleware
 const { loadUser } = require('./middleware/auth');
-app.use(loadUser);  // Diese Zeile einfügen!
-
+app.use(loadUser);
 
 // View Engine
 app.set('view engine', 'ejs');
@@ -61,6 +58,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// DEBUG Middleware - TEMPORÄR HINZUFÜGEN!
+app.use((req, res, next) => {
+  console.log('=== REQUEST ===');
+  console.log('Method:', req.method);
+  console.log('Original URL:', req.originalUrl);
+  console.log('Path:', req.path);
+  console.log('Body:', req.body);
+  console.log('Query:', req.query);
+  console.log('Override Method:', req.body._method || 'none');
+  console.log('================');
+  next();
+});
 
 // Routen einbinden
 app.use('/', require('./routes/index'));
@@ -70,19 +79,19 @@ app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
 app.use('/categories', require('./routes/categories'));
 app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
-app.use('/auth', require('./routes/auth'));  // AUCH DIE AUTH ROUTE!
+app.use('/auth', require('./routes/auth'));
 app.use('/', require('./routes/upload'));
 
-
-// 404 Handler
+// ========== NUR EIN 404 HANDLER ==========
 app.use((req, res) => {
+  console.log('404 für:', req.method, req.originalUrl);
   res.status(404).render('404', { 
     title: 'Seite nicht gefunden',
     activePage: '' 
   });
 });
 
-// Error Handler
+// ========== NUR EIN ERROR HANDLER ==========
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
   res.status(500).render('500', { 
@@ -92,46 +101,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-
 // Server starten
 init().then(() => {
   app.listen(PORT, () => {
     console.log(` Server läuft auf http://localhost:${PORT}`);
-    console.log(' Routen strukturiert in:');
-    console.log('   - /routes/index.js');
-    console.log('   - /routes/challenges.js');
-    console.log('   - /routes/schueler.js');
-    console.log('   - /routes/aufgabenpakete.js');
-    console.log('   - /routes/categories.js');
-    console.log('   - /routes/api/index.js');
+    console.log(' Method-Override aktiviert für DELETE/PUT');
+    console.log(' Debug-Logs für alle Requests aktiv');
   });
 }).catch((err) => {
   console.error('DB init error:', err);
   process.exit(1);
 });
-
-// 404 Handler - EINFACHERE VERSION
-app.use((req, res) => {
-  res.status(404).send(`
-    <div style="text-align: center; margin-top: 50px;">
-      <h1> 404 - Seite nicht gefunden</h1>
-      <p>Die angeforderte Seite existiert nicht.</p>
-      <a href="/">Zur Startseite</a>
-    </div>
-  `);
-});
-
-// Error Handler - EINFACHERE VERSION  
-app.use((err, req, res, next) => {
-  console.error('Server Error:', err);
-  res.status(500).send(`
-    <div style="text-align: center; margin-top: 50px;">
-      <h1>500 - Server Fehler</h1>
-      <p>Es ist ein interner Serverfehler aufgetreten.</p>
-      <a href="/">Zur Startseite</a>
-    </div>
-  `);
-});
-
-

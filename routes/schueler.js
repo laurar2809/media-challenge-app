@@ -166,17 +166,26 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Schüler löschen
+// Schüler löschen - OHNE ROLLEN-PRÜFUNG (nur zum Testen)
 router.delete('/:id', async (req, res) => {
-  await db('users')
-    .where({
-      id: req.params.id,
-      user_role_id: 1 // ✅ Nur Schüler löschen dürfen
-    })
-    .del();
-
-  req.flash('success', 'Schüler erfolgreich gelöscht.');
-  res.redirect('/schueler');
+  console.log('TEST: Lösche User ID', req.params.id);
+  
+  try {
+    const userId = req.params.id;
+    
+    // Einfach löschen, ohne Rolle zu prüfen
+    await db('users').where('id', userId).del();
+    
+    console.log('✅ User gelöscht');
+    req.flash('success', 'User gelöscht.');
+    res.redirect('/schueler');
+    
+  } catch (error) {
+    console.error('Fehler:', error);
+    req.flash('error', 'Fehler: ' + error.message);
+    res.redirect('/schueler');
+  }
 });
+
 
 module.exports = router;
