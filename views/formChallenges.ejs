@@ -479,15 +479,13 @@
       });
 
       if (!hasResults) {
-        availableMembers.innerHTML = `
-          <div class="text-center text-muted py-4">
-            <i class="bi bi-search display-6"></i>
-            <p class="mt-2">Keine passenden Mitglieder gefunden</p>
-          </div>
-        `;
-      }
+      availableMembers.innerHTML = `
+        <div class="d-flex justify-content-center w-100">
+          <p class="text-muted mb-3" id="filterHint">Keine Schüler gefunden.</p>
+        </div>`;
+}
 
-      console.log(`🔍 Filter angewendet: ${hasResults ? 'Ergebnisse gefunden' : 'Keine Ergebnisse'}`);
+      console.log(`Filter angewendet: ${hasResults ? 'Ergebnisse gefunden' : 'Keine Ergebnisse'}`);
     }
 
     // === 5. EVENT LISTENER ===
@@ -562,7 +560,7 @@
       };
 
       teams.push(team);
-      console.log(`✅ Team erstellt: "${teamName}" mit ${members.length} Mitgliedern`);
+      console.log(`Team erstellt: "${teamName}" mit ${members.length} Mitgliedern`);
 
       // Modal schließen und zurücksetzen
       const modal = bootstrap.Modal.getInstance(document.getElementById('teamModal'));
@@ -587,7 +585,7 @@
     function handleFilterChange() {
       clearTimeout(filterTimeout);
       filterTimeout = setTimeout(() => {
-        console.log('🔄 Filter aktualisiert');
+        console.log('Filter aktualisiert');
         filterMembers();
       }, 300);
     }
@@ -597,7 +595,7 @@
       // Nur validieren, NICHT abbrechen!
       if (teams.length === 0) {
         e.preventDefault();
-        alert('❌ Bitte erstellen Sie mindestens ein Team für diese Challenge!');
+        alert('Bitte erstellen Sie mindestens ein Team für diese Challenge!');
         return false;
       }
       
@@ -605,11 +603,11 @@
       const hasEmptyTeams = teams.some(team => !team.mitglieder || team.mitglieder.length === 0);
       if (hasEmptyTeams) {
         e.preventDefault();
-        alert('❌ Ein Team hat keine Mitglieder! Bitte überprüfen Sie alle Teams.');
+        alert('Ein Team hat keine Mitglieder! Bitte überprüfen Sie alle Teams.');
         return false;
       }
       
-      console.log(`✅ Formular wird gesendet mit ${teams.length} Teams`);
+      console.log(`Formular wird gesendet mit ${teams.length} Teams`);
       return true;
     });
 
@@ -617,7 +615,7 @@
     const teamModal = document.getElementById('teamModal');
     if (teamModal) {
       teamModal.addEventListener('show.bs.modal', function () {
-        console.log('📋 Modal geöffnet');
+        console.log('Modal geöffnet');
         clearTeamForm();
         if (nameFilter) nameFilter.value = '';
         if (classFilter) classFilter.value = '';
@@ -627,7 +625,7 @@
       });
 
       teamModal.addEventListener('hidden.bs.modal', function () {
-        console.log('📋 Modal geschlossen');
+        console.log('Modal geschlossen');
         // Optional: Filter zurücksetzen
       });
     }
@@ -641,7 +639,7 @@
 
     // === 6. INITIALISIERUNG ===
     function initialize() {
-      console.log('⚙️ Initialisiere formChallenges...');
+      console.log('Initialisiere formChallenges...');
       
       // 1. Bestehende Teams laden
       try {
@@ -653,11 +651,11 @@
             const decodedValue = decodeHTML(rawValue);
             teams = JSON.parse(decodedValue);
             teamCounter = teams.length + 1;
-            console.log(`📦 ${teams.length} bestehende Teams geladen:`, teams);
+            console.log(`${teams.length} bestehende Teams geladen:`, teams);
           }
         }
       } catch (error) {
-        console.error('❌ Fehler beim Laden der Teams:', error);
+        console.error('Fehler beim Laden der Teams:', error);
         teams = [];
       }
       
@@ -674,7 +672,7 @@
       updatePlaceholder();
       updateMemberCounter();
       
-      console.log('✅ formChallenges erfolgreich initialisiert');
+      console.log('formChallenges erfolgreich initialisiert');
     }
 
     // Starte Initialisierung
