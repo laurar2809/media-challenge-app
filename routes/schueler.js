@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const schueler = await query.orderBy('users.nachname', 'asc');  // ✅ users statt schueler
+    const schueler = await query.orderBy('users.nachname', 'asc');  // users statt schueler
 
     // Alle Klassen für Filter-Dropdown
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
@@ -94,7 +94,7 @@ router.post('/', async (req, res) => {
     nachname: nachname.trim(),
     klasse_id: klasse_id || null,
     schuljahr_id: schuljahr_id,
-    user_role_id: 1 // ✅ Immer als Schüler anlegen
+    user_role_id: 1 // Immer als Schüler anlegen
   });
 
   req.flash('success', 'Schüler erfolgreich angelegt.');
@@ -107,7 +107,7 @@ router.get('/:id/edit', async (req, res) => {
     const schueler = await db('users')
       .where({
         id: req.params.id,
-        user_role_id: 1 // ✅ Nur Schüler bearbeiten dürfen
+        user_role_id: 1 // Nur Schüler bearbeiten dürfen
       })
       .first();
 
@@ -148,7 +148,7 @@ router.put('/:id', async (req, res) => {
     await db('users')
       .where({
         id: req.params.id,
-        user_role_id: 1 // ✅ Sicherstellen, dass nur Schüler aktualisiert werden
+        user_role_id: 1 // Sicherstellen, dass nur Schüler aktualisiert werden
       })
       .update({
         vorname: vorname.trim(),
@@ -166,26 +166,17 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Schüler löschen - OHNE ROLLEN-PRÜFUNG (nur zum Testen)
+// Schüler löschen
 router.delete('/:id', async (req, res) => {
-  console.log('TEST: Lösche User ID', req.params.id);
-  
-  try {
-    const userId = req.params.id;
-    
-    // Einfach löschen, ohne Rolle zu prüfen
-    await db('users').where('id', userId).del();
-    
-    console.log('✅ User gelöscht');
-    req.flash('success', 'User gelöscht.');
-    res.redirect('/schueler');
-    
-  } catch (error) {
-    console.error('Fehler:', error);
-    req.flash('error', 'Fehler: ' + error.message);
-    res.redirect('/schueler');
-  }
-});
+  await db('users')
+    .where({
+      id: req.params.id,
+      user_role_id: 1 // Nur Schüler löschen dürfen
+    })
+    .del();
 
+  req.flash('success', 'Schüler erfolgreich gelöscht.');
+  res.redirect('/schueler');
+});
 
 module.exports = router;

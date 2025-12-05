@@ -51,7 +51,7 @@
         </div>
         <% } else { %>
           <% aufgabenpakete.forEach(paket=> { %>
-            <div class="col-md-4 col-lg-4 mb-5 aufgabenpaket-card" data-id="<%= paket.id %>"
+            <div class="col-md-6 col-lg-4 mb-5 aufgabenpaket-card" data-id="<%= paket.id %>"
               data-title="<%= paket.title.toLowerCase() %>" data-description="<%= paket.description.toLowerCase() %>"
               data-kategorie="<%= paket.kategorie.toLowerCase() %>">
 
@@ -218,24 +218,14 @@
       const deleteModal = document.getElementById('confirmDeleteModal');
       const deleteForm = document.getElementById('deleteConfirmForm');
 
-  
-
-            // Im <script>-Tag von aufgabenpakete.ejs
       deleteModal.addEventListener('show.bs.modal', event => {
-      const button = event.relatedTarget;
-      const itemId = button.getAttribute('data-id');
-      
-      // WICHTIG: KEIN ?_method=DELETE hier anhängen
-      deleteForm.action = `/aufgabenpakete/${itemId}`; 
-      
-      console.log('Action für Löschen gesetzt auf:', deleteForm.action);
-        });
+        const button = event.relatedTarget;
+        const itemId = button.getAttribute('data-id');
+        deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
+      });
 
-
-     
       // Initial Filter anwenden falls Suchbegriff vorhanden
       if (searchInput.value) {
         applyFilters();
       }
-      
     </script>
