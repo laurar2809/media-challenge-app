@@ -183,3 +183,15 @@ input.form-control:focus {
     border-color: #bbb !important;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) !important;
 }
+
+
+.btn-custom-filter {
+  color: #0082ba; /* Lila */
+  border-color: #0082ba;
+  background-color: white;
+}
+
+.btn-custom-filter:hover {
+  background-color: #0082ba;
+  color: white;
+}
