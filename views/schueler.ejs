@@ -121,7 +121,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-              <form id="deleteConfirmForm" method="POST">
+              <form id="deleteConfirmForm" method="POST" action="">
                 <input type="hidden" name="_method" value="DELETE">
                 <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
               </form>
@@ -252,6 +252,8 @@
         const itemId = button.getAttribute('data-id');
         deleteForm.action = `/schueler/${itemId}?_method=DELETE`;
       });
+
+  
 
       // Initial Filter anwenden falls Suchbegriff vorhanden
       if (searchInput.value) {
