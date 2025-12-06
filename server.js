@@ -81,6 +81,7 @@ app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
 app.use('/auth', require('./routes/auth'));
 app.use('/', require('./routes/upload'));
+app.use('/bewertung', require('./routes/bewertung'));
 
 // ========== NUR EIN 404 HANDLER ==========
 app.use((req, res) => {

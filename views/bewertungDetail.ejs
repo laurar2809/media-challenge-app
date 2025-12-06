@@ -1,0 +1,122 @@
+<% pageTitle="Abgabe bewerten" %>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h4 mb-1">Bewertung: <%= abgabe.challenge_title %></h2>
+            <div class="d-flex align-items-center gap-2 text-muted">
+                <span class="badge bg-secondary">Team: <%= abgabe.team_name %></span>
+                <span class="small">
+                    Abgabe-ID: <%= abgabe.id %> | Status: 
+                    <span class="badge bg-warning text-dark"><%= abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1) %></span>
+                </span>
+            </div>
+        </div>
+        <a href="/bewertung" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
+        </a>
+    </div>
+
+    <div class="row">
+        
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="bi bi-images"></i> Hochgeladene Medien</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <% if (abgabe.titel) { %>
+                        <h6><%= abgabe.titel %></h6>
+                    <% } %>
+                    <% if (abgabe.beschreibung) { %>
+                        <p class="text-muted small"><%= abgabe.beschreibung %></p>
+                    <% } %>
+                    
+                    <hr>
+
+                    <div id="mediaGallery" class="row g-3">
+                        <% if (medien && medien.length === 0) { %>
+                            <div class="col-12 text-center py-5 text-muted">
+                                <i class="bi bi-exclamation-triangle display-6"></i>
+                                <p class="mt-2">Keine Mediendateien zu dieser Abgabe gefunden.</p>
+                            </div>
+                        <% } %>
+
+                        <% medien.forEach(medium => { %>
+                            <div class="col-sm-6 col-md-4 col-lg-3">
+                                <div class="media-preview card h-100 shadow-sm">
+                                    <div class="media-container text-center bg-dark text-white rounded-top" style="height: 150px; overflow: hidden;">
+                                        
+                                        <% if (medium.datei_typ === 'image') { %>
+                                            <img src="<%= medium.datei_pfad %>" alt="<%= medium.original_name %>" class="img-fluid" style="object-fit: cover; height: 100%; width: 100%;">
+                                        <% } else if (medium.datei_typ === 'video') { %>
+                                            <i class="bi bi-camera-video display-4 d-block pt-4"></i> Video
+                                        <% } else if (medium.datei_typ === 'audio') { %>
+                                            <i class="bi bi-mic display-4 d-block pt-4"></i> Audio
+                                        <% } else { %>
+                                            <i class="bi bi-file-earmark-text display-4 d-block pt-4 text-muted"></i> Dokument
+                                        <% } %>
+                                    </div>
+                                    <div class="card-body p-2 small">
+                                        <div class="text-truncate fw-medium" title="<%= medium.original_name %>"><%= medium.original_name %></div>
+                                        <a href="<%= medium.datei_pfad %>" target="_blank" class="text-decoration-none">Anzeigen <i class="bi bi-box-arrow-up-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="bi bi-people"></i> Teammitglieder</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item text-muted">
+                        *Teammitgliederliste würde hier über eine weitere Abfrage eingefügt*
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="bi bi-check2-square"></i> Bewertung eintragen</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <form action="/bewertung/<%= abgabe.id %>" method="POST">
+                        
+                        <div class="mb-3">
+                            <label for="punkte" class="form-label fw-medium">Punkte vergeben (0-100)</label>
+                            <input type="number" class="form-control" id="punkte" name="punkte" min="0" max="100" required
+                                   placeholder="Zahl zwischen 0 und 100">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="feedback" class="form-label fw-medium">Feedback / Anmerkungen</label>
+                            <textarea class="form-control" id="feedback" name="feedback" rows="5" 
+                                      placeholder="Konstruktive Kritik und Lob..."></textarea>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success" name="status" value="bewertet">
+                                <i class="bi bi-save"></i> Speichern & als 'Bewertet' markieren
+                            </button>
+                            <button type="submit" class="btn btn-outline-warning text-dark" name="status" value="abgelehnt">
+                                <i class="bi bi-x-octagon"></i> Als 'Abgelehnt' markieren
+                            </button>
+                        </div>
+                        
+                    </form>
+                    
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -18,13 +18,57 @@ function getFileType(mimetype) {
 
 //  HELPER: Funktion zur Bereinigung der temporär gespeicherten Datei
 async function cleanUpFile(req) {
-    if (req.file && req.file.path) {
-        await fs.unlink(req.file.path).catch(err => {
-            console.error('Cleanup Error:', err);
+  // Greife auf den gespeicherten Pfad des Multer-Uploads zu
+    const filePathToDelete = req.file ? req.file.path : null; 
+    
+    if (filePathToDelete) {
+        await fs.unlink(filePathToDelete).catch(err => {
+            // "ENOENT" ist in Ordnung, da die Datei vielleicht schon verschoben/gelöscht wurde.
+            if (err.code !== 'ENOENT') { 
+                console.error('Cleanup Error:', err);
+            }
         });
     }
 }
 
+// API: Löschen einer einzelnen Mediendatei
+router.delete('/api/abgaben/media/:mediaId', async (req, res) => {
+    try {
+        const mediaId = req.params.mediaId;
+        
+        // 1. Prüfen ob Benutzer eingeloggt und im Team (optional, aber sicher)
+        if (!req.currentUser) {
+            return res.json({ success: false, error: 'Nicht angemeldet.' });
+        }
+        
+        // 2. Mediendatensatz und Pfad aus der DB holen
+        const mediaEntry = await db('abgabe_medien')
+            .where('id', mediaId)
+            .first();
+
+        if (!mediaEntry) {
+            return res.json({ success: false, error: 'Mediendatei nicht gefunden.' });
+        }
+
+        // 3. Datei physisch vom Server löschen
+        await cleanUpFile(mediaEntry.datei_pfad); 
+
+        // 4. Datensatz aus der DB löschen
+        const deletedRows = await db('abgabe_medien')
+            .where('id', mediaId)
+            .del();
+        
+        if (deletedRows === 0) {
+            return res.json({ success: false, error: 'Datenbankeintrag konnte nicht gelöscht werden.' });
+        }
+
+        res.json({ success: true, message: 'Datei erfolgreich gelöscht.', mediaId: mediaId });
+
+    } catch (error) {
+        console.error('Delete Media Error:', error);
+        res.status(500).json({ success: false, error: 'Löschen fehlgeschlagen.' });
+    }
+});
 
 // API: Datei hochladen UND in DB speichern
 router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res) => {

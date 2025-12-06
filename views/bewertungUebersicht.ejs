@@ -1,0 +1,75 @@
+<% pageTitle="Abgaben verwalten" %>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="h4 m-0">Alle eingereichten Abgaben</h2>
+    <span class="badge bg-info text-dark">
+        Anzahl Abgaben: <%= abgaben.length %>
+    </span>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table align-middle m-0 table-light">
+        <thead class="table-light">
+            <tr>
+                <th scope="col"># ID</th>
+                <th scope="col">Challenge</th>
+                <th scope="col">Team</th>
+                <th scope="col">Status</th>
+                <th scope="col">Eingereicht am</th>
+                <th scope="col" class="text-end" style="min-width: 150px;">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (abgaben.length === 0) { %>
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        Keine Abgaben zum Bewerten gefunden.
+                    </td>
+                </tr>
+            <% } %>
+
+            <% abgaben.forEach(abgabe => { %>
+                <tr>
+                    <td class="text-muted small"><%= abgabe.id %></td>
+                    <td class="fw-medium">
+                        <%= abgabe.challenge_title %>
+                    </td>
+                    <td>
+                        <%= abgabe.team_name %>
+                    </td>
+                    <td>
+                        <% let statusClass = 'secondary';
+                           if (abgabe.status === 'eingereicht') statusClass = 'warning text-dark';
+                           if (abgabe.status === 'bewertet') statusClass = 'success';
+                           if (abgabe.status === 'abgelehnt') statusClass = 'danger';
+                        %>
+                        <span class="badge bg-<%= statusClass %>">
+                            <%= abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1) %>
+                        </span>
+                    </td>
+                    <td>
+                        <% if (abgabe.created_at) { %>
+                            <%= new Date(abgabe.created_at).toLocaleDateString('de-DE') %>
+                        <% } else { %>
+                            N/A
+                        <% } %>
+                    </td>
+                    <td class="text-end">
+                        <a href="/bewertung/<%= abgabe.id %>" class="btn btn-sm btn-custom-edit">
+                            <% if (abgabe.status === 'bewertet') { %>
+                                Bewertung ansehen
+                            <% } else { %>
+                                Bewerten
+                            <% } %>
+                        </a>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
