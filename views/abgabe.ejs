@@ -53,9 +53,9 @@
             <p class="text-muted mb-3">oder klicken um Dateien auszuwählen</p>
             <input type="file" id="fileInput" multiple class="d-none" 
                    accept="image/*,video/*,audio/*,.pdf">
-            <button class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
-              <i class="bi bi-folder2-open"></i> Dateien auswählen
-            </button>
+           <button class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click(); event.stopPropagation()">
+            <i class="bi bi-folder2-open"></i> Dateien auswählen
+           </button>
             <div class="mt-2 small text-muted">
               Unterstützt: Bilder (JPG, PNG), Videos (MP4), Audio (MP3), PDF
             </div>
@@ -247,9 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Handle drop
   dropZone.addEventListener('drop', handleDrop, false);
   
-  // Click to select files
-  dropZone.addEventListener('click', () => fileInput.click());
-  
+
   // File input change
   fileInput.addEventListener('change', handleFiles);
   
@@ -272,6 +270,8 @@ document.addEventListener('DOMContentLoaded', function() {
     Array.from(files).forEach(file => {
       uploadFile(file);
     });
+
+    fileInput.value = '';
   }
   
   function uploadFile(file) {
