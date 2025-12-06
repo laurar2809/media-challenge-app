@@ -417,31 +417,31 @@ router.get('/detail/:id', async (req, res) => {
 router.get('/:id/edit', async (req, res) => {
   try {
     const challengeId = req.params.id;
-    
+
     // 1. ERST die Challenge ohne JOIN holen (um team_id zu sehen)
     const challenge = await db('challenges')
       .where('id', challengeId)
       .first();
-    
-    console.log('🔍 RAW Challenge from DB:', {
+
+    console.log(' RAW Challenge from DB:', {
       id: challenge.id,
       team_id: challenge.team_id,
       has_team: !!challenge.team_id
     });
-    
+
     let existingTeams = [];
-    
+
     // 2. NUR WENN team_id EXISTIERT
     if (challenge.team_id) {
-      console.log('✅ Challenge hat Team ID:', challenge.team_id);
-      
+      console.log(' Challenge hat Team ID:', challenge.team_id);
+
       // Team-Daten holen
       const team = await db('teams')
         .where('id', challenge.team_id)
         .first();
-      
-      console.log('✅ Team gefunden:', team ? team.name : 'NEIN');
-      
+
+      console.log(' Team gefunden:', team ? team.name : 'NEIN');
+
       // Team-Mitglieder holen
       const teamMitglieder = await db('team_mitglieder')
         .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
@@ -454,9 +454,9 @@ router.get('/:id/edit', async (req, res) => {
           'users.nachname',
           'klassen.name as klasse_name'
         );
-      
-      console.log('✅ Team Mitglieder:', teamMitglieder.length);
-      
+
+      console.log(' Team Mitglieder:', teamMitglieder.length);
+
       // Existing Team erstellen (NUR wenn Team existiert)
       if (team) {
         existingTeams = [{
@@ -470,19 +470,19 @@ router.get('/:id/edit', async (req, res) => {
             rolle: m.rolle
           }))
         }];
-        
-        console.log('✅ existingTeams erstellt:', existingTeams);
+
+        console.log(' existingTeams erstellt:', existingTeams);
       }
     } else {
-      console.log('❌ Challenge hat KEIN Team (team_id ist null/undefined)');
+      console.log(' Challenge hat KEIN Team (team_id ist null/undefined)');
     }
-    
+
     // 3. Debug-Ausgabe was an EJS gesendet wird
-    console.log('📤 Sende an EJS Template:');
+    console.log(' Sende an EJS Template:');
     console.log('- existingTeams:', existingTeams);
     console.log('- existingTeams Länge:', existingTeams.length);
     console.log('- existingTeams JSON:', JSON.stringify(existingTeams));
-    
+
     // 4. Hole restliche Daten
     const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
     const schueler = await db('users')
@@ -491,7 +491,7 @@ router.get('/:id/edit', async (req, res) => {
       .select('users.*', 'klassen.name as klasse_name')
       .orderBy('users.nachname', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-    
+
     // 5. RENDER mit KORREKTEN DATEN
     res.render('formChallenges', {
       item: {
@@ -505,14 +505,14 @@ router.get('/:id/edit', async (req, res) => {
       aufgabenpakete,
       schueler,
       schuljahre,
-      existingTeam: existingTeams, // ✅ Jetzt sollte es gefüllt sein
+      existingTeam: existingTeams, //  Jetzt sollte es gefüllt sein
       action: `/challenges/${challenge.id}?_method=PUT`,
       title: 'Challenge bearbeiten',
       activePage: 'challenges'
     });
-    
+
   } catch (error) {
-    console.error("❌ FEHLER in GET /edit:", error);
+    console.error(" FEHLER in GET /edit:", error);
     req.flash('error', 'Fehler beim Laden der Challenge: ' + error.message);
     res.redirect('/challenges');
   }
@@ -521,88 +521,88 @@ router.get('/:id/edit', async (req, res) => {
 // PUT /:id - VOLLSTÄNDIG KORRIGIERT FÜR MEHRERE TEAMS
 router.put('/:id', async (req, res) => {
   try {
-    console.log('🎯 PUT /challenges/' + req.params.id + ' - BEARBEITEN + NEUE TEAMS');
-    
-    const { 
-      aufgabenpaket_id, 
-      zusatzinfos, 
-      abgabedatum, 
-      schuljahr_id, 
-      teams_data 
+    console.log(' PUT /challenges/' + req.params.id + ' - BEARBEITEN + NEUE TEAMS');
+
+    const {
+      aufgabenpaket_id,
+      zusatzinfos,
+      abgabedatum,
+      schuljahr_id,
+      teams_data
     } = req.body;
-    
+
     // VALIDIERUNG
     if (!aufgabenpaket_id || !schuljahr_id) {
       req.flash('error', 'Aufgabenpaket und Schuljahr sind erforderlich.');
       return res.redirect(`/challenges/${req.params.id}/edit`);
     }
-    
+
     // TRANSACTION
     const trx = await db.transaction();
-    
+
     try {
       // 1. AKTUELLE CHALLENGE (Nur für Vorlage-Daten)
       const currentChallenge = await trx('challenges')
         .where({ id: req.params.id })
         .first();
-      
+
       if (!currentChallenge) {
         await trx.rollback();
         req.flash('error', 'Challenge nicht gefunden.');
         return res.redirect('/challenges');
       }
-      
+
       // 2. TEAMS-DATEN PARSEN
       let teams = [];
       if (teams_data && teams_data !== '[]' && teams_data !== '') {
         try {
           teams = JSON.parse(teams_data);
-          console.log(`📦 ${teams.length} Team(s) zum Verarbeiten`);
+          console.log(` ${teams.length} Team(s) zum Verarbeiten`);
         } catch (e) {
           await trx.rollback();
           req.flash('error', 'Ungültige Team-Daten.');
           return res.redirect(`/challenges/${req.params.id}/edit`);
         }
       }
-      
+
       // 3. AUFGABENPAKET HOLEN (Vorlage)
       const aufgabenpaket = await trx('aufgabenpakete')
         .where({ id: aufgabenpaket_id })
         .first();
-      
+
       if (!aufgabenpaket) {
         await trx.rollback();
         req.flash('error', 'Aufgabenpaket nicht gefunden.');
         return res.redirect(`/challenges/${req.params.id}/edit`);
       }
-      
+
       // 4. UNTERSCHEIDUNG: BESTEHENDE vs NEUE TEAMS
       const existingTeams = teams.filter(t => t.id && t.id.startsWith('existing-'));
       const newTeams = teams.filter(t => !t.id || !t.id.startsWith('existing-'));
-      
-      console.log(`🔍 ${existingTeams.length} bestehende, ${newTeams.length} neue Team(s)`);
-      
-      // 5. 🔄 BESTEHENDE TEAMS AKTUALISIEREN (nur das aktuelle!)
+
+      console.log(` ${existingTeams.length} bestehende, ${newTeams.length} neue Team(s)`);
+
+      // 5.  BESTEHENDE TEAMS AKTUALISIEREN (nur das aktuelle!)
       for (const teamData of existingTeams) {
         const teamId = teamData.id.replace('existing-', '');
-        
+
         // Nur das Team der aktuellen Challenge aktualisieren
         if (parseInt(teamId) === currentChallenge.team_id) {
-          console.log(`🔄 Update Team der aktuellen Challenge: ${teamData.name}`);
-          
+          console.log(` Update Team der aktuellen Challenge: ${teamData.name}`);
+
           // Team-Name aktualisieren
           await trx('teams')
             .where({ id: teamId })
-            .update({ 
+            .update({
               name: teamData.name,
               updated_at: db.fn.now()
             });
-          
+
           // Alte Mitglieder löschen
           await trx('team_mitglieder')
             .where({ team_id: teamId })
             .del();
-          
+
           // Neue Mitglieder einfügen
           if (teamData.mitglieder && teamData.mitglieder.length > 0) {
             const mitglieder = teamData.mitglieder.map((m, index) => ({
@@ -610,10 +610,10 @@ router.put('/:id', async (req, res) => {
               user_id: m.id,
               rolle: index === 0 ? 'teamleiter' : 'mitglied'
             }));
-            
+
             await trx('team_mitglieder').insert(mitglieder);
           }
-          
+
           // Challenge-Daten aktualisieren
           await trx('challenges')
             .where({ id: req.params.id })
@@ -629,11 +629,11 @@ router.put('/:id', async (req, res) => {
             });
         }
       }
-      
-      // 6. ➕ NEUE TEAMS HINZUFÜGEN (wie beim Erstellen!)
+
+      // 6.  NEUE TEAMS HINZUFÜGEN (wie beim Erstellen!)
       for (const teamData of newTeams) {
-        console.log(`🆕 Erstelle neues Team: ${teamData.name}`);
-        
+        console.log(` Erstelle neues Team: ${teamData.name}`);
+
         // Neues Team erstellen
         const [newTeamId] = await trx('teams').insert({
           name: teamData.name || 'Neues Team',
@@ -641,7 +641,7 @@ router.put('/:id', async (req, res) => {
           created_at: db.fn.now(),
           updated_at: db.fn.now()
         });
-        
+
         // Mitglieder einfügen
         if (teamData.mitglieder && teamData.mitglieder.length > 0) {
           const mitglieder = teamData.mitglieder.map((m, index) => ({
@@ -649,10 +649,10 @@ router.put('/:id', async (req, res) => {
             user_id: m.id,
             rolle: index === 0 ? 'teamleiter' : 'mitglied'
           }));
-          
+
           await trx('team_mitglieder').insert(mitglieder);
         }
-        
+
         // NEUE CHALLENGE KOPIE erstellen (genau wie beim Erstellen!)
         await trx('challenges').insert({
           title: aufgabenpaket.title,
@@ -667,29 +667,29 @@ router.put('/:id', async (req, res) => {
           created_at: db.fn.now(),
           updated_at: db.fn.now()
         });
-        
-        console.log(`✅ Neue Challenge für Team ${teamData.name} erstellt`);
+
+        console.log(` Neue Challenge für Team ${teamData.name} erstellt`);
       }
-      
+
       // 7. COMMIT
       await trx.commit();
-      
-      const message = newTeams.length > 0 
-        ? `✅ Challenge aktualisiert und ${newTeams.length} neue Team(s) hinzugefügt!`
-        : '✅ Challenge aktualisiert.';
-      
+
+      const message = newTeams.length > 0
+        ? ` Challenge aktualisiert und ${newTeams.length} neue Team(s) hinzugefügt!`
+        : ' Challenge aktualisiert.';
+
       req.flash('success', message);
       res.redirect('/challenges');
-      
+
     } catch (error) {
       await trx.rollback();
-      console.error('❌ Transaction Error:', error);
+      console.error(' Transaction Error:', error);
       req.flash('error', 'Fehler: ' + error.message);
       res.redirect(`/challenges/${req.params.id}/edit`);
     }
-    
+
   } catch (error) {
-    console.error('❌ Allgemeiner Fehler:', error);
+    console.error(' Allgemeiner Fehler:', error);
     req.flash('error', 'Server-Fehler: ' + error.message);
     res.redirect(`/challenges/${req.params.id}/edit`);
   }
@@ -729,7 +729,7 @@ router.delete('/:id', async (req, res) => {
 
       await trx.commit();
 
-      req.flash('success', '✅ Challenge und Team erfolgreich gelöscht.');
+      req.flash('success', ' Challenge und Team erfolgreich gelöscht.');
       res.redirect('/challenges');
 
     } catch (error) {
@@ -738,18 +738,18 @@ router.delete('/:id', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ Fehler beim Löschen:', error);
+    console.error(' Fehler beim Löschen:', error);
     req.flash('error', 'Fehler beim Löschen: ' + error.message);
     res.redirect('/challenges');
   }
 });
 
 
-// Abgabe-Seite anzeigen - EINFACHE VERSION
+// Abgabe-Seite anzeigen - KORRIGIERT MIT MEDIEN-LADUNG
 router.get('/:id/abgabe', async (req, res) => {
   try {
     const challengeId = req.params.id;
-    
+
     // 1. Challenge-Daten laden
     const challenge = await req.db('challenges')
       .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
@@ -763,12 +763,12 @@ router.get('/:id/abgabe', async (req, res) => {
         'teams.id as team_id'
       )
       .first();
-    
+
     if (!challenge) {
       req.flash('error', 'Challenge nicht gefunden.');
       return res.redirect('/challenges');
     }
-    
+
     // 2. TEAM-Mitglieder laden
     const teamMitglieder = await req.db('team_mitglieder')
       .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
@@ -780,7 +780,7 @@ router.get('/:id/abgabe', async (req, res) => {
         'users.nachname',
         'klassen.name as klasse_name'
       );
-    
+
     // 3. Abgabe-Daten laden (falls bereits existiert)
     let abgabe = await req.db('challenge_abgaben')
       .where({
@@ -788,8 +788,19 @@ router.get('/:id/abgabe', async (req, res) => {
         team_id: challenge.team_id
       })
       .first();
-    
-    // 4. Sehr einfache HTML-Seite rendern (TEST)
+
+    //  HIER WIRD DER MEDIEN-CODE EINGEFÜGT:
+    if (abgabe) {
+      const medien = await db('abgabe_medien')
+        .where('abgabe_id', abgabe.id)
+        .orderBy('reihenfolge', 'asc');
+
+      // Füge die Medien zum Abgabe-Objekt hinzu
+      abgabe.medien = medien;
+    }
+    //  ENDE MEDIEN-CODE
+
+    // 4. HTML-Seite rendern
     res.render('abgabe', {
       title: 'Abgabe einreichen',
       challenge: challenge,
@@ -797,11 +808,11 @@ router.get('/:id/abgabe', async (req, res) => {
         name: challenge.team_name,
         mitglieder: teamMitglieder
       },
-      abgabe: abgabe || null,
+      abgabe: abgabe || null, // Enthält jetzt abgabe.medien oder ist null
       daysLeft: 7, // Testwert
       currentUser: req.currentUser
     });
-    
+
   } catch (error) {
     console.error('Fehler Abgabe-Seite:', error);
     req.flash('error', 'Fehler beim Laden der Abgabe-Seite.');
