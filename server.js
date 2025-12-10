@@ -8,7 +8,7 @@ const methodOverride = require('method-override');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 
-const {db, init } = require('./db');
+const { db, init } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +17,15 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(methodOverride('_method'));  // ✅ KORREKT - VOR allen Routen!
+//  ERSETZEN SIE DIES MIT:
+app.use(methodOverride(function (req, res) {
+  if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+    // schaut in req.body nach dem versteckten Feld _method
+    const method = req.body._method;
+    delete req.body._method;
+    return method;
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session & Flash
@@ -86,16 +94,16 @@ app.use('/bewertung', require('./routes/bewertung'));
 // ========== NUR EIN 404 HANDLER ==========
 app.use((req, res) => {
   console.log('404 für:', req.method, req.originalUrl);
-  res.status(404).render('404', { 
+  res.status(404).render('404', {
     title: 'Seite nicht gefunden',
-    activePage: '' 
+    activePage: ''
   });
 });
 
 // ========== NUR EIN ERROR HANDLER ==========
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
-  res.status(500).render('500', { 
+  res.status(500).render('500', {
     title: 'Server Fehler',
     activePage: '',
     error: process.env.NODE_ENV === 'development' ? err : {}
