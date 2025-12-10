@@ -1,0 +1,50 @@
+<% pageTitle="Team Übersicht" %>
+
+<h1 class="h4 mb-4">Alle Teams</h1>
+
+<div class="table-responsive">
+    <table class="table table-hover table align-middle m-0 table-light">
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Team Name</th>
+                <th scope="col">Team ID</th>
+                <th scope="col">Schuljahr</th>
+                <th scope="col">Mitglieder (Anzahl)</th>
+                <th scope="col">Mitglieder Details</th>
+                <th scope="col" class="text-end">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (teams && teams.length > 0) { %>
+                <% teams.forEach(team => { %>
+                    <tr>
+                        <td class="fw-medium">
+                            <i class="bi bi-people me-1"></i> <%= team.name %>
+                        </td>
+                        <td class="text-muted small"><%= team.id %></td>
+                        <td><%= team.schuljahr_name || 'Nicht zugewiesen' %></td>
+                        <td><%= team.mitglieder_count %></td>
+                        <td>
+                            <% if (team.mitglieder && team.mitglieder.length > 0) { %>
+                                <%= team.mitglieder.map(m => `${m.vorname} ${m.nachname} (${m.klasse_name || 'N/A'})`).join(', ') %>
+                            <% } else { %>
+                                <span class="text-muted">Keine Mitglieder</span>
+                            <% } %>
+                        </td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#teamDetailModal<%= team.id %>">Details</button>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Keine Teams gefunden.</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Eventuell benötigtes JS für Sortierung/Filterung kann hier folgen
+</script>

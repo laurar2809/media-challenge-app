@@ -506,7 +506,7 @@ router.get('/:id/edit', async (req, res) => {
       schueler,
       schuljahre,
       existingTeam: existingTeams, //  Jetzt sollte es gefüllt sein
-      action: `/challenges/${challenge.id}?_method=PUT`,
+      action: `/challenges/${challenge.id}`,
       title: 'Challenge bearbeiten',
       activePage: 'challenges'
     });
@@ -582,11 +582,11 @@ router.put('/:id', async (req, res) => {
 
       console.log(` ${existingTeams.length} bestehende, ${newTeams.length} neue Team(s)`);
 
-      // 5.  BESTEHENDE TEAMS AKTUALISIEREN (nur das aktuelle!)
+      // 5.  BESTEHENDE TEAMS AKTUALISIEREN
       for (const teamData of existingTeams) {
         const teamId = teamData.id.replace('existing-', '');
 
-        // Nur das Team der aktuellen Challenge aktualisieren
+        // 🛑 HIER IST DIE WICHTIGE PRÜFUNG: Nur das Team der aktuellen Challenge aktualisieren
         if (parseInt(teamId) === currentChallenge.team_id) {
           console.log(` Update Team der aktuellen Challenge: ${teamData.name}`);
 
@@ -594,9 +594,11 @@ router.put('/:id', async (req, res) => {
           await trx('teams')
             .where({ id: teamId })
             .update({
-              name: teamData.name,
+              name: teamData.name, // 🛑 Aktualisierter Team-Name
               updated_at: db.fn.now()
             });
+
+          // 🛑 Team-Mitglieder aktualisieren (ALT löschen, NEU einfügen)
 
           // Alte Mitglieder löschen
           await trx('team_mitglieder')
@@ -614,19 +616,22 @@ router.put('/:id', async (req, res) => {
             await trx('team_mitglieder').insert(mitglieder);
           }
 
-          // Challenge-Daten aktualisieren
+          // Challenge-Daten aktualisieren (bleibt unverändert)
           await trx('challenges')
             .where({ id: req.params.id })
-            .update({
-              title: aufgabenpaket.title,
-              beschreibung: aufgabenpaket.description,
-              kategorie: aufgabenpaket.kategorie,
-              icon: aufgabenpaket.icon,
-              zusatzinfos: zusatzinfos || null,
-              abgabedatum: abgabedatum || null,
-              schuljahr_id: schuljahr_id,
-              updated_at: db.fn.now()
+// ... (restliche Challenge-Updates) ...
+            .update({ 
+                title: aufgabenpaket.title,
+                beschreibung: aufgabenpaket.description,
+                kategorie: aufgabenpaket.kategorie,
+                icon: aufgabenpaket.icon,
+                zusatzinfos: zusatzinfos || null,
+                abgabedatum: abgabedatum || null,
+                schuljahr_id: schuljahr_id,
+                updated_at: db.fn.now()
             });
+        } else {
+            console.log(` Überspringe Update für nicht-zugehöriges Team-Element: ${teamId}`);
         }
       }
 
