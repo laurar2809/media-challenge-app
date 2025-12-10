@@ -2,11 +2,11 @@
 
 const express = require('express');
 const router = express.Router();
-const { requireAuth, requireAdmin } = require('../middleware/auth'); // Brauchen wir für die Sicherheit
+const { requireAuth, requireLehrer } = require('../middleware/auth'); // Brauchen wir für die Sicherheit
 const { db } = require('../db'); // Direkter DB-Import
 
 // Teams Übersicht (Nur für Lehrer/Admin zugänglich)
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/', requireAuth, requireLehrer, async (req, res) => {
     try {
         console.log('Zugriff auf Team Übersicht durch Admin/Lehrer.');
 
