@@ -798,6 +798,21 @@ router.get('/:id/abgabe', async (req, res) => {
       // Füge die Medien zum Abgabe-Objekt hinzu
       abgabe.medien = medien;
     }
+
+
+    //  NEU: 4. Bewertungsinformationen laden (falls vorhanden)
+    if (abgabe) {
+        // Wir laden die Bewertung vom aktuell angemeldeten Lehrer, 
+        // oder falls mehrere Lehrer bewerten, die relevanteste (hier: die erste gefundene).
+        const bewertung = await db('abgabe_bewertungen')
+            .where('abgabe_id', abgabe.id)
+            .first(); // Lädt den ersten oder einzigen Bewertungs-Eintrag
+
+        // Füge die Bewertung dem Abgabe-Objekt hinzu
+        abgabe.bewertung = bewertung || null; 
+    }
+    //  ENDE BEWERTUNGS-LADUNG
+
     //  ENDE MEDIEN-CODE
 
     // 4. HTML-Seite rendern
