@@ -5,11 +5,9 @@
     <a href="/challenges/new" class="btn btn-custom-newCategorieChallenge">+ Neue Challenge</a>
   </div>
 
-  <!-- FILTER UND SUCHLEISTE -->
-  <div class="row mb-4 g-2">
+    <div class="row mb-4 g-2">
     <div class="col-md-4">
-      <!-- Kategorien Filter -->
-      <div class="input-group">
+            <div class="input-group">
         <span class="input-group-text">Kategorie:</span>
         <select class="form-select" id="kategorienFilter">
           <option value="alle" <%=activeKategorie==='alle' ? 'selected' : '' %>>Alle Kategorien</option>
@@ -25,8 +23,7 @@
     </div>
 
     <div class="col-md-4">
-      <!-- Schuljahr Filter -->
-      <div class="input-group">
+            <div class="input-group">
         <span class="input-group-text">Schuljahr:</span>
         <select class="form-select" id="schuljahrFilter">
           <option value="alle" <%=activeSchuljahr==='alle' ? 'selected' : '' %>>Alle Schuljahre</option>
@@ -42,8 +39,7 @@
     </div>
 
     <div class="col-md-4">
-      <!-- Suchleiste -->
-      <div class="position-relative" id="searchContainer">
+            <div class="position-relative" id="searchContainer">
         <div class="input-group mb-3">
           <span class="input-group-text">
             <i class="bi bi-search"></i>
@@ -55,8 +51,7 @@
     </div>
 
     <div class="table-responsive">
-      <!-- Card-Container -->
-      <div class="row" id="challengesCardContainer">
+            <div class="row" id="challengesCardContainer">
         <% if (challenges && challenges.length===0) { %>
           <div class="col-12">
             <div class="card text-center py-4 text-muted">
@@ -81,8 +76,7 @@
                   data-teammitglieder="<%= (challenge.team_mitglieder_names || '').toLowerCase() %>">
 
                   <div class="card h-100 shadow-sm">
-                    <!-- BILD VOM AUFGABENPAKET -->
-                    <% if (challenge.aufgabenpaket_icon) { %>
+                                        <% if (challenge.aufgabenpaket_icon) { %>
                       <img src="<%= challenge.aufgabenpaket_icon %>" class="card-img-top"
                         alt="<%= challenge.aufgabenpaket_title %>" style="height: 150px; object-fit: cover;">
                       <% } else { %>
@@ -93,24 +87,21 @@
                         <% } %>
 
                           <div class="card-body">
-                            <!-- AUFGABENPAKET NAME -->
-                            <div class="mb-3">
+                                                      <div class="mb-3">
                               <strong class="d-block">Aufgabenpaket:</strong>
                               <span class="fw-medium">
                                 <%= challenge.aufgabenpaket_title || 'Kein Aufgabenpaket' %>
                               </span>
                             </div>
 
-                            <!-- KATEGORIE -->
-                            <div class="mb-3">
+                                                      <div class="mb-3">
                               <strong class="d-block">Kategorie:</strong>
                               <span class="badge bg-secondary">
                                 <%= challenge.kategorie %>
                               </span>
                             </div>
 
-                            <!-- TEAM MIT MITGLIEDERN -->
-                            <div class="mb-3">
+                                                      <div class="mb-3">
                               <strong class="d-block">Team:</strong>
                               <% if (challenge.team_name) { %>
                                 <div class="text-muted">
@@ -124,8 +115,7 @@
                                   <% } %>
                             </div>
 
-                            <!-- ABGABETERMIN -->
-                            <div class="mb-3">
+                                                      <div class="mb-3">
                               <strong class="d-block">Abgabetermin:</strong>
                               <span class="text-body-secondary">
                                 <% if (challenge.abgabedatum) { %>
@@ -137,8 +127,7 @@
                             </div>
                           </div>
 
-                          <!-- AKTIONEN -->
-                          <div class="card-footer bg-transparent">
+                                                  <div class="card-footer bg-transparent">
                             <div class="d-flex justify-content-between align-items-center">
                               <a href="/challenges/detail/<%= challenge.id %>"
                                 class="btn btn-custom-details btn-sm">Details</a>
@@ -157,8 +146,7 @@
       </div>
     </div>
 
-    <!-- Pop Up Löschen Fenster -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header custom-delete-header">
@@ -170,10 +158,10 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-            <form id="deleteConfirmForm" method="POST">
+                        <form id="deleteConfirmFormChallenge" method="POST" action="">
               <input type="hidden" name="_method" value="DELETE">
-              <button type="submit" class="btn btn-custom-delete">Ja, löschen</button>
             </form>
+                        <button type="button" class="btn btn-custom-delete" id="confirmDeleteSubmitChallenge">Ja, löschen</button>
           </div>
         </div>
       </div>
@@ -193,17 +181,17 @@
 
         let searchTimeout;
 
-        console.log('✅ Suchfunktion initialisiert - Gefundene Cards:', challengeCards.length);
+        console.log(' Suchfunktion initialisiert - Gefundene Cards:', challengeCards.length);
 
         // Filter bei Änderung anwenden
         kategorienFilter.addEventListener('change', function () {
-          console.log('🔍 Kategorie Filter geändert:', this.value);
+          console.log(' Kategorie Filter geändert:', this.value);
           applyFilters();
         });
 
         // Schuljahr Filter bei Änderung
         schuljahrFilter.addEventListener('change', function () {
-          console.log('🔍 Schuljahr Filter geändert:', this.value);
+          console.log(' Schuljahr Filter geändert:', this.value);
           applyFilters();
         });
 
@@ -212,7 +200,7 @@
           clearTimeout(searchTimeout);
           const query = this.value.trim().toLowerCase();
 
-          console.log('🔍 Sucheingabe:', query);
+          console.log(' Sucheingabe:', query);
 
           // Sofortige Filterung anwenden
           searchTimeout = setTimeout(() => {
@@ -236,7 +224,7 @@
           const schuljahrValue = schuljahrFilter.value.toLowerCase();
           const searchValue = searchInput.value.trim().toLowerCase();
 
-          console.log('🔄 Filter anwenden:', {
+          console.log(' Filter anwenden:', {
             kategorie: kategorieValue,
             schuljahr: schuljahrValue,
             search: searchValue
@@ -268,7 +256,7 @@
             }
           });
 
-          console.log('📊 Sichtbare Cards:', visibleCount);
+          console.log(' Sichtbare Cards:', visibleCount);
 
           // Zeige "Keine Ergebnisse" wenn nötig
           const container = document.getElementById('challengesCardContainer');
@@ -294,22 +282,38 @@
         }
 
         // Search beenden
-        clearSearch.addEventListener('click', function (e) {
-          e.preventDefault();
-          searchInput.value = '';
-          searchBadge.style.display = 'none';
-          applyFilters();
-        });
+        const clearSearchButton = document.querySelector('#searchContainer .input-group-text'); // HACK: clearSearch existiert nicht in deinem HTML, nutze den input-group-text
 
-        // Eventlistener für modales Fenster beim Delete
+        // Wenn dein HTML einen clearSearch Button hat, nutze dies:
+        // if (clearSearch) { clearSearch.addEventListener('click', function (e) { ... }); }
+        
+        
+        //  HIER IST DER KORRIGIERTE DELETE BLOCK 
         const deleteModal = document.getElementById('confirmDeleteModal');
-        const deleteForm = document.getElementById('deleteConfirmForm');
+        const deleteForm = document.getElementById('deleteConfirmFormChallenge'); //  NEUE ID nutzen!
+        const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmitChallenge'); //  NEUE ID nutzen!
+
+        let currentItemIdToDelete = null;
 
         deleteModal.addEventListener('show.bs.modal', event => {
           const button = event.relatedTarget;
-          const itemId = button.getAttribute('data-id');
-          deleteForm.action = `/challenges/${itemId}?_method=DELETE`;
+          currentItemIdToDelete = button.getAttribute('data-id');
         });
+        
+        if (confirmDeleteSubmit) {
+            confirmDeleteSubmit.addEventListener('click', () => {
+                if (currentItemIdToDelete) {
+                    // Action korrekt setzen (/challenges/ID)
+                    deleteForm.action = `/challenges/${currentItemIdToDelete}`;
+                    // Absenden (wird von method-override in DELETE umgewandelt)
+                    deleteForm.submit();
+                } else {
+                    alert('Fehler: Die Challenge-ID konnte nicht ermittelt werden.');
+                }
+            });
+        }
+        //  ENDE KORRIGIERTER DELETE BLOCK 
+
 
         // Initial Filter anwenden falls Suchbegriff vorhanden
         if (searchInput.value) {

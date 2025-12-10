@@ -705,45 +705,70 @@ router.post('/test-form', async (req, res) => {
   });
 });
 
-// Challenge löschen
-router.delete('/:id', async (req, res) => {
-  try {
-    const challengeId = parseInt(req.params.id);
+// routes/challenges.js - KORRIGIERTER DELETE CONTROLLER (Challenge löschen)
 
+router.delete('/:id', async (req, res) => {
+    const challengeId = parseInt(req.params.id);
     const trx = await db.transaction();
 
     try {
-      const challenge = await trx('challenges').where({ id: challengeId }).first();
+        const challenge = await trx('challenges').where({ id: challengeId }).first();
 
-      if (!challenge) {
-        await trx.rollback();
-        req.flash('error', 'Challenge nicht gefunden.');
-        return res.redirect('/challenges');
-      }
+        if (!challenge) {
+            await trx.rollback();
+            req.flash('error', 'Challenge nicht gefunden.');
+            return res.redirect('/challenges');
+        }
 
-      const teamId = challenge.team_id;
+        const teamId = challenge.team_id;
 
-      await trx('challenges').where({ id: challengeId }).del();
-      await trx('team_mitglieder').where({ team_id: teamId }).del();
-      await trx('teams').where({ id: teamId }).del();
+        //  NEU: KASKADIERTES LÖSCHEN STARTEN
+        // 1. Alle Abgaben (challenge_abgaben) zur Challenge finden
+        const abgaben = await trx('challenge_abgaben')
+            .where('challenge_id', challengeId)
+            .select('id');
+        
+        const abgabeIds = abgaben.map(a => a.id);
 
-      await trx.commit();
+        // 2. Abhängige Daten aus Abgaben löschen (Bewertungen & Medien)
+        if (abgabeIds.length > 0) {
+            await trx('abgabe_bewertungen').whereIn('abgabe_id', abgabeIds).del();
+            await trx('abgabe_medien').whereIn('abgabe_id', abgabeIds).del();
+            
+            // 3. Abgaben selbst löschen
+            await trx('challenge_abgaben').where('challenge_id', challengeId).del();
+        }
+        
+        // 4. Team-Abhängigkeiten löschen
+        if (teamId) {
+            // Nur das Team löschen, wenn es nur für diese eine Challenge existiert
+            const teamChallengesCount = await trx('challenges').where('team_id', teamId).count('id as count').first();
+            
+            if (teamChallengesCount.count <= 1) { // Nur diese Challenge referenziert das Team
+                 console.log(` Lösche Team ${teamId} und Mitglieder.`);
+                 await trx('team_mitglieder').where({ team_id: teamId }).del();
+                 await trx('teams').where({ id: teamId }).del();
+            } else {
+                 // Wenn das Team von anderen Challenges geteilt wird, nur die Challenge löschen
+                 console.log(` Team ${teamId} wird von anderen Challenges genutzt, nur Challenge-Eintrag löschen.`);
+            }
+        }
+        
+        // 5. Challenge selbst löschen
+        await trx('challenges').where({ id: challengeId }).del();
+        //  ENDE KASKADIERTES LÖSCHEN
 
-      req.flash('success', ' Challenge und Team erfolgreich gelöscht.');
-      res.redirect('/challenges');
+        await trx.commit();
+        req.flash('success', '✅ Challenge und alle zugehörigen Daten erfolgreich gelöscht.');
+        res.redirect('/challenges');
 
     } catch (error) {
-      await trx.rollback();
-      throw error;
+        await trx.rollback();
+        console.error(' Fehler beim Löschen der Challenge:', error);
+        req.flash('error', 'Fehler beim Löschen der Challenge: ' + error.message);
+        res.redirect('/challenges');
     }
-
-  } catch (error) {
-    console.error(' Fehler beim Löschen:', error);
-    req.flash('error', 'Fehler beim Löschen: ' + error.message);
-    res.redirect('/challenges');
-  }
 });
-
 
 // Abgabe-Seite anzeigen - KORRIGIERT MIT MEDIEN-LADUNG
 router.get('/:id/abgabe', async (req, res) => {

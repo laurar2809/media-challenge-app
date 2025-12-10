@@ -166,17 +166,50 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Schüler löschen
-router.delete('/:id', async (req, res) => {
-  await db('users')
-    .where({
-      id: req.params.id,
-      user_role_id: 1 // Nur Schüler löschen dürfen
-    })
-    .del();
+// routes/schueler.js - KORRIGIERTER DELETE CONTROLLER
 
-  req.flash('success', 'Schüler erfolgreich gelöscht.');
-  res.redirect('/schueler');
+// routes/schueler.js - Fügen Sie DIESEN BLOCK hinzu oder überprüfen Sie ihn
+
+router.delete('/:id', async (req, res) => {
+    const userId = req.params.id;
+    const trx = await db.transaction();
+
+    try {
+        // 1. Abhängigkeiten auflösen: TEAM-Mitgliedschaften löschen
+        await trx('team_mitglieder')
+            .where('user_id', userId)
+            .del();
+        
+        // 2. LÖSCHE DEN USER (Schüler)
+        const deletedRows = await trx('users')
+            .where({
+                id: userId,
+                user_role_id: 1
+            })
+            .del();
+
+        if (deletedRows === 0) {
+            await trx.rollback();
+            req.flash('error', 'Schüler nicht gefunden.');
+            return res.redirect('/schueler');
+        }
+
+        await trx.commit();
+        req.flash('success', `✅ Schüler ${userId} erfolgreich und sauber gelöscht.`);
+        res.redirect('/schueler');
+
+    } catch (error) {
+        await trx.rollback();
+        console.error('❌ Fehler beim Löschen des Schülers:', error);
+        
+        let errorMessage = 'Fehler beim Löschen aufgetreten.';
+        if (error.code === 'SQLITE_CONSTRAINT' || error.errno === 1451) {
+            errorMessage = 'Der Schüler kann nicht gelöscht werden, da er noch in einer Abgabe oder Challenge als Urheber referenziert wird.';
+        }
+        
+        req.flash('error', errorMessage);
+        res.redirect('/schueler');
+    }
 });
 
 module.exports = router;
