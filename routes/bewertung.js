@@ -1,18 +1,21 @@
-// routes/bewertung.js
+// routes/bewertung.js - FINALER BEREINIGTER CONTROLLER
 
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { requireLehrer } = require('../middleware/auth'); // Nur für Lehrer/Admin
+// Import der benötigten Middleware
+const { requireAuth, requireLehrer } = require('../middleware/auth');
 
-/// routes/bewertung.js - KORRIGIERTER router.get('/') mit Filtern und Suche
-
+// =========================================================
+// 1. ÜBERSICHT: Liste aller Challenges (mit Abgabestatus)
+// URL: /bewertung
+// =========================================================
 router.get('/', requireLehrer, async (req, res) => {
     const { status, search } = req.query;
     const activeStatus = status || 'alle';
     const searchTerm = search || '';
-    
-    //  Liste aller möglichen Status für das Frontend-Dropdown
+
+    // Liste aller möglichen Status für das Frontend-Dropdown
     const statusOptions = ['alle', 'offen', 'entwurf', 'eingereicht', 'bewertet', 'abgelehnt'];
 
     try {
@@ -30,28 +33,28 @@ router.get('/', requireLehrer, async (req, res) => {
         // 2. Abgabe-Status und Metadaten zu jeder Challenge hinzufügen
         let challengesWithAbgaben = await Promise.all(
             allChallenges.map(async (challenge) => {
-                
+
                 const abgabe = await db('challenge_abgaben')
                     .where('challenge_id', challenge.challenge_id)
                     .where('team_id', challenge.team_id)
                     .select('id', 'status', 'created_at')
                     .first();
 
-                // NEU: Challenge als "Abgabe" behandeln (für EJS-Template)
+                // Challenge als "Abgabe" behandeln (für EJS-Template)
                 return {
-                    id: abgabe ? abgabe.id : null, 
-                    challenge_id: challenge.challenge_id, 
+                    id: abgabe ? abgabe.id : null,
+                    challenge_id: challenge.challenge_id,
                     challenge_title: challenge.challenge_title,
                     team_name: challenge.team_name,
-                    status: abgabe ? abgabe.status : 'offen', 
-                    created_at: abgabe ? abgabe.created_at : null 
+                    status: abgabe ? abgabe.status : 'offen',
+                    created_at: abgabe ? abgabe.created_at : null
                 };
             })
         );
-        
+
         // 3. BACKEND-FILTERUNG ANWENDEN
         if (activeStatus !== 'alle' || searchTerm) {
-            
+
             challengesWithAbgaben = challengesWithAbgaben.filter(abgabe => {
                 let matchesStatus = true;
                 let matchesSearch = true;
@@ -61,19 +64,19 @@ router.get('/', requireLehrer, async (req, res) => {
                 if (activeStatus !== 'alle') {
                     matchesStatus = abgabe.status === activeStatus;
                 }
-                
+
                 // Such-Filter (Robuste Null-Checks für Titel/Teamnamen)
                 if (searchTerm) {
                     const title = abgabe.challenge_title ? abgabe.challenge_title.toLowerCase() : '';
                     const team = abgabe.team_name ? abgabe.team_name.toLowerCase() : '';
-                    
+
                     matchesSearch = title.includes(searchLower) || team.includes(searchLower);
                 }
-                
+
                 return matchesStatus && matchesSearch;
             });
         }
-        
+
         // 4. Sortierung: 'eingereicht' (zur Bewertung) oben
         challengesWithAbgaben.sort((a, b) => {
             if (a.status === 'eingereicht' && b.status !== 'eingereicht') return -1;
@@ -82,7 +85,7 @@ router.get('/', requireLehrer, async (req, res) => {
         });
 
         res.render('bewertungUebersicht', {
-            abgaben: challengesWithAbgaben, 
+            abgaben: challengesWithAbgaben,
             activePage: 'bewertung',
             activeStatus,
             searchTerm,
@@ -101,15 +104,21 @@ router.get('/', requireLehrer, async (req, res) => {
     }
 });
 
-// routes/bewertung.js - KORRIGIERTE DETAILANSICHT
+// =========================================================
+// 2. DETAILANSICHT: Abgabe prüfen
+// URL: /bewertung/:id
+// =========================================================
 router.get('/:id', requireLehrer, async (req, res) => {
     try {
         const abgabeId = req.params.id;
-        
-        // 1. Abgabe, Challenge und Team-Infos laden
+
+        // 1. Abgabe, Challenge und Team-Infos laden (Joins ergänzen, falls nötig)
         const abgabe = await db('challenge_abgaben')
             .where('challenge_abgaben.id', abgabeId)
-            // ... (restliche Joins) ...
+            // Füge hier Joins hinzu, um Challenge Titel und Team Name zu laden!
+            .leftJoin('challenges', 'challenge_abgaben.challenge_id', 'challenges.id')
+            .leftJoin('teams', 'challenge_abgaben.team_id', 'teams.id')
+            .select('challenge_abgaben.*', 'challenges.title as challenge_title', 'teams.name as team_name')
             .first();
 
         if (!abgabe) {
@@ -117,17 +126,17 @@ router.get('/:id', requireLehrer, async (req, res) => {
             return res.redirect('/bewertung');
         }
 
-        // 2. Alle hochgeladenen Medien für diese Abgabe laden
+        // 2. Alle hochgeladenen Medien
         const medien = await db('abgabe_medien')
             .where('abgabe_id', abgabeId)
             .orderBy('reihenfolge', 'asc');
-            
-        //  NEU: 3. Bestehende Bewertung laden (falls vorhanden)
+
+        // 3. Bestehende Bewertung laden
         const bewertung = await db('abgabe_bewertungen')
             .where('abgabe_id', abgabeId)
             .first();
 
-        //  NEU: 4. Teammitglieder laden
+        // 4. Teammitglieder laden
         const teamMitglieder = await db('team_mitglieder')
             .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
             .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
@@ -137,8 +146,8 @@ router.get('/:id', requireLehrer, async (req, res) => {
         res.render('bewertungDetail', {
             abgabe,
             medien,
-            bewertung: bewertung || null, // Übergibt die Bewertung
-            teamMitglieder, // Übergibt die Mitglieder
+            bewertung: bewertung || null,
+            teamMitglieder,
             activePage: 'bewertung'
         });
     } catch (error) {
@@ -148,59 +157,78 @@ router.get('/:id', requireLehrer, async (req, res) => {
     }
 });
 
-// routes/bewertung.js - FEHLENDER POST HANDLER
-//  3. POST: Bewertung speichern und Status aktualisieren
-// Die Route muss genau auf POST und den Parameter :id lauten
-router.post('/:id', requireLehrer, async (req, res) => {
+// routes/bewertung.js - KORRIGIERTER POST-HANDLER (angepasst an die SQL-Struktur)
+
+router.post('/:id', requireAuth, requireLehrer, async (req, res) => {
     const abgabeId = req.params.id;
-    const { punkte, feedback, status } = req.body; 
+    let { punkte, feedback, status } = req.body;
     const lehrerId = req.currentUser.id;
-    
-    // Einfache Validierung und Status-Check...
-    if (!punkte || !feedback || !status || (status !== 'bewertet' && status !== 'abgelehnt')) {
-        req.flash('error', 'Ungültige oder fehlende Daten für die Bewertung.');
+
+    // 1. Validierung (bleibt gleich, status wird vom Button gesetzt)
+    if (!status || (status !== 'bewertet' && status !== 'abgelehnt')) {
+        req.flash('error', 'Ungültiger Status übermittelt.');
         return res.redirect(`/bewertung/${abgabeId}`);
+    }
+    if (!feedback || feedback.trim() === '') {
+        req.flash('error', 'Feedback ist zwingend erforderlich.');
+        return res.redirect(`/bewertung/${abgabeId}`);
+    }
+
+    // Punkte sind nur Pflicht, wenn die Abgabe BEWERTET wird
+    let punkteZuSpeichern = 0; // Standardwert auf 0 setzen, da NOT NULL verlangt wird
+
+    if (status === 'bewertet') {
+        const parsedPunkte = parseInt(punkte);
+
+        if (isNaN(parsedPunkte) || parsedPunkte < 0 || parsedPunkte > 100) {
+            req.flash('error', 'Punkte sind bei Status "Bewertet" erforderlich und müssen zwischen 0 und 100 liegen.');
+            return res.redirect(`/bewertung/${abgabeId}`);
+        }
+        punkteZuSpeichern = parsedPunkte;
+    } else {
+        // Status ist 'abgelehnt' -> Punktezahl muss 0 sein, um den NOT NULL Constraint zu erfüllen
+        punkteZuSpeichern = 0;
     }
 
     const trx = await db.transaction();
 
     try {
-        // 1. Punkte in 'abgabe_bewertungen' speichern/aktualisieren
-        // Nutzt ON CONFLICT, um Duplikate bei Bearbeitung zu vermeiden
+        // 2. Punkte in 'abgabe_bewertungen' speichern/aktualisieren
+        // HINWEIS: WIR SPEICHERN HIER NUR DIE EXISTIERENDEN SPALTEN DER TABELLE!
         await trx('abgabe_bewertungen')
             .insert({
                 abgabe_id: abgabeId,
                 lehrer_id: lehrerId,
-                punkte: parseInt(punkte),
+                punkte: punkteZuSpeichern, // 🛑 Nun korrekt NULL bei Ablehnung
                 feedback: feedback,
-                bewertet_am: db.fn.now()
+                bewertet_am: db.fn.now() // 🛑 Nur 'bewertet_am' verwenden
             })
-            // Knex-spezifisch für UPDATE bei Konflikt (erfordert, dass lehrer_id und abgabe_id UNIQUE sind)
-            .onConflict(['abgabe_id', 'lehrer_id']) 
+            // UPDATE bei Konflikt
+            .onConflict(['abgabe_id', 'lehrer_id'])
             .merge(['punkte', 'feedback', 'bewertet_am']);
 
 
-        // 2. Status und erreichte Punkte in der Haupt-Abgabe 'challenge_abgaben' aktualisieren
+        // 3. Status und erreichte Punkte in der Haupt-Abgabe 'challenge_abgaben' aktualisieren
+        // DIES IST DER ORT, WO STATUS UND ERREICHTE PUNKTE WIRKLICH HINGEHÖREN!
         await trx('challenge_abgaben')
             .where({ id: abgabeId })
             .update({
-                status: status,
-                erreichte_punkte: parseInt(punkte),
+                status: status, //  Status wird in der challenge_abgaben Tabelle aktualisiert
+                erreichte_punkte: punkteZuSpeichern, //  Punkte werden hier aktualisiert (NULL bei Ablehnung)
                 updated_at: db.fn.now()
             });
 
         await trx.commit();
-        req.flash('success', ` Abgabe ${abgabeId} als '${status}' markiert und bewertet.`);
-        res.redirect('/bewertung'); 
+        req.flash('success', ` Abgabe ${abgabeId} erfolgreich als '${status}' markiert.`);
+        res.redirect('/bewertung');
 
     } catch (error) {
         await trx.rollback();
         console.error(" Fehler beim Speichern der Bewertung:", error);
-        req.flash('error', `Datenbank-Fehler beim Speichern der Bewertung.`);
+        req.flash('error', `Datenbank-Fehler beim Speichern der Bewertung: ${error.message}`);
         res.redirect(`/bewertung/${abgabeId}`);
     }
 });
-
 
 
 module.exports = router;

@@ -3,132 +3,135 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { requireAuth, requireLehrer } = require('../middleware/auth'); 
-const { deleteFile } = require('../utils/fileHandler'); 
+const { requireAuth, requireLehrer } = require('../middleware/auth');
+const { deleteFile } = require('../utils/fileHandler');
 const { deleteImageFile } = require('../utils/fileHandler'); // Sicherstellen, dass deleteFile/deleteImageFile verfügbar ist
 
 // =========================================================
 // HAUPTANSICHT: /challenges (Abgesichert für alle)
 // =========================================================
 router.get('/', requireAuth, async (req, res) => {
-    try {
-        const { kategorie, search, schuljahr } = req.query; // Filter-Parameter für Admin/Lehrer
-        const activeKategorie = kategorie || 'alle';
-        const activeSchuljahr = schuljahr || 'alle';
-        const searchTerm = search || '';
-        
-        // 1. ROLLENPRÜFUNG
-        if (req.currentUser.user_role_id === 1) { 
-            // ---------------------------------------------
-            //  SCHÜLER ANSICHT (views/challenges/index.ejs)
-            // ---------------------------------------------
-            console.log(` Lade Challenges für Schüler ${req.currentUser.vorname}`);
+  try {
+    const { kategorie, search, schuljahr } = req.query; // Filter-Parameter für Admin/Lehrer
+    const activeKategorie = kategorie || 'alle';
+    const activeSchuljahr = schuljahr || 'alle';
+    const searchTerm = search || '';
 
-            const userTeams = await req.db('team_mitglieder')
-                .where('user_id', req.currentUser.id)
-                .pluck('team_id');
+    // 1. ROLLENPRÜFUNG
+    if (req.currentUser.user_role_id === 1) {
+      // ---------------------------------------------
+      //  SCHÜLER ANSICHT (views/challenges/index.ejs)
+      // ---------------------------------------------
+      console.log(` Lade Challenges für Schüler ${req.currentUser.vorname}`);
 
-            let challenges = [];
-            if (userTeams.length > 0) {
-                // Lade nur die Challenges, an denen der Schüler beteiligt ist
-                challenges = await req.db('challenges')
-                    .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
-                    .leftJoin('teams', 'challenges.team_id', 'teams.id')
-                    .whereIn('challenges.team_id', userTeams)
-                    .select(
-                        'challenges.*',
-                        'aufgabenpakete.title as aufgabenpaket_title',
-                        'aufgabenpakete.kategorie', // Für das EJS-Template
-                        'teams.name as team_name'
-                    )
-                    .orderBy('challenges.created_at', 'desc');
-            }
-            
-            //  RENDER SCHÜLER-TEMPLATE: Dieses Template braucht KEINE Filter-Arrays
-            return res.render('challenges/index', { 
-                title: 'Challenges',
-                activePage: 'challenges',
-                challenges: challenges,
-                currentUser: req.currentUser
-            });
-            
-        } else { 
-            // ---------------------------------------------
-            //  LEHRER/ADMIN ANSICHT (views/challenges.ejs)
-            // ---------------------------------------------
-            console.log(` Lade ALLE Challenges für ${req.currentUser.rolle}`);
-            
-            let challengesQuery = req.db('challenges')
-                .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
-                .leftJoin('teams', 'challenges.team_id', 'teams.id')
-                .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id');
+      const userTeams = await req.db('team_mitglieder')
+        .where('user_id', req.currentUser.id)
+        .pluck('team_id');
 
-            // 1. Filtern der Hauptabfrage
-            if (activeSchuljahr !== 'alle') {
-                challengesQuery = challengesQuery.where('schuljahre.name', activeSchuljahr);
-            }
-            if (activeKategorie !== 'alle') {
-                challengesQuery = challengesQuery.where('aufgabenpakete.kategorie', activeKategorie);
-            }
-            if (searchTerm && searchTerm.length >= 2) {
-                const searchLower = searchTerm.toLowerCase();
-                challengesQuery = challengesQuery.where(function () {
-                    this.where('aufgabenpakete.title', 'like', `%${searchLower}%`)
-                       .orWhere('teams.name', 'like', `%${searchLower}%`);
-                });
-            }
+      let challenges = [];
+      if (userTeams.length > 0) {
+        // Lade nur die Challenges, an denen der Schüler beteiligt ist
+        challenges = await req.db('challenges')
+          .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+          .leftJoin('teams', 'challenges.team_id', 'teams.id')
+          .whereIn('challenges.team_id', userTeams)
+          .select(
+            'challenges.*',
+            'aufgabenpakete.title as aufgabenpaket_title',
+            'aufgabenpakete.kategorie', // Für das EJS-Template
+            'teams.name as team_name'
+          )
+          .orderBy('challenges.created_at', 'desc');
+      }
 
-            const challengesRaw = await challengesQuery
-                .select(
-                    'challenges.*',
-                    'aufgabenpakete.title as aufgabenpaket_title',
-                    'aufgabenpakete.kategorie',
-                    'aufgabenpakete.icon as aufgabenpaket_icon',
-                    'teams.name as team_name',
-                    'schuljahre.name as schuljahr_name'
-                )
-                .orderBy('challenges.created_at', 'desc');
+      //  RENDER SCHÜLER-TEMPLATE: Dieses Template braucht KEINE Filter-Arrays
+      return res.render('challenges/index', {
+        title: 'Challenges',
+        activePage: 'challenges',
+        challenges: challenges,
+        currentUser: req.currentUser
+      });
 
-            // 2. Team-Mitglieder für jede Challenge laden (Promise.all)
-            const challenges = await Promise.all(
-                challengesRaw.map(async (challenge) => {
-                    if (challenge.team_id) {
-                        const mitglieder = await req.db('team_mitglieder')
-                            .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
-                            .where('team_mitglieder.team_id', challenge.team_id)
-                            .select('users.vorname', 'users.nachname');
+    } else {
+      // ---------------------------------------------
+      //  LEHRER/ADMIN ANSICHT (views/challenges.ejs)
+      // ---------------------------------------------
+      console.log(` Lade ALLE Challenges für ${req.currentUser.rolle}`);
 
-                        challenge.team_mitglieder_names = mitglieder.map(m => `${m.vorname} ${m.nachname}`).join(', ');
-                    } else {
-                         challenge.team_mitglieder_names = 'Kein Team';
-                    }
-                    return challenge;
-                })
-            );
+      let challengesQuery = req.db('challenges')
+        .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+        .leftJoin('teams', 'challenges.team_id', 'teams.id')
+        .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id');
 
-            // 3. Hole Filter-Daten
-            const [kategorien, schuljahre] = await Promise.all([
-                 req.db('categories').select('*').orderBy('title', 'asc'),
-                 req.db('schuljahre').orderBy('startjahr', 'desc')
-            ]);
-            
-            //  RENDER ADMIN/LEHRER-TEMPLATE: Dieses Template braucht alle Filter-Arrays
-            return res.render('challenges', { 
-                title: 'Challenges',
-                activePage: 'challenges',
-                challenges,
-                kategorien,
-                schuljahre,
-                activeKategorie,
-                activeSchuljahr,
-                searchTerm
-            });
-        }
+      // 1. Filtern der Hauptabfrage
+      if (activeSchuljahr !== 'alle') {
+        challengesQuery = challengesQuery.where('schuljahre.name', activeSchuljahr);
+      }
+      if (activeKategorie !== 'alle') {
+        challengesQuery = challengesQuery.where('aufgabenpakete.kategorie', activeKategorie);
+      }
+      if (searchTerm && searchTerm.length >= 2) {
+        const searchLower = searchTerm.toLowerCase();
+        challengesQuery = challengesQuery.where(function () {
+          this.where('aufgabenpakete.title', 'like', `%${searchLower}%`)
+            .orWhere('teams.name', 'like', `%${searchLower}%`);
+        });
+      }
 
-    } catch (error) {
-        console.error('Challenges Fehler:', error);
-        res.status(500).send('Server Fehler');
+      const challengesRaw = await challengesQuery
+        .select(
+          'challenges.*',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.kategorie',
+          'aufgabenpakete.icon as aufgabenpaket_icon',
+          'teams.name as team_name',
+          'schuljahre.name as schuljahr_name'
+        )
+        .orderBy('challenges.created_at', 'desc');
+
+      // 2. Team-Mitglieder für jede Challenge laden (Promise.all)
+      const challenges = await Promise.all(
+        challengesRaw.map(async (challenge) => {
+          if (challenge.team_id) {
+            const mitglieder = await req.db('team_mitglieder')
+              .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+              .where('team_mitglieder.team_id', challenge.team_id)
+              .select('users.vorname', 'users.nachname');
+
+            challenge.team_mitglieder_names = mitglieder.map(m => `${m.vorname} ${m.nachname}`).join(', ');
+          } else {
+            challenge.team_mitglieder_names = 'Kein Team';
+          }
+          return challenge;
+        })
+      );
+
+      // 3. Hole Filter-Daten
+      const [kategorien, schuljahre] = await Promise.all([
+        req.db('categories').select('*').orderBy('title', 'asc'),
+        req.db('schuljahre').orderBy('startjahr', 'desc')
+      ]);
+
+      //  RENDER ADMIN/LEHRER-TEMPLATE: Dieses Template braucht alle Filter-Arrays
+      return res.render('challenges', {
+        title: 'Challenges',
+        activePage: 'challenges',
+        challenges,
+        kategorien,
+        schuljahre,
+        activeKategorie,
+        activeSchuljahr,
+        searchTerm
+      });
+
+
+      
     }
+
+  } catch (error) {
+    console.error('Challenges Fehler:', error);
+    res.status(500).send('Server Fehler');
+  }
 });
 
 // Neue Challenge Formular
@@ -510,19 +513,19 @@ router.put('/:id', async (req, res) => {
           // Challenge-Daten aktualisieren (bleibt unverändert)
           await trx('challenges')
             .where({ id: req.params.id })
-          // ... (restliche Challenge-Updates) ...
-            .update({ 
-                title: aufgabenpaket.title,
-                beschreibung: aufgabenpaket.description,
-                kategorie: aufgabenpaket.kategorie,
-                icon: aufgabenpaket.icon,
-                zusatzinfos: zusatzinfos || null,
-                abgabedatum: abgabedatum || null,
-                schuljahr_id: schuljahr_id,
-                updated_at: db.fn.now()
+            // ... (restliche Challenge-Updates) ...
+            .update({
+              title: aufgabenpaket.title,
+              beschreibung: aufgabenpaket.description,
+              kategorie: aufgabenpaket.kategorie,
+              icon: aufgabenpaket.icon,
+              zusatzinfos: zusatzinfos || null,
+              abgabedatum: abgabedatum || null,
+              schuljahr_id: schuljahr_id,
+              updated_at: db.fn.now()
             });
         } else {
-            console.log(` Überspringe Update für nicht-zugehöriges Team-Element: ${teamId}`);
+          console.log(` Überspringe Update für nicht-zugehöriges Team-Element: ${teamId}`);
         }
       }
 
@@ -603,76 +606,76 @@ router.post('/test-form', async (req, res) => {
 
 // DELETE /challenges/:id (Challenge löschen)
 router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
-    const challengeId = parseInt(req.params.id);
-    const trx = await db.transaction();
+  const challengeId = parseInt(req.params.id);
+  const trx = await db.transaction();
 
-    try {
-        const challenge = await trx('challenges').where({ id: challengeId }).first();
+  try {
+    const challenge = await trx('challenges').where({ id: challengeId }).first();
 
-        if (!challenge) {
-            await trx.rollback();
-            req.flash('error', 'Challenge nicht gefunden.');
-            return res.redirect('/challenges');
-        }
-
-        const teamId = challenge.team_id;
-
-        // 1. Abgaben finden, um deren Medienpfade zu erhalten
-        const abgaben = await trx('challenge_abgaben')
-            .where('challenge_id', challengeId)
-            .select('id');
-        
-        const abgabeIds = abgaben.map(a => a.id);
-
-        // 2. Mediendateien und DB-Einträge der Abgaben löschen
-        if (abgabeIds.length > 0) {
-            // Finde ALLE Medienpfade VOR dem Löschen der DB-Referenzen
-            const mediaPaths = await trx('abgabe_medien')
-                .whereIn('abgabe_id', abgabeIds)
-                .pluck('datei_pfad'); // Verwende den Pfad, den Sie in abgabe_medien speichern
-
-            //  LÖSCHEN DER DATEIEN VOM DATEISYSTEM
-            mediaPaths.forEach(path => deleteFile(path)); 
-
-            // DB-Einträge der Abgaben und Abhängigkeiten löschen
-            await trx('abgabe_bewertungen').whereIn('abgabe_id', abgabeIds).del();
-            await trx('abgabe_medien').whereIn('abgabe_id', abgabeIds).del(); 
-            await trx('challenge_abgaben').where('challenge_id', challengeId).del();
-        }
-        
-       
-        
-        // 4. Team-Einträge löschen, aber NUR wenn das Team nur von DIESER Challenge genutzt wird
-        if (teamId) {
-            const teamChallengesCount = await trx('challenges').where('team_id', teamId).count('id as count').first();
-            
-            if (teamChallengesCount.count <= 1) { 
-                 // Nur diese Challenge referenziert das Team -> Team und Mitglieder löschen
-                 await trx('team_mitglieder').where({ team_id: teamId }).del();
-                 await trx('teams').where({ id: teamId }).del();
-            }
-        }
-        
-        // 5. Challenge selbst löschen
-        await trx('challenges').where({ id: challengeId }).del();
-        
-        // Transaktion abschließen
-        await trx.commit();
-        req.flash('success', ` Challenge ${challengeId} und alle zugehörigen Daten erfolgreich und sauber gelöscht.`);
-        res.redirect('/challenges');
-
-    } catch (error) {
-        await trx.rollback();
-        console.error(' Fehler beim Löschen der Challenge:', error);
-        
-        let errorMessage = 'Fehler beim Löschen aufgetreten.';
-        if (error.code === 'SQLITE_CONSTRAINT' || error.errno === 1451) {
-            errorMessage = 'Fehler: Challenge enthält noch unbekannte Abhängigkeiten.';
-        }
-        
-        req.flash('error', errorMessage);
-        res.redirect('/challenges');
+    if (!challenge) {
+      await trx.rollback();
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
     }
+
+    const teamId = challenge.team_id;
+
+    // 1. Abgaben finden, um deren Medienpfade zu erhalten
+    const abgaben = await trx('challenge_abgaben')
+      .where('challenge_id', challengeId)
+      .select('id');
+
+    const abgabeIds = abgaben.map(a => a.id);
+
+    // 2. Mediendateien und DB-Einträge der Abgaben löschen
+    if (abgabeIds.length > 0) {
+      // Finde ALLE Medienpfade VOR dem Löschen der DB-Referenzen
+      const mediaPaths = await trx('abgabe_medien')
+        .whereIn('abgabe_id', abgabeIds)
+        .pluck('datei_pfad'); // Verwende den Pfad, den Sie in abgabe_medien speichern
+
+      //  LÖSCHEN DER DATEIEN VOM DATEISYSTEM
+      mediaPaths.forEach(path => deleteFile(path));
+
+      // DB-Einträge der Abgaben und Abhängigkeiten löschen
+      await trx('abgabe_bewertungen').whereIn('abgabe_id', abgabeIds).del();
+      await trx('abgabe_medien').whereIn('abgabe_id', abgabeIds).del();
+      await trx('challenge_abgaben').where('challenge_id', challengeId).del();
+    }
+
+
+
+    // 4. Team-Einträge löschen, aber NUR wenn das Team nur von DIESER Challenge genutzt wird
+    if (teamId) {
+      const teamChallengesCount = await trx('challenges').where('team_id', teamId).count('id as count').first();
+
+      if (teamChallengesCount.count <= 1) {
+        // Nur diese Challenge referenziert das Team -> Team und Mitglieder löschen
+        await trx('team_mitglieder').where({ team_id: teamId }).del();
+        await trx('teams').where({ id: teamId }).del();
+      }
+    }
+
+    // 5. Challenge selbst löschen
+    await trx('challenges').where({ id: challengeId }).del();
+
+    // Transaktion abschließen
+    await trx.commit();
+    req.flash('success', ` Challenge ${challengeId} und alle zugehörigen Daten erfolgreich und sauber gelöscht.`);
+    res.redirect('/challenges');
+
+  } catch (error) {
+    await trx.rollback();
+    console.error(' Fehler beim Löschen der Challenge:', error);
+
+    let errorMessage = 'Fehler beim Löschen aufgetreten.';
+    if (error.code === 'SQLITE_CONSTRAINT' || error.errno === 1451) {
+      errorMessage = 'Fehler: Challenge enthält noch unbekannte Abhängigkeiten.';
+    }
+
+    req.flash('error', errorMessage);
+    res.redirect('/challenges');
+  }
 });
 
 
@@ -733,14 +736,14 @@ router.get('/:id/abgabe', async (req, res) => {
 
     //  NEU: 4. Bewertungsinformationen laden (falls vorhanden)
     if (abgabe) {
-        // Wir laden die Bewertung vom aktuell angemeldeten Lehrer, 
-        // oder falls mehrere Lehrer bewerten, die relevanteste (hier: die erste gefundene).
-        const bewertung = await db('abgabe_bewertungen')
-            .where('abgabe_id', abgabe.id)
-            .first(); // Lädt den ersten oder einzigen Bewertungs-Eintrag
+      // Wir laden die Bewertung vom aktuell angemeldeten Lehrer, 
+      // oder falls mehrere Lehrer bewerten, die relevanteste (hier: die erste gefundene).
+      const bewertung = await db('abgabe_bewertungen')
+        .where('abgabe_id', abgabe.id)
+        .first(); // Lädt den ersten oder einzigen Bewertungs-Eintrag
 
-        // Füge die Bewertung dem Abgabe-Objekt hinzu
-        abgabe.bewertung = bewertung || null; 
+      // Füge die Bewertung dem Abgabe-Objekt hinzu
+      abgabe.bewertung = bewertung || null;
     }
     //  ENDE BEWERTUNGS-LADUNG
 

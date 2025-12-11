@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { loadUser, requireAuth } = require('../middleware/auth'); // 🛑 requireAuth HINZUFÜGEN
+const { loadUser, requireAuth } = require('../middleware/auth'); //  requireAuth HINZUFÜGEN
 const { db } = require('../db'); 
 
 // Homepage
