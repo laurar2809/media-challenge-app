@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
     // Alle Schuljahre für Filter-Dropdown
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
-    res.render('schueler', {
+    res.render('admin/personen/schueler', {
       schueler,
       klassen,
       schuljahre,
@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error("Fehler beim Laden der Schüler:", error);
-    res.render('schueler', {
+    res.render('admin/personen/schueler', {
       schueler: [],
       klassen: [],
       schuljahre: [],
@@ -70,7 +70,7 @@ router.get('/', async (req, res) => {
 router.get('/new', async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
   const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-  res.render('formSchueler', {
+  res.render('admin/personen/formSchueler', {
     item: {},
     klassen,
     schuljahre,
@@ -119,7 +119,7 @@ router.get('/:id/edit', async (req, res) => {
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
-    res.render('formSchueler', {
+    res.render('admin/personen/formSchueler', {
       item: schueler,
       klassen,
       schuljahre,

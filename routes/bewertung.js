@@ -84,7 +84,7 @@ router.get('/', requireLehrer, async (req, res) => {
             return 0;
         });
 
-        res.render('bewertungUebersicht', {
+        res.render('admin/bewertung/bewertungUebersicht', {
             abgaben: challengesWithAbgaben,
             activePage: 'bewertung',
             activeStatus,
@@ -94,7 +94,7 @@ router.get('/', requireLehrer, async (req, res) => {
     } catch (error) {
         console.error("Fehler beim Laden der Bewertungsübersicht:", error);
         req.flash('error', 'Fehler beim Laden der Bewertungsübersicht.');
-        res.render('bewertungUebersicht', {
+        res.render('admin/bewertung/bewertungUebersicht', {
             abgaben: [],
             activePage: 'bewertung',
             activeStatus: 'alle',
@@ -143,7 +143,7 @@ router.get('/:id', requireLehrer, async (req, res) => {
             .where('team_mitglieder.team_id', abgabe.team_id)
             .select('users.vorname', 'users.nachname', 'klassen.name as klasse_name');
 
-        res.render('bewertungDetail', {
+        res.render('admin/bewertung/bewertungDetail', {
             abgabe,
             medien,
             bewertung: bewertung || null,
@@ -199,9 +199,9 @@ router.post('/:id', requireAuth, requireLehrer, async (req, res) => {
             .insert({
                 abgabe_id: abgabeId,
                 lehrer_id: lehrerId,
-                punkte: punkteZuSpeichern, // 🛑 Nun korrekt NULL bei Ablehnung
+                punkte: punkteZuSpeichern, //  Nun korrekt NULL bei Ablehnung
                 feedback: feedback,
-                bewertet_am: db.fn.now() // 🛑 Nur 'bewertet_am' verwenden
+                bewertet_am: db.fn.now() //  Nur 'bewertet_am' verwenden
             })
             // UPDATE bei Konflikt
             .onConflict(['abgabe_id', 'lehrer_id'])

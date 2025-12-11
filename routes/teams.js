@@ -36,7 +36,7 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
             })
         );
 
-        res.render('teams', {
+        res.render('admin/personen/teams', {
             title: 'Team Übersicht',
             activePage: 'teams', // Für die aktive Navigationsleiste
             teams: teamsWithMembers

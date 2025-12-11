@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
     const aufgabenpakete = await query.orderBy('title', 'asc');
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
-    res.render('aufgabenpakete', {
+    res.render('admin/aufgabenpakete/aufgabenpakete', {
       aufgabenpakete: aufgabenpakete,
       kategorien: kategorien,
       activeKategorie: kategorie || 'alle',
@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error("Fehler beim Laden der aufgabenpakete:", error);
-    res.render('aufgabenpakete', {
+    res.render('admin/aufgabenpakete/aufgabenpakete', {
       aufgabenpakete: [],
       kategorien: [],
       activeKategorie: 'alle',
@@ -59,7 +59,7 @@ router.get('/filter/:kategorie', async (req, res) => {
 
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
 
-    res.render('aufgabenpakete', {
+    res.render('admin/aufgabenpakete/aufgabenpakete', {
       aufgabenpakete: aufgabenpakete,
       kategorien: kategorien,
       activeKategorie: kategorie,
@@ -76,7 +76,7 @@ router.get('/filter/:kategorie', async (req, res) => {
 // Neues Aufgabenpaket Formular
 router.get('/new', async (req, res) => {
   const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-  res.render('formAufgabenpakete', {
+  res.render('admin/aufgabenpakete/formAufgabenpakete', {
     item: {},
     kategorien,
     action: '/aufgabenpakete',
@@ -121,7 +121,7 @@ router.get('/:id/edit', async (req, res) => {
       return res.redirect('/aufgabenpakete');
     }
 
-    res.render('formAufgabenpakete', {
+    res.render('admin/aufgabenpakete/formAufgabenpakete', {
       item: aufgabenpaket,
       kategorien,
       action: `/aufgabenpakete/${aufgabenpaket.id}?_method=PUT`,
@@ -241,7 +241,7 @@ router.get('/:id', async (req, res) => {
       return res.redirect('/aufgabenpakete');
     }
 
-    res.render('aufgabenpaketeDetail', {
+    res.render('admin/aufgabenpakete/aufgabenpaketeDetail', {
       aufgabenpaket: aufgabenpaket,
       activePage: 'aufgabenpakete'
     });

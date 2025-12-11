@@ -19,7 +19,7 @@ router.get('/', loadUser, requireAuth, async (req, res) => {
     try {
         const categories = await db('categories').select('*').orderBy('title', 'asc');
         
-        res.render('kategorien', {
+        res.render('admin/kategorien/kategorien', {
             categories,
             activePage: 'kategorien'
         });

@@ -93,7 +93,7 @@ app.use((req, res, next) => {
 });
 
 // Routen einbinden
-app.use('/', require('./routes/index'));
+app.use('/', require('./routes/ansichten'));
 app.use('/challenges', require('./routes/challenges'));
 app.use('/schueler', require('./routes/schueler'));
 app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
