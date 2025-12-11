@@ -5,28 +5,27 @@ const router = express.Router();
 const { db } = require('../db');
 const { requireLehrer } = require('../middleware/auth'); // Nur für Lehrer/Admin
 
-// routes/bewertung.js - KORRIGIERTER router.get('/') mit Filtern und Suche
+/// routes/bewertung.js - KORRIGIERTER router.get('/') mit Filtern und Suche
 
 router.get('/', requireLehrer, async (req, res) => {
-    //  NEU: Filter- und Suchparameter aus der URL holen
     const { status, search } = req.query;
     const activeStatus = status || 'alle';
     const searchTerm = search || '';
     
+    //  Liste aller möglichen Status für das Frontend-Dropdown
+    const statusOptions = ['alle', 'offen', 'entwurf', 'eingereicht', 'bewertet', 'abgelehnt'];
+
     try {
         // 1. Alle Challenges laden (Basis für die Anzeige)
-        let challengesQuery = db('challenges')
+        const allChallenges = await db('challenges')
             .leftJoin('teams', 'challenges.team_id', 'teams.id')
             .select(
                 'challenges.id as challenge_id',
                 'challenges.title as challenge_title',
-                'challenges.abgabedatum',
                 'teams.name as team_name',
                 'teams.id as team_id'
             )
             .orderBy('challenges.created_at', 'desc');
-
-        const allChallenges = await challengesQuery;
 
         // 2. Abgabe-Status und Metadaten zu jeder Challenge hinzufügen
         let challengesWithAbgaben = await Promise.all(
@@ -40,41 +39,42 @@ router.get('/', requireLehrer, async (req, res) => {
 
                 // NEU: Challenge als "Abgabe" behandeln (für EJS-Template)
                 return {
-                    id: abgabe ? abgabe.id : null, // Abgabe ID
-                    challenge_id: challenge.challenge_id, // Challenge ID
+                    id: abgabe ? abgabe.id : null, 
+                    challenge_id: challenge.challenge_id, 
                     challenge_title: challenge.challenge_title,
                     team_name: challenge.team_name,
-                    status: abgabe ? abgabe.status : 'offen', // 'offen' wenn keine Abgabe
+                    status: abgabe ? abgabe.status : 'offen', 
                     created_at: abgabe ? abgabe.created_at : null 
                 };
             })
         );
         
-        // 3.  BACKEND-FILTERUNG ANWENDEN
+        // 3. BACKEND-FILTERUNG ANWENDEN
         if (activeStatus !== 'alle' || searchTerm) {
             
             challengesWithAbgaben = challengesWithAbgaben.filter(abgabe => {
                 let matchesStatus = true;
                 let matchesSearch = true;
+                const searchLower = searchTerm.toLowerCase();
 
                 // Status-Filter
                 if (activeStatus !== 'alle') {
                     matchesStatus = abgabe.status === activeStatus;
                 }
-
-                // Such-Filter (Fall-unabhängig)
+                
+                // Such-Filter (Robuste Null-Checks für Titel/Teamnamen)
                 if (searchTerm) {
-                    const searchLower = searchTerm.toLowerCase();
-                    matchesSearch = abgabe.challenge_title.toLowerCase().includes(searchLower) ||
-                                    (abgabe.team_name && abgabe.team_name.toLowerCase().includes(searchLower));
-                    // Füge hier weitere suchbare Felder hinzu (z.B. Teammitglieder, falls geladen)
+                    const title = abgabe.challenge_title ? abgabe.challenge_title.toLowerCase() : '';
+                    const team = abgabe.team_name ? abgabe.team_name.toLowerCase() : '';
+                    
+                    matchesSearch = title.includes(searchLower) || team.includes(searchLower);
                 }
                 
                 return matchesStatus && matchesSearch;
             });
         }
         
-        // 4. Sortierung: 'eingereicht' oben (zur Bewertung)
+        // 4. Sortierung: 'eingereicht' (zur Bewertung) oben
         challengesWithAbgaben.sort((a, b) => {
             if (a.status === 'eingereicht' && b.status !== 'eingereicht') return -1;
             if (a.status !== 'eingereicht' && b.status === 'eingereicht') return 1;
@@ -84,20 +84,19 @@ router.get('/', requireLehrer, async (req, res) => {
         res.render('bewertungUebersicht', {
             abgaben: challengesWithAbgaben, 
             activePage: 'bewertung',
-            //  NEU: Filterwerte an das Frontend zurückgeben
             activeStatus,
             searchTerm,
-            // Liste aller möglichen Status
-            statusOptions: ['alle', 'offen', 'entwurf', 'eingereicht', 'bewertet', 'abgelehnt'] 
+            statusOptions
         });
     } catch (error) {
         console.error("Fehler beim Laden der Bewertungsübersicht:", error);
+        req.flash('error', 'Fehler beim Laden der Bewertungsübersicht.');
         res.render('bewertungUebersicht', {
             abgaben: [],
             activePage: 'bewertung',
             activeStatus: 'alle',
             searchTerm: '',
-            statusOptions: ['alle', 'offen', 'entwurf', 'eingereicht', 'bewertet', 'abgelehnt'] 
+            statusOptions: statusOptions
         });
     }
 });
