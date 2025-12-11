@@ -2,10 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireLehrer } = require('../middleware/auth'); 
+const { deleteFile } = require('../utils/fileHandler');
+
 
 // Challenges Übersicht - ADMIN: alles, SCHÜLER: nur eigene
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, requireLehrer, async (req, res) => {
   try {
     let challenges;
 
@@ -34,7 +36,7 @@ router.get('/', requireAuth, async (req, res) => {
       });
 
     } else { // Lehrer/Admin - KOMPLETTE FUNKTION MIT ALLEN JOINS
-      console.log(`👨‍🏫 Lade ALLE Challenges für ${req.currentUser.rolle}`);
+      console.log(` Lade ALLE Challenges für ${req.currentUser.rolle}`);
 
       // VOLLSTÄNDIGE QUERY MIT ALLEN JOINS
       let challengesQuery = req.db('challenges')
@@ -586,7 +588,7 @@ router.put('/:id', async (req, res) => {
       for (const teamData of existingTeams) {
         const teamId = teamData.id.replace('existing-', '');
 
-        // 🛑 HIER IST DIE WICHTIGE PRÜFUNG: Nur das Team der aktuellen Challenge aktualisieren
+        //  HIER IST DIE WICHTIGE PRÜFUNG: Nur das Team der aktuellen Challenge aktualisieren
         if (parseInt(teamId) === currentChallenge.team_id) {
           console.log(` Update Team der aktuellen Challenge: ${teamData.name}`);
 
@@ -594,11 +596,11 @@ router.put('/:id', async (req, res) => {
           await trx('teams')
             .where({ id: teamId })
             .update({
-              name: teamData.name, // 🛑 Aktualisierter Team-Name
+              name: teamData.name, //  Aktualisierter Team-Name
               updated_at: db.fn.now()
             });
 
-          // 🛑 Team-Mitglieder aktualisieren (ALT löschen, NEU einfügen)
+          // Team-Mitglieder aktualisieren (ALT löschen, NEU einfügen)
 
           // Alte Mitglieder löschen
           await trx('team_mitglieder')
@@ -619,7 +621,7 @@ router.put('/:id', async (req, res) => {
           // Challenge-Daten aktualisieren (bleibt unverändert)
           await trx('challenges')
             .where({ id: req.params.id })
-// ... (restliche Challenge-Updates) ...
+          // ... (restliche Challenge-Updates) ...
             .update({ 
                 title: aufgabenpaket.title,
                 beschreibung: aufgabenpaket.description,
@@ -710,9 +712,8 @@ router.post('/test-form', async (req, res) => {
   });
 });
 
-// routes/challenges.js - KORRIGIERTER DELETE CONTROLLER (Challenge löschen)
-
-router.delete('/:id', async (req, res) => {
+// DELETE /challenges/:id (Challenge löschen)
+router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
     const challengeId = parseInt(req.params.id);
     const trx = await db.transaction();
 
@@ -727,53 +728,64 @@ router.delete('/:id', async (req, res) => {
 
         const teamId = challenge.team_id;
 
-        //  NEU: KASKADIERTES LÖSCHEN STARTEN
-        // 1. Alle Abgaben (challenge_abgaben) zur Challenge finden
+        // 1. Abgaben finden, um deren Medienpfade zu erhalten
         const abgaben = await trx('challenge_abgaben')
             .where('challenge_id', challengeId)
             .select('id');
         
         const abgabeIds = abgaben.map(a => a.id);
 
-        // 2. Abhängige Daten aus Abgaben löschen (Bewertungen & Medien)
+        // 2. Mediendateien und DB-Einträge der Abgaben löschen
         if (abgabeIds.length > 0) {
+            // Finde ALLE Medienpfade VOR dem Löschen der DB-Referenzen
+            const mediaPaths = await trx('abgabe_medien')
+                .whereIn('abgabe_id', abgabeIds)
+                .pluck('datei_pfad'); // Verwende den Pfad, den Sie in abgabe_medien speichern
+
+            //  LÖSCHEN DER DATEIEN VOM DATEISYSTEM
+            mediaPaths.forEach(path => deleteFile(path)); 
+
+            // DB-Einträge der Abgaben und Abhängigkeiten löschen
             await trx('abgabe_bewertungen').whereIn('abgabe_id', abgabeIds).del();
-            await trx('abgabe_medien').whereIn('abgabe_id', abgabeIds).del();
-            
-            // 3. Abgaben selbst löschen
+            await trx('abgabe_medien').whereIn('abgabe_id', abgabeIds).del(); 
             await trx('challenge_abgaben').where('challenge_id', challengeId).del();
         }
         
-        // 4. Team-Abhängigkeiten löschen
+       
+        
+        // 4. Team-Einträge löschen, aber NUR wenn das Team nur von DIESER Challenge genutzt wird
         if (teamId) {
-            // Nur das Team löschen, wenn es nur für diese eine Challenge existiert
             const teamChallengesCount = await trx('challenges').where('team_id', teamId).count('id as count').first();
             
-            if (teamChallengesCount.count <= 1) { // Nur diese Challenge referenziert das Team
-                 console.log(` Lösche Team ${teamId} und Mitglieder.`);
+            if (teamChallengesCount.count <= 1) { 
+                 // Nur diese Challenge referenziert das Team -> Team und Mitglieder löschen
                  await trx('team_mitglieder').where({ team_id: teamId }).del();
                  await trx('teams').where({ id: teamId }).del();
-            } else {
-                 // Wenn das Team von anderen Challenges geteilt wird, nur die Challenge löschen
-                 console.log(` Team ${teamId} wird von anderen Challenges genutzt, nur Challenge-Eintrag löschen.`);
             }
         }
         
         // 5. Challenge selbst löschen
         await trx('challenges').where({ id: challengeId }).del();
-        //  ENDE KASKADIERTES LÖSCHEN
-
+        
+        // Transaktion abschließen
         await trx.commit();
-        req.flash('success', '✅ Challenge und alle zugehörigen Daten erfolgreich gelöscht.');
+        req.flash('success', ` Challenge ${challengeId} und alle zugehörigen Daten erfolgreich und sauber gelöscht.`);
         res.redirect('/challenges');
 
     } catch (error) {
         await trx.rollback();
         console.error(' Fehler beim Löschen der Challenge:', error);
-        req.flash('error', 'Fehler beim Löschen der Challenge: ' + error.message);
+        
+        let errorMessage = 'Fehler beim Löschen aufgetreten.';
+        if (error.code === 'SQLITE_CONSTRAINT' || error.errno === 1451) {
+            errorMessage = 'Fehler: Challenge enthält noch unbekannte Abhängigkeiten.';
+        }
+        
+        req.flash('error', errorMessage);
         res.redirect('/challenges');
     }
 });
+
 
 // Abgabe-Seite anzeigen - KORRIGIERT MIT MEDIEN-LADUNG
 router.get('/:id/abgabe', async (req, res) => {
