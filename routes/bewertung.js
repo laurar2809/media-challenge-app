@@ -5,35 +5,99 @@ const router = express.Router();
 const { db } = require('../db');
 const { requireLehrer } = require('../middleware/auth'); // Nur für Lehrer/Admin
 
-//  1. ÜBERSICHT: Liste aller eingereichten Abgaben
-// URL: /bewertung
-router.get('/', requireLehrer, async (req, res) => {
-    try {
-        const abgaben = await db('challenge_abgaben')
-            // Joins zur Anzeige der Titel und Teamnamen
-            .leftJoin('challenges', 'challenge_abgaben.challenge_id', 'challenges.id')
-            .leftJoin('teams', 'challenge_abgaben.team_id', 'teams.id')
-            
-            // Wähle nur die relevanten Spalten
-            .select(
-                'challenge_abgaben.*',
-                'challenges.title as challenge_title',
-                'teams.name as team_name'
-            )
-            // Nur eingereichte, bewertete oder abgelehnte Abgaben anzeigen (keine Entwürfe)
-            .whereIn('challenge_abgaben.status', ['eingereicht', 'bewertet', 'abgelehnt'])
-            .orderBy('challenge_abgaben.updated_at', 'desc');
+// routes/bewertung.js - KORRIGIERTER router.get('/') mit Filtern und Suche
 
-        // Nutze den neuen, kurzen EJS-Namen
+router.get('/', requireLehrer, async (req, res) => {
+    //  NEU: Filter- und Suchparameter aus der URL holen
+    const { status, search } = req.query;
+    const activeStatus = status || 'alle';
+    const searchTerm = search || '';
+    
+    try {
+        // 1. Alle Challenges laden (Basis für die Anzeige)
+        let challengesQuery = db('challenges')
+            .leftJoin('teams', 'challenges.team_id', 'teams.id')
+            .select(
+                'challenges.id as challenge_id',
+                'challenges.title as challenge_title',
+                'challenges.abgabedatum',
+                'teams.name as team_name',
+                'teams.id as team_id'
+            )
+            .orderBy('challenges.created_at', 'desc');
+
+        const allChallenges = await challengesQuery;
+
+        // 2. Abgabe-Status und Metadaten zu jeder Challenge hinzufügen
+        let challengesWithAbgaben = await Promise.all(
+            allChallenges.map(async (challenge) => {
+                
+                const abgabe = await db('challenge_abgaben')
+                    .where('challenge_id', challenge.challenge_id)
+                    .where('team_id', challenge.team_id)
+                    .select('id', 'status', 'created_at')
+                    .first();
+
+                // NEU: Challenge als "Abgabe" behandeln (für EJS-Template)
+                return {
+                    id: abgabe ? abgabe.id : null, // Abgabe ID
+                    challenge_id: challenge.challenge_id, // Challenge ID
+                    challenge_title: challenge.challenge_title,
+                    team_name: challenge.team_name,
+                    status: abgabe ? abgabe.status : 'offen', // 'offen' wenn keine Abgabe
+                    created_at: abgabe ? abgabe.created_at : null 
+                };
+            })
+        );
+        
+        // 3.  BACKEND-FILTERUNG ANWENDEN
+        if (activeStatus !== 'alle' || searchTerm) {
+            
+            challengesWithAbgaben = challengesWithAbgaben.filter(abgabe => {
+                let matchesStatus = true;
+                let matchesSearch = true;
+
+                // Status-Filter
+                if (activeStatus !== 'alle') {
+                    matchesStatus = abgabe.status === activeStatus;
+                }
+
+                // Such-Filter (Fall-unabhängig)
+                if (searchTerm) {
+                    const searchLower = searchTerm.toLowerCase();
+                    matchesSearch = abgabe.challenge_title.toLowerCase().includes(searchLower) ||
+                                    (abgabe.team_name && abgabe.team_name.toLowerCase().includes(searchLower));
+                    // Füge hier weitere suchbare Felder hinzu (z.B. Teammitglieder, falls geladen)
+                }
+                
+                return matchesStatus && matchesSearch;
+            });
+        }
+        
+        // 4. Sortierung: 'eingereicht' oben (zur Bewertung)
+        challengesWithAbgaben.sort((a, b) => {
+            if (a.status === 'eingereicht' && b.status !== 'eingereicht') return -1;
+            if (a.status !== 'eingereicht' && b.status === 'eingereicht') return 1;
+            return 0;
+        });
+
         res.render('bewertungUebersicht', {
-            abgaben,
-            activePage: 'bewertung' 
+            abgaben: challengesWithAbgaben, 
+            activePage: 'bewertung',
+            //  NEU: Filterwerte an das Frontend zurückgeben
+            activeStatus,
+            searchTerm,
+            // Liste aller möglichen Status
+            statusOptions: ['alle', 'offen', 'entwurf', 'eingereicht', 'bewertet', 'abgelehnt'] 
         });
     } catch (error) {
         console.error("Fehler beim Laden der Bewertungsübersicht:", error);
         res.render('bewertungUebersicht', {
             abgaben: [],
-            activePage: 'bewertung'
+            activePage: 'bewertung',
+            activeStatus: 'alle',
+            searchTerm: '',
+            statusOptions: ['alle', 'offen', 'entwurf', 'eingereicht', 'bewertet', 'abgelehnt'] 
         });
     }
 });

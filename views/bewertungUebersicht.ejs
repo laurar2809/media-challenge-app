@@ -1,75 +1,89 @@
 <% pageTitle="Abgaben verwalten" %>
 
 <div class="d-flex align-items-center justify-content-between mb-4">
-    <h2 class="h4 m-0">Alle eingereichten Abgaben</h2>
+    <h2 class="h4 m-0">Alle Abgaben und offene Challenges</h2>
     <span class="badge bg-info text-dark">
-        Anzahl Abgaben: <%= abgaben.length %>
+        Challenges: <%= abgaben.length %>
     </span>
 </div>
 
-<div class="row mb-3">
-    <div class="col-md-12">
-        </div>
-</div>
-
-<div class="table-responsive">
-    <table class="table table-hover table align-middle m-0 table-light">
-        <thead class="table-light">
-            <tr>
-                <th scope="col"># ID</th>
-                <th scope="col">Challenge</th>
-                <th scope="col">Team</th>
-                <th scope="col">Status</th>
-                <th scope="col">Eingereicht am</th>
-                <th scope="col" class="text-end" style="min-width: 150px;">Aktionen</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (abgaben.length === 0) { %>
-                <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">
-                        Keine Abgaben zum Bewerten gefunden.
-                    </td>
-                </tr>
-            <% } %>
-
-            <% abgaben.forEach(abgabe => { %>
-                <tr>
-                    <td class="text-muted small"><%= abgabe.id %></td>
-                    <td class="fw-medium">
-                        <%= abgabe.challenge_title %>
-                    </td>
-                    <td>
-                        <%= abgabe.team_name %>
-                    </td>
-                    <td>
-                        <% let statusClass = 'secondary';
-                           if (abgabe.status === 'eingereicht') statusClass = 'warning text-dark';
-                           if (abgabe.status === 'bewertet') statusClass = 'success';
-                           if (abgabe.status === 'abgelehnt') statusClass = 'danger';
+<div class="row mb-4 g-2" id="filterContainer">
+    
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text">Status:</span>
+            <select class="form-select" id="statusFilter">
+                <% statusOptions.forEach(opt => { %>
+                    <option value="<%= opt %>" <%= activeStatus === opt ? 'selected' : '' %>>
+                        <% 
+                            let display = opt.charAt(0).toUpperCase() + opt.slice(1);
+                            if (opt === 'offen') display = 'Noch nicht abgegeben';
+                            if (opt === 'eingereicht') display = 'Zur Bewertung';
+                            if (opt === 'alle') display = 'Alle Status';
                         %>
-                        <span class="badge bg-<%= statusClass %>">
-                            <%= abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1) %>
-                        </span>
-                    </td>
-                    <td>
-                        <% if (abgabe.created_at) { %>
-                            <%= new Date(abgabe.created_at).toLocaleDateString('de-DE') %>
-                        <% } else { %>
-                            N/A
-                        <% } %>
-                    </td>
-                    <td class="text-end">
-                        <a href="/bewertung/<%= abgabe.id %>" class="btn btn-sm btn-custom-edit">
-                            <% if (abgabe.status === 'bewertet') { %>
-                                Bewertung ansehen
-                            <% } else { %>
-                                Bewerten
-                            <% } %>
-                        </a>
-                    </td>
-                </tr>
-            <% }); %>
-        </tbody>
-    </table>
+                        <%= display %>
+                    </option>
+                <% }) %>
+            </select>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="bewertungSearch" class="form-control"
+                placeholder="Suche nach Challenge oder Team..." value="<%= searchTerm %>" autocomplete="off">
+        </div>
+    </div>
 </div>
+<div class="table-responsive">
+    </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusFilter = document.getElementById('statusFilter');
+        const searchInput = document.getElementById('bewertungSearch');
+        const filterContainer = document.getElementById('filterContainer');
+
+        let searchTimeout;
+
+        function applyFilters() {
+            // Holen Sie sich die aktuellen Werte
+            const currentStatus = statusFilter.value;
+            const currentSearch = searchInput.value.trim();
+
+            // URL-Parameter vorbereiten
+            const params = new URLSearchParams();
+            
+            if (currentStatus && currentStatus !== 'alle') {
+                params.set('status', currentStatus);
+            }
+            if (currentSearch) {
+                params.set('search', currentSearch);
+            }
+            
+            // Zur neuen URL weiterleiten
+            window.location.href = `/bewertung?${params.toString()}`;
+        }
+
+        // Event Listener für Status-Filter
+        statusFilter.addEventListener('change', function () {
+            applyFilters();
+        });
+
+        // Event Listener für Sucheingabe (mit Debounce)
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 500); // 500ms Verzögerung für effiziente Suche
+        });
+        
+        // Initialen Search Term aus der URL setzen (falls vorhanden, wird aber durch EJS-Value gesetzt)
+        // const urlParams = new URLSearchParams(window.location.search);
+        // if (urlParams.get('search')) {
+        //     searchInput.value = urlParams.get('search');
+        // }
+    });
+</script>
