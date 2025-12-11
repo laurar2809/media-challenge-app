@@ -7,14 +7,14 @@
   <form action="<%= action %>" method="POST">
 
     <!-- Vorname -->
-    <div class="mb-3">
-      <label class="form-label">Vorname *</label>
+    <div class="input-group mb-3">
+      <label class="input-group-text">Vorname *</label>
       <input type="text" name="vorname" class="form-control" value="<%= item.vorname || '' %>" required>
     </div>
 
     <!-- Nachname -->
-    <div class="mb-3">
-      <label class="form-label">Nachname *</label>
+    <div class="input-group mb-3">
+      <label class="input-group-text">Nachname *</label>
       <input type="text" name="nachname" class="form-control" value="<%= item.nachname || '' %>" required>
     </div>
 
