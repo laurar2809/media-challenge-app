@@ -19,12 +19,25 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 //  ERSETZEN SIE DIES MIT:
 app.use(methodOverride(function (req, res) {
-  if (req.body && typeof req.body === 'object' && '_method' in req.body) {
-    // schaut in req.body nach dem versteckten Feld _method
-    const method = req.body._method;
-    delete req.body._method;
-    return method;
-  }
+    let method = null;
+    
+    // 1. Suche im Body (für Schüler-Löschung, Challenge-Update, etc.)
+    if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+        method = req.body._method;
+        delete req.body._method;
+        return method;
+    }
+
+    // 2. Suche im Query-String (für Aufgabenpakete mit Datei-Upload)
+    if (req.query && req.query._method) {
+        method = req.query._method;
+        // WICHTIG: Im Gegensatz zum Body darf der Query-Parameter NICHT gelöscht werden,
+        // da er Teil des ursprünglichen URL-Pfads ist, den Express erwartet.
+        return method;
+    }
+    
+    // Wenn nichts gefunden wurde
+    return null;
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
