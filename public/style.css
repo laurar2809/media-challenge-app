@@ -22,6 +22,16 @@ table td, table th { vertical-align: middle; }
   background-color: white; /*Farbe*/
 }
 
+
+#svgLogoColorHTL,#svgLogoColorBraunau {
+ fill: white;
+}
+
+#svgLogoColorDish{
+  fill: rgba(255, 255, 255, .5)
+  
+}
+
 .dropdown-toggle.fixed-width {
   width: 300px;
   text-overflow: ellipsis;
@@ -190,6 +200,8 @@ input.form-control:focus {
   border-color: #0082ba;
   background-color: white;
 }
+
+
 
 .btn-custom-filter:hover {
   background-color: #0082ba;
