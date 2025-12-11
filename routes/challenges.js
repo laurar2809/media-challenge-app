@@ -1,245 +1,134 @@
-// routes/challenges.js - OHNE beschreibung
+// routes/challenges.js - FINALE VEREINHEITLICHUNG UND ROLLENTRENNUNG
+
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
 const { requireAuth, requireLehrer } = require('../middleware/auth'); 
-const { deleteFile } = require('../utils/fileHandler');
+const { deleteFile } = require('../utils/fileHandler'); 
+const { deleteImageFile } = require('../utils/fileHandler'); // Sicherstellen, dass deleteFile/deleteImageFile verfügbar ist
 
+// =========================================================
+// HAUPTANSICHT: /challenges (Abgesichert für alle)
+// =========================================================
+router.get('/', requireAuth, async (req, res) => {
+    try {
+        const { kategorie, search, schuljahr } = req.query; // Filter-Parameter für Admin/Lehrer
+        const activeKategorie = kategorie || 'alle';
+        const activeSchuljahr = schuljahr || 'alle';
+        const searchTerm = search || '';
+        
+        // 1. ROLLENPRÜFUNG
+        if (req.currentUser.user_role_id === 1) { 
+            // ---------------------------------------------
+            //  SCHÜLER ANSICHT (views/challenges/index.ejs)
+            // ---------------------------------------------
+            console.log(` Lade Challenges für Schüler ${req.currentUser.vorname}`);
 
-// Challenges Übersicht - ADMIN: alles, SCHÜLER: nur eigene
-router.get('/', requireAuth, requireLehrer, async (req, res) => {
-  try {
-    let challenges;
+            const userTeams = await req.db('team_mitglieder')
+                .where('user_id', req.currentUser.id)
+                .pluck('team_id');
 
-    if (req.currentUser.user_role_id === 1) { // Schüler
-      console.log(` Lade Challenges für Schüler ${req.currentUser.vorname}`);
+            let challenges = [];
+            if (userTeams.length > 0) {
+                // Lade nur die Challenges, an denen der Schüler beteiligt ist
+                challenges = await req.db('challenges')
+                    .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+                    .leftJoin('teams', 'challenges.team_id', 'teams.id')
+                    .whereIn('challenges.team_id', userTeams)
+                    .select(
+                        'challenges.*',
+                        'aufgabenpakete.title as aufgabenpaket_title',
+                        'aufgabenpakete.kategorie', // Für das EJS-Template
+                        'teams.name as team_name'
+                    )
+                    .orderBy('challenges.created_at', 'desc');
+            }
+            
+            //  RENDER SCHÜLER-TEMPLATE: Dieses Template braucht KEINE Filter-Arrays
+            return res.render('challenges/index', { 
+                title: 'Challenges',
+                activePage: 'challenges',
+                challenges: challenges,
+                currentUser: req.currentUser
+            });
+            
+        } else { 
+            // ---------------------------------------------
+            //  LEHRER/ADMIN ANSICHT (views/challenges.ejs)
+            // ---------------------------------------------
+            console.log(` Lade ALLE Challenges für ${req.currentUser.rolle}`);
+            
+            let challengesQuery = req.db('challenges')
+                .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+                .leftJoin('teams', 'challenges.team_id', 'teams.id')
+                .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id');
 
-      // Schüler-Logik - nur eigene Challenges
-      const userTeams = await req.db('team_mitglieder')
-        .where('user_id', req.currentUser.id)
-        .pluck('team_id');
+            // 1. Filtern der Hauptabfrage
+            if (activeSchuljahr !== 'alle') {
+                challengesQuery = challengesQuery.where('schuljahre.name', activeSchuljahr);
+            }
+            if (activeKategorie !== 'alle') {
+                challengesQuery = challengesQuery.where('aufgabenpakete.kategorie', activeKategorie);
+            }
+            if (searchTerm && searchTerm.length >= 2) {
+                const searchLower = searchTerm.toLowerCase();
+                challengesQuery = challengesQuery.where(function () {
+                    this.where('aufgabenpakete.title', 'like', `%${searchLower}%`)
+                       .orWhere('teams.name', 'like', `%${searchLower}%`);
+                });
+            }
 
-      if (userTeams.length > 0) {
-        challenges = await req.db('challenges')
-          .whereIn('team_id', userTeams)
-          .select('*')
-          .orderBy('created_at', 'desc');
-      } else {
-        challenges = [];
-      }
+            const challengesRaw = await challengesQuery
+                .select(
+                    'challenges.*',
+                    'aufgabenpakete.title as aufgabenpaket_title',
+                    'aufgabenpakete.kategorie',
+                    'aufgabenpakete.icon as aufgabenpaket_icon',
+                    'teams.name as team_name',
+                    'schuljahre.name as schuljahr_name'
+                )
+                .orderBy('challenges.created_at', 'desc');
 
-      // Schüler bekommt die einfache View
-      res.render('challenges/index', {
-        title: 'Challenges',
-        activePage: 'challenges',
-        challenges
-      });
+            // 2. Team-Mitglieder für jede Challenge laden (Promise.all)
+            const challenges = await Promise.all(
+                challengesRaw.map(async (challenge) => {
+                    if (challenge.team_id) {
+                        const mitglieder = await req.db('team_mitglieder')
+                            .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+                            .where('team_mitglieder.team_id', challenge.team_id)
+                            .select('users.vorname', 'users.nachname');
 
-    } else { // Lehrer/Admin - KOMPLETTE FUNKTION MIT ALLEN JOINS
-      console.log(` Lade ALLE Challenges für ${req.currentUser.rolle}`);
+                        challenge.team_mitglieder_names = mitglieder.map(m => `${m.vorname} ${m.nachname}`).join(', ');
+                    } else {
+                         challenge.team_mitglieder_names = 'Kein Team';
+                    }
+                    return challenge;
+                })
+            );
 
-      // VOLLSTÄNDIGE QUERY MIT ALLEN JOINS
-      let challengesQuery = req.db('challenges')
-        .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
-        .leftJoin('teams', 'challenges.team_id', 'teams.id')
-        .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
-        .select(
-          'challenges.*',
-          'aufgabenpakete.title as aufgabenpaket_title',
-          'aufgabenpakete.icon as aufgabenpaket_icon',
-          'aufgabenpakete.description as aufgabenpaket_description',
-          'teams.name as team_name',
-          'schuljahre.name as schuljahr_name'
-        )
-        .orderBy('challenges.created_at', 'desc');
+            // 3. Hole Filter-Daten
+            const [kategorien, schuljahre] = await Promise.all([
+                 req.db('categories').select('*').orderBy('title', 'asc'),
+                 req.db('schuljahre').orderBy('startjahr', 'desc')
+            ]);
+            
+            //  RENDER ADMIN/LEHRER-TEMPLATE: Dieses Template braucht alle Filter-Arrays
+            return res.render('challenges', { 
+                title: 'Challenges',
+                activePage: 'challenges',
+                challenges,
+                kategorien,
+                schuljahre,
+                activeKategorie,
+                activeSchuljahr,
+                searchTerm
+            });
+        }
 
-      // Hole zusätzlich Team-Mitglieder für jede Challenge
-      const allChallenges = await challengesQuery;
-
-      // Für jede Challenge die Team-Mitglieder laden
-      const challengesWithMembers = await Promise.all(
-        allChallenges.map(async (challenge) => {
-          if (challenge.team_id) {
-            const mitglieder = await req.db('team_mitglieder')
-              .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
-              .where('team_mitglieder.team_id', challenge.team_id)
-              .select(
-                'users.vorname',
-                'users.nachname'
-              );
-
-            // Namen der Mitglieder als String zusammenfassen
-            challenge.team_mitglieder_names = mitglieder
-              .map(m => `${m.vorname} ${m.nachname}`)
-              .join(', ');
-          } else {
-            challenge.team_mitglieder_names = '';
-          }
-
-          return challenge;
-        })
-      );
-
-      // Hole Filter-Daten
-      const [kategorien, schuljahre, teams] = await Promise.all([
-        req.db('categories').select('*'),
-        req.db('schuljahre').select('*'),
-        req.db('teams').select('*')
-      ]);
-
-      // Setze ALLE Filter-Werte (mit Defaults)
-      const activeKategorie = req.query.kategorie || 'alle';
-      const activeSchuljahr = req.query.schuljahr || 'alle';
-      const searchTerm = req.query.search || '';
-
-      // Filtere Challenges
-      let gefilterteChallenges = challengesWithMembers;
-
-      // Kategorie-Filter
-      if (activeKategorie !== 'alle') {
-        gefilterteChallenges = gefilterteChallenges.filter(c => c.kategorie === activeKategorie);
-      }
-
-      // Schuljahr-Filter
-      if (activeSchuljahr !== 'alle') {
-        gefilterteChallenges = gefilterteChallenges.filter(c => c.schuljahr_name === activeSchuljahr);
-      }
-
-      // Such-Filter
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        gefilterteChallenges = gefilterteChallenges.filter(c =>
-          c.title.toLowerCase().includes(searchLower) ||
-          c.beschreibung.toLowerCase().includes(searchLower) ||
-          c.kategorie.toLowerCase().includes(searchLower) ||
-          (c.aufgabenpaket_title && c.aufgabenpaket_title.toLowerCase().includes(searchLower)) ||
-          (c.team_name && c.team_name.toLowerCase().includes(searchLower)) ||
-          (c.team_mitglieder_names && c.team_mitglieder_names.toLowerCase().includes(searchLower))
-        );
-      }
-
-      console.log(` Gefundene Challenges: ${gefilterteChallenges.length} (gefiltert von ${allChallenges.length})`);
-
-      // Debug: Zeige erste Challenge mit allen Daten
-      if (gefilterteChallenges.length > 0) {
-        console.log('🔍 Erste Challenge mit allen Daten:', {
-          title: gefilterteChallenges[0].title,
-          team_id: gefilterteChallenges[0].team_id,
-          team_name: gefilterteChallenges[0].team_name,
-          team_mitglieder: gefilterteChallenges[0].team_mitglieder_names,
-          aufgabenpaket_title: gefilterteChallenges[0].aufgabenpaket_title,
-          aufgabenpaket_icon: gefilterteChallenges[0].aufgabenpaket_icon
-        });
-      }
-
-      // Admin/Lehrer bekommt die ORIGINALE View mit ALLEN Funktionen
-      res.render('challenges', {
-        title: 'Challenges',
-        activePage: 'challenges',
-        challenges: gefilterteChallenges,
-        kategorien,
-        schuljahre,
-        teams,
-        activeKategorie,
-        activeSchuljahr,
-        searchTerm
-      });
+    } catch (error) {
+        console.error('Challenges Fehler:', error);
+        res.status(500).send('Server Fehler');
     }
-
-  } catch (error) {
-    console.error('Challenges Fehler:', error);
-    res.status(500).send('Server Fehler');
-  }
-});
-
-// Challenges Übersicht
-router.get('/', async (req, res) => {
-  try {
-    const { kategorie, search, schuljahr } = req.query;
-
-    let query = db('challenges')
-      .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
-      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
-      .leftJoin('teams', 'challenges.team_id', 'teams.id');
-
-    if (schuljahr && schuljahr !== 'alle') {
-      query = query.where('schuljahre.name', schuljahr);
-    }
-
-    if (kategorie && kategorie !== 'alle') {
-      query = query.where('aufgabenpakete.kategorie', kategorie);
-    }
-
-    if (search && search.length >= 2) {
-      query = query.where(function () {
-        this.where('aufgabenpakete.title', 'like', `%${search}%`)
-          .orWhere('teams.name', 'like', `%${search}%`)
-          .orWhere('aufgabenpakete.kategorie', 'like', `%${search}%`);
-      });
-    }
-
-    const challenges = await query
-      .select(
-        'challenges.*',
-        'aufgabenpakete.title as aufgabenpaket_title',
-        'aufgabenpakete.kategorie',
-        'aufgabenpakete.icon as aufgabenpaket_icon',
-        'teams.name as team_name',
-        'schuljahre.name as schuljahr_name'
-      )
-      .orderBy('challenges.created_at', 'desc');
-
-    // Team-Mitglieder laden
-    for (let challenge of challenges) {
-      if (challenge.team_id) {
-        const mitglieder = await db('team_mitglieder')
-          .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
-          .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
-          .where('team_mitglieder.team_id', challenge.team_id)
-          .where('users.user_role_id', 1)
-          .select(
-            'users.id',
-            'users.vorname',
-            'users.nachname',
-            'klassen.name as klasse_name'
-          );
-
-        challenge.team_mitglieder_names = mitglieder
-          .map(m => `${m.vorname} ${m.nachname}`)
-          .join(', ');
-      } else {
-        challenge.team_mitglieder_names = 'Kein Team';
-      }
-    }
-
-    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-
-    res.render('challenges', {
-      challenges,
-      kategorien,
-      schuljahre,
-      activeKategorie: kategorie || 'alle',
-      activeSchuljahr: schuljahr || 'alle',
-      searchTerm: search || '',
-      activePage: 'challenges'
-    });
-
-  } catch (error) {
-    console.error("Fehler beim Laden der challenges:", error);
-    const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-    const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-
-    res.render('challenges', {
-      challenges: [],
-      kategorien,
-      schuljahre,
-      activeKategorie: 'alle',
-      activeSchuljahr: 'alle',
-      searchTerm: '',
-      activePage: 'challenges'
-    });
-  }
 });
 
 // Neue Challenge Formular
