@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
       .orderBy('users.nachname', 'asc')
       .orderBy('users.vorname', 'asc');
 
-    res.render('lehrer', {
+    res.render('admin/personen/lehrer', {
       lehrer,
       searchTerm: search || '',
       activePage: 'lehrer'
@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
 
 // Neuer Lehrer Formular
 router.get('/new', async (req, res) => {
-  res.render('formLehrer', {
+  res.render('admin/personen/formLehrer', {
     item: {},
     action: '/lehrer',
     title: 'Neuen Lehrer anlegen',
@@ -86,7 +86,7 @@ router.get('/:id/edit', async (req, res) => {
       return res.redirect('/lehrer');
     }
 
-    res.render('formLehrer', {
+    res.render('admin/personen/formLehrer', {
       item: lehrer,
       action: `/lehrer/${lehrer.id}?_method=PUT`,
       title: 'Lehrer bearbeiten',

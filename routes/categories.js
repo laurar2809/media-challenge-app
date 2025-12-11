@@ -10,7 +10,7 @@ const { uploadCategory } = require('../middleware/uploads');
 
 // Neue Kategorie Formular
 router.get('/new', (req, res) => {
-  res.render('formKategorien', {
+  res.render('admin/kategorien/formKategorien', {
     item: {},
     action: '/categories',
     method: 'POST',
@@ -45,7 +45,7 @@ router.get('/:id/edit', async (req, res) => {
     req.flash('error', 'Kategorie nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('formKategorien', {
+  res.render('admin/kategorien/formKategorien', {
     item,
     action: `/categories/${item.id}?_method=PUT`,
     method: 'POST',
