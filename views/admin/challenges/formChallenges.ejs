@@ -190,7 +190,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      console.log('🚀 formChallenges.ejs initialisiert');
+      console.log(' formChallenges.ejs initialisiert');
 
       // === 1. DOM ELEMENTE DEFINIEREN ===
       const availableMembers = document.getElementById('availableMembers');
@@ -225,8 +225,8 @@
       let teamCounter = 1;
       let filterTimeout;
 
-      let isEditMode = false; // 🛑 NEU: Status zur Unterscheidung Erstellen/Bearbeiten
-      let currentEditIndex = -1; // 🛑 NEU: Index des Teams, das gerade bearbeitet wird
+      let isEditMode = false; //  NEU: Status zur Unterscheidung Erstellen/Bearbeiten
+      let currentEditIndex = -1; //  NEU: Index des Teams, das gerade bearbeitet wird
 
 
       // === 4. HELPER FUNCTIONS ===
@@ -340,7 +340,7 @@
         }
       }
 
-      // 🛑 NEU: Funktion zum Bearbeiten eines Teams
+      //  NEU: Funktion zum Bearbeiten eines Teams
       function editTeam(index) {
         const teamToEdit = teams[index];
         currentEditIndex = index;
@@ -433,7 +433,7 @@
             });
           });
 
-          // 🛑 NEU: EDIT BUTTON LISTENER
+          //  NEU: EDIT BUTTON LISTENER
           teamsContainer.querySelectorAll('.edit-team').forEach(btn => {
             btn.addEventListener('click', function () {
               const index = parseInt(this.dataset.index);
@@ -595,7 +595,7 @@
         }
       });
 
-      // 🛑 NEU: Klick auf "Neues Team erstellen" öffnet Modal sauber
+      //  NEU: Klick auf "Neues Team erstellen" öffnet Modal sauber
       document.getElementById('openCreateTeamModal').addEventListener('click', function () {
         isEditMode = false;
         currentEditIndex = -1;
@@ -650,7 +650,7 @@
         clearTeamForm();
       });
 
-      // 🛑 NEU: Team speichern Button (Bearbeiten Modus)
+      //  NEU: Team speichern Button (Bearbeiten Modus)
       saveTeamBtn.addEventListener('click', function () {
         const teamName = newTeamName.value.trim();
         const members = Array.from(teamDropZone.querySelectorAll('.btn[data-id]'));
@@ -702,7 +702,7 @@
 
       // Formular Submit
       challengeForm.addEventListener('submit', function (e) {
-        // 🛑 WICHTIG: Teams-Daten in Hidden-Feld speichern
+        //  WICHTIG: Teams-Daten in Hidden-Feld speichern
         updateTeamsData();
 
         // Nur validieren, NICHT abbrechen!
@@ -746,7 +746,7 @@
 
         teamModal.addEventListener('hidden.bs.modal', function () {
           console.log('Modal geschlossen');
-          // 🛑 WICHTIG: Bearbeitungs-Status zurücksetzen
+          //  WICHTIG: Bearbeitungs-Status zurücksetzen
           isEditMode = false;
           currentEditIndex = -1;
           clearTeamForm();

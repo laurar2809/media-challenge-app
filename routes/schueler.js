@@ -8,11 +8,11 @@ router.get('/', async (req, res) => {
     const { klasse, schuljahr, search } = req.query;
 
     let query = db('users')
-      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')  // ✅ users statt schueler
-      .leftJoin('schuljahre', 'users.schuljahr_id', 'schuljahre.id')  // ✅ users statt schueler
+      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')  // users statt schueler
+      .leftJoin('schuljahre', 'users.schuljahr_id', 'schuljahre.id')  //  users statt schueler
       .where('users.user_role_id', 1)
       .select(
-        'users.*',  // ✅ users statt schueler
+        'users.*',  // users statt schueler
         'klassen.name as klasse_name',
         'schuljahre.name as schuljahr_name'
       );
@@ -23,14 +23,14 @@ router.get('/', async (req, res) => {
     }
 
     if (schuljahr && schuljahr !== 'alle') {
-      query = query.where('schuljahre.id', schuljahr); // ✅ 'name' durch 'id' ersetzen
+      query = query.where('schuljahre.id', schuljahr); //  'name' durch 'id' ersetzen
     }
 
     // Suche nach Namen 
     if (search) {
       query = query.where(function () {
-        this.where('users.vorname', 'like', `%${search}%`)  // ✅ users statt schueler
-          .orWhere('users.nachname', 'like', `%${search}%`)  // ✅ users statt schueler
+        this.where('users.vorname', 'like', `%${search}%`)  //  users statt schueler
+          .orWhere('users.nachname', 'like', `%${search}%`)  //  users statt schueler
           .orWhere('klassen.name', 'like', `%${search}%`)
           .orWhere('schuljahre.name', 'like', `%${search}%`);
       });
@@ -195,12 +195,12 @@ router.delete('/:id', async (req, res) => {
         }
 
         await trx.commit();
-        req.flash('success', `✅ Schüler ${userId} erfolgreich und sauber gelöscht.`);
+        req.flash('success', ` Schüler ${userId} erfolgreich und sauber gelöscht.`);
         res.redirect('/schueler');
 
     } catch (error) {
         await trx.rollback();
-        console.error('❌ Fehler beim Löschen des Schülers:', error);
+        console.error(' Fehler beim Löschen des Schülers:', error);
         
         let errorMessage = 'Fehler beim Löschen aufgetreten.';
         if (error.code === 'SQLITE_CONSTRAINT' || error.errno === 1451) {

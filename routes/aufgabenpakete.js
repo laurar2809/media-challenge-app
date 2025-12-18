@@ -143,10 +143,10 @@ const deleteImageFile = async (imagePath) => {
     if (imagePath && imagePath.startsWith('/uploads/')) {
       const fullPath = path.join(__dirname, '../public', imagePath);
       await fs.unlink(fullPath);
-      console.log('✅ Bild gelöscht:', fullPath);
+      console.log(' Bild gelöscht:', fullPath);
     }
   } catch (error) {
-    console.log('⚠️ Bild konnte nicht gelöscht werden (evtl. nicht vorhanden):', error.message);
+    console.log(' Bild konnte nicht gelöscht werden (evtl. nicht vorhanden):', error.message);
   }
 };
 
@@ -217,7 +217,7 @@ router.delete('/:id', async (req, res) => {
     const deleteResult = await db('aufgabenpakete').where({ id: aufgabenpaketId }).del();
 
     if (deleteResult > 0) {
-      console.log("🎉 ERFOLG: Aufgabenpaket wurde gelöscht!");
+      console.log(" ERFOLG: Aufgabenpaket wurde gelöscht!");
       req.flash('success', 'Aufgabenpaket erfolgreich gelöscht.');
     } else {
       req.flash('error', 'Löschen fehlgeschlagen.');

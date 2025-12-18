@@ -72,13 +72,13 @@
                             let statusText = abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1);
 
                             if (abgabe.status === 'eingereicht') { 
-                                statusClass = 'danger'; // 🛑 Rot für "Zur Bewertung"
+                                statusClass = 'danger'; //  Rot für "Zur Bewertung"
                                 statusText = 'Zur Bewertung';
                             }
                             if (abgabe.status === 'bewertet') statusClass = 'success';
                             if (abgabe.status === 'abgelehnt') statusClass = 'dark';
                             if (abgabe.status === 'entwurf') statusClass = 'warning text-dark';
-                            if (abgabe.status === 'offen') { // 🛑 NEU: Wenn noch keine Abgabe erstellt
+                            if (abgabe.status === 'offen') { //  NEU: Wenn noch keine Abgabe erstellt
                                 statusClass = 'info text-dark';
                                 statusText = 'Nicht abgegeben';
                             }

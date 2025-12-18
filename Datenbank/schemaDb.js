@@ -5,7 +5,7 @@ const { db } = require('../db');
 async function createSchema() {
   try {
     const dbClient = process.env.DB_CLIENT || 'sqlite';
-    console.log(`📦 Erstelle Datenbank-Schema für ${dbClient.toUpperCase()}...`);
+    console.log(` Erstelle Datenbank-Schema für ${dbClient.toUpperCase()}...`);
 
     // Helper function für Fremdschlüssel
     const addForeignKey = (table, column, references, onDelete = 'SET NULL') => {
@@ -21,9 +21,9 @@ async function createSchema() {
         table.string('rolle', 50).notNullable().unique();
         table.timestamps(true, true);
       });
-      console.log('✅ User_Roles-Tabelle erstellt');
+      console.log(' User_Roles-Tabelle erstellt');
     } else {
-      console.log('⏭ User_Roles-Tabelle existiert bereits');
+      console.log(' User_Roles-Tabelle existiert bereits');
     }
 
     // users Tabelle - NEU (ersetzt schueler)
@@ -41,9 +41,9 @@ async function createSchema() {
         addForeignKey(table, 'klasse_id', 'klassen');
         addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
-      console.log('✅ Users-Tabelle erstellt');
+      console.log(' Users-Tabelle erstellt');
     } else {
-      console.log('⏭ Users-Tabelle existiert bereits');
+      console.log(' Users-Tabelle existiert bereits');
     }
 
     // categories Tabelle
@@ -55,9 +55,9 @@ async function createSchema() {
         table.string('icon', 500);
         table.timestamps(true, true);
       });
-      console.log('✅ Categories-Tabelle erstellt');
+      console.log('Categories-Tabelle erstellt');
     } else {
-      console.log('⏭ Categories-Tabelle existiert bereits');
+      console.log('Categories-Tabelle existiert bereits');
     }
 
     // aufgabenpakete Tabelle
@@ -72,7 +72,7 @@ async function createSchema() {
         table.date('end_date').nullable();
         table.timestamps(true, true);
       });
-      console.log('✅ Aufgabenpakete-Tabelle erstellt');
+      console.log(' Aufgabenpakete-Tabelle erstellt');
     } else {
       console.log('⏭ Aufgabenpakete-Tabelle existiert bereits');
     }
@@ -91,7 +91,7 @@ async function createSchema() {
         }
         table.timestamp('created_at').defaultTo(db.fn.now());
       });
-      console.log('✅ Schuljahre-Tabelle erstellt');
+      console.log(' Schuljahre-Tabelle erstellt');
     } else {
       console.log('⏭ Schuljahre-Tabelle existiert bereits');
     }
@@ -103,7 +103,7 @@ async function createSchema() {
         table.string('name', 50).notNullable().unique();
         table.timestamps(true, true);
       });
-      console.log('✅ Klassen-Tabelle erstellt');
+      console.log(' Klassen-Tabelle erstellt');
     } else {
       console.log('⏭ Klassen-Tabelle existiert bereits');
     }
@@ -119,9 +119,9 @@ async function createSchema() {
         
         addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
-      console.log('✅ Teams-Tabelle erstellt');
+      console.log(' Teams-Tabelle erstellt');
     } else {
-      console.log('⏭ Teams-Tabelle existiert bereits');
+      console.log(' Teams-Tabelle existiert bereits');
     }
 
     // team_mitglieder Tabelle - ANGEPASST (schueler_id → user_id)
@@ -147,7 +147,7 @@ async function createSchema() {
         table.unique(['team_id', 'user_id']);
       });
       
-      console.log('✅ Team-Mitglieder-Tabelle erstellt');
+      console.log(' Team-Mitglieder-Tabelle erstellt');
     } else {
       console.log('⏭ Team-Mitglieder-Tabelle existiert bereits');
     }
@@ -194,9 +194,9 @@ async function createSchema() {
         addForeignKey(table, 'user_id', 'users'); // GEÄNDERT: schueler → users
         addForeignKey(table, 'schuljahr_id', 'schuljahre');
       });
-      console.log('✅ Challenges-Tabelle erstellt');
+      console.log(' Challenges-Tabelle erstellt');
     } else {
-      console.log('⏭ Challenges-Tabelle existiert bereits');
+      console.log('Challenges-Tabelle existiert bereits');
     }
 
     // challenge_bilder Tabelle
@@ -211,15 +211,15 @@ async function createSchema() {
         
         addForeignKey(table, 'challenge_id', 'challenges', 'CASCADE');
       });
-      console.log('✅ Challenge-Bilder-Tabelle erstellt');
+      console.log(' Challenge-Bilder-Tabelle erstellt');
     } else {
       console.log('⏭ Challenge-Bilder-Tabelle existiert bereits');
     }
 
-    console.log('🎉 Datenbank-Schema erfolgreich geprüft/erstellt!');
+    console.log(' Datenbank-Schema erfolgreich geprüft/erstellt!');
 
   } catch (error) {
-    console.error('❌ Fehler beim Erstellen des Schemas:', error);
+    console.error(' Fehler beim Erstellen des Schemas:', error);
     throw error;
   }
 }

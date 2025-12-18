@@ -4,10 +4,10 @@ const { db } = require('./db');
 
 async function seedDatabase() {
   try {
-    console.log('🌱 Starte mit dem Befüllen der Datenbank...');
+    console.log('Starte mit dem Befüllen der Datenbank...');
 
     // Schuljahre einfügen
-    console.log('📅 Füge Schuljahre hinzu...');
+    console.log(' Füge Schuljahre hinzu...');
     const schuljahreExists = await db('schuljahre').select('id').first();
     if (!schuljahreExists) {
       await db('schuljahre').insert([
@@ -15,13 +15,13 @@ async function seedDatabase() {
         { name: '2024/25', startjahr: 2024, endjahr: 2025, aktiv: true },
         { name: '2025/26', startjahr: 2025, endjahr: 2026, aktiv: false }
       ]);
-      console.log('✅ Schuljahre eingefügt');
+      console.log(' Schuljahre eingefügt');
     } else {
-      console.log('⏭ Schuljahre existieren bereits');
+      console.log(' Schuljahre existieren bereits');
     }
 
     // Klassen einfügen
-    console.log('🏫 Füge Klassen hinzu...');
+    console.log(' Füge Klassen hinzu...');
     const klassenExists = await db('klassen').select('id').first();
     if (!klassenExists) {
       await db('klassen').insert([
@@ -29,13 +29,13 @@ async function seedDatabase() {
         { name: '3BHELS' },
         { name: '4BHELS' }
       ]);
-      console.log('✅ Klassen eingefügt');
+      console.log(' Klassen eingefügt');
     } else {
-      console.log('⏭ Klassen existieren bereits');
+      console.log('Klassen existieren bereits');
     }
 
     // Schüler einfügen
-    console.log('👥 Füge Schüler hinzu...');
+    console.log(' Füge Schüler hinzu...');
     const schuelerExists = await db('schueler').select('id').first();
     if (!schuelerExists) {
       const klassen = await db('klassen').select('id', 'name');
@@ -166,7 +166,7 @@ async function seedDatabase() {
       ];
 
       await db('schueler').insert(schuelerData);
-      console.log(`✅ ${schuelerData.length} Schüler eingefügt`);
+      console.log(` ${schuelerData.length} Schüler eingefügt`);
     } else {
       console.log('⏭ Schüler existieren bereits');
     }
@@ -187,13 +187,13 @@ async function seedDatabase() {
         { name: 'Team 7', schuljahr_id: aktuellesSchuljahr },
         { name: 'Team 8', schuljahr_id: aktuellesSchuljahr }
       ]);
-      console.log('✅ Teams eingefügt');
+      console.log(' Teams eingefügt');
     } else {
       console.log('⏭ Teams existieren bereits');
     }
 
     // Team-Mitglieder einfügen
-    console.log('🔗 Füge Team-Mitglieder hinzu...');
+    console.log(' Füge Team-Mitglieder hinzu...');
     const teamMitgliederExists = await db('team_mitglieder').select('id').first();
     if (!teamMitgliederExists) {
       // Hole Schüler-IDs für bekannte Namen
@@ -251,18 +251,18 @@ async function seedDatabase() {
 
       if (teamMitgliederData.length > 0) {
         await db('team_mitglieder').insert(teamMitgliederData);
-        console.log(`✅ ${teamMitgliederData.length} Team-Mitglieder eingefügt`);
+        console.log(` ${teamMitgliederData.length} Team-Mitglieder eingefügt`);
       } else {
-        console.log('⚠️ Keine Team-Mitglieder eingefügt (Schüler/Teams nicht gefunden)');
+        console.log(' Keine Team-Mitglieder eingefügt (Schüler/Teams nicht gefunden)');
       }
     } else {
-      console.log('⏭ Team-Mitglieder existieren bereits');
+      console.log(' Team-Mitglieder existieren bereits');
     }
 
-    console.log('🎉 Datenbank-Befüllung abgeschlossen!');
+    console.log(' Datenbank-Befüllung abgeschlossen!');
 
   } catch (error) {
-    console.error('❌ Fehler beim Befüllen der Datenbank:', error);
+    console.error(' Fehler beim Befüllen der Datenbank:', error);
     throw error;
   }
 }

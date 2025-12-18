@@ -125,7 +125,7 @@ router.get('/', requireAuth, async (req, res) => {
       });
 
 
-      
+
     }
 
   } catch (error) {
