@@ -31,6 +31,20 @@ async function cleanUpFile(req) {
     }
 }
 
+// HELPER: Datei über den in der DB gespeicherten Pfad löschen (z.B. "/uploads/abgaben/2025/26/team-21/...")
+async function deletePhysicalFile(dbPath) {
+  if (!dbPath) return;
+
+  const fullPath = path.join(__dirname, '..', 'public', dbPath);
+
+  await fs.unlink(fullPath).catch(err => {
+    if (err.code !== 'ENOENT') {
+      console.error('Delete file error:', err);
+    }
+  });
+}
+
+
 // API: Löschen einer einzelnen Mediendatei
 router.delete('/api/abgaben/media/:mediaId', async (req, res) => {
     try {
@@ -51,7 +65,7 @@ router.delete('/api/abgaben/media/:mediaId', async (req, res) => {
         }
 
         // 3. Datei physisch vom Server löschen
-        await cleanUpFile(mediaEntry.datei_pfad); 
+        await deletePhysicalFile(mediaEntry.datei_pfad);
 
         // 4. Datensatz aus der DB löschen
         const deletedRows = await db('abgabe_medien')
