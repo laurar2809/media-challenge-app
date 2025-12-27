@@ -135,7 +135,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // Neue Challenge Formular
-router.get('/new', async (req, res) => {
+router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   try {
     const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
     const schueler = await db('users')
@@ -165,7 +165,7 @@ router.get('/new', async (req, res) => {
 });
 
 // Challenge speichern - OHNE beschreibung
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, requireLehrer ,async (req, res) => {
   try {
     const { aufgabenpaket_id, teams_data, zusatzinfos, abgabedatum, schuljahr_id } = req.body;
 
@@ -308,7 +308,7 @@ router.get('/detail/:id', async (req, res) => {
 });
 
 // IN challenges.js - DIESE GET ROUTE KORRIGIEREN:
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
   try {
     const challengeId = req.params.id;
 
@@ -413,7 +413,7 @@ router.get('/:id/edit', async (req, res) => {
 });
 
 // PUT /:id - VOLLSTÄNDIG KORRIGIERT FÜR MEHRERE TEAMS
-router.put('/:id', async (req, res) => {
+router.put('/:id',requireAuth, requireLehrer, async (req, res) => {
   try {
     console.log(' PUT /challenges/' + req.params.id + ' - BEARBEITEN + NEUE TEAMS');
 

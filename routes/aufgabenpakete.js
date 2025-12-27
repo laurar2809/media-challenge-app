@@ -4,9 +4,10 @@ const { db } = require('../db');
 const { uploadAufgabenpaket } = require('../middleware/uploads');
 const fs = require('fs').promises;
 const path = require('path');
+const { requireAuth, requireLehrer } = require('..middleware/auth');
 
 // Aufgabenpakete Übersicht mit Filterung
-router.get('/', async (req, res) => {
+router.get('/',  requireAuth, requireLehrer, async (req, res) => {
   try {
     const { kategorie, search } = req.query;
 
@@ -49,7 +50,7 @@ router.get('/', async (req, res) => {
 });
 
 // Aufgabenpaket Filter nach Kategorie
-router.get('/filter/:kategorie', async (req, res) => {
+router.get('/filter/:kategorie',  requireAuth, requireLehrer, async (req, res) => {
   try {
     const kategorie = req.params.kategorie;
 
@@ -74,7 +75,7 @@ router.get('/filter/:kategorie', async (req, res) => {
 });
 
 // Neues Aufgabenpaket Formular
-router.get('/new', async (req, res) => {
+router.get('/new',  requireAuth, requireLehrer, async (req, res) => {
   const kategorien = await db('categories').select('*').orderBy('title', 'asc');
   res.render('admin/aufgabenpakete/formAufgabenpakete', {
     item: {},
@@ -86,7 +87,7 @@ router.get('/new', async (req, res) => {
 });
 
 // Aufgabenpaket speichern
-router.post('/', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
+router.post('/', requireAuth, requireLehrer, uploadAufgabenpaket.single('iconFile'), async (req, res) => {
   let { kategorie, description, icon, title } = req.body;
 
   if (!kategorie || !description || !title) {
@@ -111,7 +112,7 @@ router.post('/', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
 });
 
 // Aufgabenpaket bearbeiten Formular
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit',  requireAuth, requireLehrer,async (req, res) => {
   try {
     const aufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
     const kategorien = await db('categories').select('*').orderBy('title', 'asc');
@@ -151,7 +152,7 @@ const deleteImageFile = async (imagePath) => {
 };
 
 // Aufgabenpaket aktualisieren
-router.put('/:id', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
+router.put('/:id',  requireAuth, requireLehrer, uploadAufgabenpaket.single('iconFile'), async (req, res) => {
   try {
     let { kategorie, description, title, keep_existing_image } = req.body;
 
@@ -199,7 +200,7 @@ router.put('/:id', uploadAufgabenpaket.single('iconFile'), async (req, res) => {
 });
 
 // Aufgabenpaket löschen
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',  requireAuth, requireLehrer, async (req, res) => {
   try {
     const aufgabenpaketId = parseInt(req.params.id);
     const aufgabenpaketToDelete = await db('aufgabenpakete').where({ id: aufgabenpaketId }).first();
@@ -232,7 +233,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Aufgabenpaket Details
-router.get('/:id', async (req, res) => {
+router.get('/:id',  requireAuth, requireLehrer, async (req, res) => {
   try {
     const aufgabenpaket = await db('aufgabenpakete').where({ id: req.params.id }).first();
 

@@ -117,8 +117,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function uploadFile(file) {
         // Logik für den Upload (Progress Bar etc.) bleibt hier
         const progressDiv = document.querySelector('.upload-progress');
-        const progressBar = progressDiv.querySelector('.progress-bar');
-        const statusText = progressDiv.querySelector('.upload-status');
+        const progressBar = progressDiv ? progressDiv.querySelector('.progress-bar') : null;
+        const statusText = progressDiv ? progressDiv.querySelector('.upload-status') : null;
 
         if (progressDiv) progressDiv.classList.remove('d-none');
         if (progressBar) progressBar.style.width = '0%';

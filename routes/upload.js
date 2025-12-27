@@ -216,13 +216,7 @@ router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res)
 
         //  Clean-up Logic (Wird bei JEDEM Fehler erreicht)
         if (req.file) {
-            // Löscht die Datei vom temporären oder vom ZIEL-Pfad, falls der Fehler später auftrat.
-            // Achtung: Wenn der Fehler VOR dem Verschieben auftrat, liegt die Datei in req.file.path.
-            // Wenn der Fehler NACH dem Verschieben (4c) auftrat, liegt die Datei im newFullPath.
-
-            // Da wir in 4c den Fehler weiterwerfen, liegt die Datei in newFullPath. 
-            // Hier wird nur die Multer-Logik gelöscht, was reicht, wenn der Fehler früh auftritt.
-            await fs.unlink(req.file.path).catch(err => console.error('Cleanup Error:', err));
+            await cleanUpFile(req);
         }
 
         // Zusätzliche Überprüfung: Wenn das Verschieben erfolgreich war, aber DB fehlschlug,

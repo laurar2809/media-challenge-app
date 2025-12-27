@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
+const { requireAuth, requireLehrer } = require('../middleware/auth');
 
 // Schüler Übersicht mit Filterung - VOLLSTÄNDIG KORRIGIERT
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requireLehrer, async (req, res) => {
   try {
     const { klasse, schuljahr, search } = req.query;
 
@@ -67,7 +68,7 @@ router.get('/', async (req, res) => {
 });
 
 // Neuer Schüler Formular
-router.get('/new', async (req, res) => {
+router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
   const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
   res.render('admin/personen/formSchueler', {
@@ -81,7 +82,7 @@ router.get('/new', async (req, res) => {
 });
 
 // Schüler speichern
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, requireLehrer, async (req, res) => {
   const { vorname, nachname, klasse_id, schuljahr_id } = req.body;
 
   if (!vorname || !nachname || !schuljahr_id) {
@@ -102,7 +103,7 @@ router.post('/', async (req, res) => {
 });
 
 // Schüler bearbeiten Formular
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
   try {
     const schueler = await db('users')
       .where({
@@ -136,7 +137,7 @@ router.get('/:id/edit', async (req, res) => {
 });
 
 // Schüler aktualisieren
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
   const { vorname, nachname, klasse_id, schuljahr_id } = req.body;
 
   if (!vorname || !nachname || !schuljahr_id) {
@@ -170,7 +171,7 @@ router.put('/:id', async (req, res) => {
 
 // routes/schueler.js - Fügen Sie DIESEN BLOCK hinzu oder überprüfen Sie ihn
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
     const userId = req.params.id;
     const trx = await db.transaction();
 

@@ -4,12 +4,13 @@ const path = require('path');
 const fs = require('fs');
 const { db } = require('../db');
 const { uploadCategory } = require('../middleware/uploads');
+const { requireAuth, requireLehrer} =require('..middleware/auth');
 
 // Kategorien Übersicht (Homepage)
 // Wird bereits in routes/index.js behandelt
 
 // Neue Kategorie Formular
-router.get('/new', (req, res) => {
+router.get('/new', requireAuth, requireLehrer, (req, res) => {
   res.render('admin/kategorien/formKategorien', {
     item: {},
     action: '/categories',
@@ -20,7 +21,7 @@ router.get('/new', (req, res) => {
 });
 
 // Kategorie speichern
-router.post('/', uploadCategory.single('iconFile'), async (req, res) => {
+router.post('/', requireAuth, requireLehrer, uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
 
   if (!title || !description) {
@@ -39,7 +40,7 @@ router.post('/', uploadCategory.single('iconFile'), async (req, res) => {
 });
 
 // Kategorie bearbeiten Formular
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
   const item = await db('categories').where({ id: req.params.id }).first();
   if (!item) {
     req.flash('error', 'Kategorie nicht gefunden.');
@@ -55,7 +56,7 @@ router.get('/:id/edit', async (req, res) => {
 });
 
 // Kategorie aktualisieren
-router.put('/:id', uploadCategory.single('iconFile'), async (req, res) => {
+router.put('/:id',requireAuth, requireLehrer, uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
   const currentItem = await db('categories').where({ id: req.params.id }).first();
   if (!req.file) icon = currentItem.icon;
@@ -73,7 +74,7 @@ router.put('/:id', uploadCategory.single('iconFile'), async (req, res) => {
 });
 
 // Kategorie löschen
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
   const item = await db('categories').where({ id: req.params.id }).first();
   if (item && res.locals.isUploadPath(item.icon)) {
     // try to remove uploaded file

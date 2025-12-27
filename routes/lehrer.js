@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
+const { requireAuth, requireLehrer } = require('../middleware/auth');
 
 // Lehrer Übersicht - NUR Vorname und Nachname
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requireLehrer , async (req, res) => {
   try {
     const { search } = req.query;
 
@@ -43,7 +44,7 @@ router.get('/', async (req, res) => {
 });
 
 // Neuer Lehrer Formular
-router.get('/new', async (req, res) => {
+router.get('/new',requireAuth, requireLehrer , async (req, res) => {
   res.render('admin/personen/formLehrer', {
     item: {},
     action: '/lehrer',
@@ -53,7 +54,7 @@ router.get('/new', async (req, res) => {
 });
 
 // Lehrer speichern
-router.post('/', async (req, res) => {
+router.post('/',requireAuth, requireLehrer , async (req, res) => {
   const { vorname, nachname } = req.body;
 
   if (!vorname || !nachname) {
@@ -72,7 +73,7 @@ router.post('/', async (req, res) => {
 });
 
 // Lehrer bearbeiten Formular
-router.get('/:id/edit', async (req, res) => {
+router.get('/:id/edit',requireAuth, requireLehrer , async (req, res) => {
   try {
     const lehrer = await db('users')
       .where({
@@ -100,7 +101,7 @@ router.get('/:id/edit', async (req, res) => {
 });
 
 // Lehrer aktualisieren
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireAuth, requireLehrer ,async (req, res) => {
   const { vorname, nachname } = req.body;
 
   if (!vorname || !nachname) {
@@ -129,7 +130,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Lehrer löschen
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',requireAuth, requireLehrer , async (req, res) => {
   await db('users')
     .where({
       id: req.params.id,
