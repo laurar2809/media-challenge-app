@@ -4,7 +4,7 @@ const { db } = require('../db');
 const { uploadAufgabenpaket } = require('../middleware/uploads');
 const fs = require('fs').promises;
 const path = require('path');
-const { requireAuth, requireLehrer } = require('..middleware/auth');
+const { requireAuth, requireLehrer } = require('../middleware/auth');
 
 // Aufgabenpakete Übersicht mit Filterung
 router.get('/',  requireAuth, requireLehrer, async (req, res) => {

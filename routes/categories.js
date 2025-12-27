@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db } = require('../db');
 const { uploadCategory } = require('../middleware/uploads');
-const { requireAuth, requireLehrer} =require('..middleware/auth');
+const { requireAuth, requireLehrer} =require('../middleware/auth');
 
 // Kategorien Übersicht (Homepage)
 // Wird bereits in routes/index.js behandelt
