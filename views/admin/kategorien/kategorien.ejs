@@ -67,27 +67,14 @@
       </tbody>
     </table>
 
-    <!-- Pop Up Löschen Fenster -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header custom-delete-header">
-            <h5 class="modal-title">Löschen bestätigen</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            Bist du sicher, dass du diesen Datensatz löschen möchtest?
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-            <form id="deleteConfirmForm" method="POST">
-              <input type="hidden" name="_method" value="DELETE">
-              <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+      <%- include('../../partials/deleteModal', {
+        modalId: 'confirmDeleteModal',
+        formId: 'deleteConfirmForm',
+        submitButtonId: 'confirmDeleteSubmit',
+        title: 'Löschen bestätigen',
+        bodyText: 'Bist du sicher, dass du diese Kategorie löschen möchtest?'
+      }) %>
+
   </div>
 
   <script src="/js/app/categoriesLogic.js"> </script>

@@ -1,6 +1,7 @@
  // Eventlistener für modales Fenster beim Delete
     const deleteModal = document.getElementById('confirmDeleteModal');
     const deleteForm = document.getElementById('deleteConfirmForm');
+    const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
     deleteModal.addEventListener('show.bs.modal', event => {
       const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
@@ -8,3 +9,10 @@
       // Action auf die richtige ID setzen
       deleteForm.action = `/categories/${itemId}?_method=DELETE`;
     });
+
+
+     if(confirmDeleteSubmit && deleteForm) {
+        confirmDeleteSubmit.addEventListener('click', () => {
+            deleteForm.submit();
+        });
+    }

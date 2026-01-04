@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const deleteModal = document.getElementById('confirmDeleteModal');
     const deleteForm = document.getElementById('deleteConfirmForm');
+    const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
     if (!searchInput || !kategorienFilter || !cardsContainer) return;
 
@@ -99,6 +100,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (itemId) {
                 deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
             }
+        });
+    }
+
+     if(confirmDeleteSubmit && deleteForm) {
+        confirmDeleteSubmit.addEventListener('click', () => {
+            deleteForm.submit();
         });
     }
 

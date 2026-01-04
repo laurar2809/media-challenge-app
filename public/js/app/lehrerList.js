@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const deleteModal = document.getElementById('confirmDeleteModal');
     const deleteForm = document.getElementById('deleteConfirmForm');
+    const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
     if (!searchInput || lehrerRows.length === 0) return;
 
@@ -89,5 +90,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (searchInput.value) {
         applyFilters();
+    }
+
+    if(confirmDeleteSubmit && deleteForm) {
+        confirmDeleteSubmit.addEventListener('click', () => {
+            deleteForm.submit();
+        });
     }
 });

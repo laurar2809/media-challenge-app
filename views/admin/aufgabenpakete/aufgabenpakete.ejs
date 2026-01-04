@@ -50,78 +50,21 @@
           </div>
         </div>
         <% } else { %>
+          <!-- PARTIAL: -->
           <% aufgabenpakete.forEach(paket=> { %>
-            <div class="col-md-6 col-lg-4 mb-5 aufgabenpaket-card" data-id="<%= paket.id %>"
-              data-title="<%= paket.title.toLowerCase() %>" data-description="<%= paket.description.toLowerCase() %>"
-              data-kategorie="<%= paket.kategorie.toLowerCase() %>">
+              <%- include('./card', { paket }) %>
+          <% }) %>
 
-              <div class="card h-100">
-                <!-- BILD -->
-                <% if (paket.icon) { %>
-                  <img src="<%= paket.icon %>" class="card-img-top" alt="<%= paket.title %>"
-                    style="height: 200px; object-fit: cover;">
-                  <% } else { %>
-                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                      style="height: 200px;">
-                      <span class="text-muted">Kein Bild</span>
-                    </div>
-                    <% } %>
-
-                      <div class="card-body">
-                        <!-- Titel -->
-                        <h5 class="card-title">
-                          <%= paket.title %>
-                        </h5>
-
-                        <!-- Kategorie -->
-                        <div class="mb-2">
-                          <span class="badge bg-secondary">
-                            <%= paket.kategorie %>
-                          </span>
-                        </div>
-
-                        <!-- Beschreibung -->
-                        <p class="card-text">
-                          <%= paket.description %>
-                        </p>
-                      </div>
-
-                      <!-- Aktionen -->
-                      <div class="card-footer bg-transparent">
-                        <div class="d-flex gap-2">
-                          <a href="/aufgabenpakete/<%= paket.id %>" class="btn btn-custom-details btn-sm">Details</a>
-                          <a href="/aufgabenpakete/<%= paket.id %>/edit"
-                            class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
-                          <button type="button" class="btn btn-custom-delete btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#confirmDeleteModal" data-id="<%= paket.id %>">Löschen</button>
-                        </div>
-                      </div>
-              </div>
-            </div> <!-- HIER schließt die col-div -->
-            <% }) %>
               <% } %>
     </div> <!-- HIER schließt die row -->
 
-    <!-- Pop Up Löschen Fenster - NUR EINMAL AUSSERHALB DER LOOP -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header custom-delete-header">
-            <h5 class="modal-title">Löschen bestätigen</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            Bist du sicher, dass du diesen Datensatz löschen möchtest?
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-            <form id="deleteConfirmForm" method="POST">
-              <input type="hidden" name="_method" value="DELETE">
-              <button type="submit" class="btn btn-custom-danger">Ja, löschen</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+      <%- include('../../partials/deleteModal', {
+        modalId: 'confirmDeleteModal',
+        formId: 'deleteConfirmForm',
+        submitButtonId: 'confirmDeleteSubmit',
+        title: 'Löschen bestätigen',
+        bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
+      }) %>
+
 
     <script src="/js/app/aufgabenpaketeLogic.js"></script>

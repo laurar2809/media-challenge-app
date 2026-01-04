@@ -102,30 +102,21 @@
         </tbody>
       </table>
 
-      <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header custom-delete-header">
-              <h5 class="modal-title">Löschen bestätigen</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              Bist du sicher, dass du diesen Schüler löschen möchtest?
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+      <%- include('../../partials/deleteModal', {
+        modalId: 'confirmDeleteModal',
+        formId: 'deleteConfirmForm',
+        submitButtonId: 'confirmDeleteSubmit',
+        title: 'Löschen bestätigen',
+        bodyText: 'Bist du sicher, dass du diesen Schüler löschen möchtest?'
+      }) %>
 
-              <form id="deleteConfirmForm" method="POST" action="">
-                <input type="hidden" name="_method" value="DELETE">
-              </form>
-
-              <button type="button" class="btn btn-custom-danger" id="confirmDeleteSubmit">Ja, löschen</button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <script src ="/js/app/schuelerList.js"> </script>
  
+<!-- <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true"> -->
+   <!--  <h5 class="modal-title">Löschen bestätigen</h5> -->
+    <!--  Bist du sicher, dass du diesen Schüler löschen möchtest? -->
+    <!-- <form id="deleteConfirmForm" method="POST" action=""> -->
+    <!--  <button type="button" class="btn btn-custom-danger" id="confirmDeleteSubmit">Ja, löschen</button> -->
+   
