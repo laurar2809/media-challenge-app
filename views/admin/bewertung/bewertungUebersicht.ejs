@@ -7,35 +7,26 @@
     </span>
 </div>
 
-<div class="row mb-4 g-2" id="filterContainer">
-    
-    <div class="col-md-6">
-        <div class="input-group">
-            <span class="input-group-text">Status:</span>
-            <select class="form-select" id="statusFilter">
-                <% statusOptions.forEach(opt => { %>
-                    <option value="<%= opt %>" <%= activeStatus === opt ? 'selected' : '' %>>
-                        <% 
-                            let display = opt.charAt(0).toUpperCase() + opt.slice(1);
-                            if (opt === 'offen') display = 'Noch nicht abgegeben';
-                            if (opt === 'eingereicht') display = 'Zur Bewertung';
-                            if (opt === 'alle') display = 'Alle Status';
-                        %>
-                        <%= display %>
-                    </option>
-                <% }) %>
-            </select>
-        </div>
-    </div>
 
-    <div class="col-md-6">
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" id="bewertungSearch" class="form-control"
-                placeholder="Suche nach Challenge oder Team..." value="<%= searchTerm || '' %>" autocomplete="off">
-        </div>
-    </div>
-</div>
+    <!-- Filter und Suchfunktion - Partial -->
+  <%- include('../../partials/filter_search', {
+
+    showSchuljahr: false,
+    showKategorie: false,
+    showSearch: true,
+    showStatus: true,
+
+    //Status
+    statusOptions,
+    activeStatus,
+    statusFilterId: 'statusFilter',
+
+    //Suche
+    searchContainerId: 'searchContainer',
+    searchInputId: 'bewertungSearch',
+    searchTerm
+  }) %>
+
 <div class="table-responsive">
     <table class="table table-hover table align-middle m-0 table-light">
         <thead class="table-light">
