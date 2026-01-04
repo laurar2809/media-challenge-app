@@ -5,50 +5,31 @@
     <a href="/challenges/new" class="btn btn-custom-newCategorieChallenge">+ Neue Challenge</a>
   </div>
 
-  <div class="row mb-4 g-2">
-    <div class="col-md-4">
-      <div class="input-group">
-        <span class="input-group-text">Kategorie:</span>
-        <select class="form-select" id="kategorienFilter">
-          <option value="alle" <%=activeKategorie==='alle' ? 'selected' : '' %>>Alle Kategorien</option>
-          <% if (kategorien && kategorien.length> 0) { %>
-            <% kategorien.forEach(kat=> { %>
-              <option value="<%= kat.title %>" <%=activeKategorie===kat.title ? 'selected' : '' %>>
-                <%= kat.title %>
-              </option>
-              <% }) %>
-                <% } %>
-        </select>
-      </div>
-    </div>
+  
+  <!-- Filter und Suchfunktion -->
+      <%- include('../../partials/filter_search', {
 
-    <div class="col-md-4">
-      <div class="input-group">
-        <span class="input-group-text">Schuljahr:</span>
-        <select class="form-select" id="schuljahrFilter">
-          <option value="alle" <%=activeSchuljahr==='alle' ? 'selected' : '' %>>Alle Schuljahre</option>
-          <% if (schuljahre && schuljahre.length> 0) { %>
-            <% schuljahre.forEach(jahr=> { %>
-              <option value="<%= jahr.name %>" <%=activeSchuljahr===jahr.name ? 'selected' : '' %>>
-                <%= jahr.name %>
-              </option>
-              <% }) %>
-                <% } %>
-        </select>
-      </div>
-    </div>
+        showKlasse: false,
+        showSchuljahr: true,
+        showKategorie: true,
+        showSearch: true,
+        
+        // Kategorie
+        kategorien,
+        activeKategorie,
+        kategorieSelectId: 'kategorienFilter',
 
-    <div class="col-md-4">
-      <div class="position-relative" id="searchContainer">
-        <div class="input-group mb-3">
-          <span class="input-group-text">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" id="challengesSearch" class="form-control p-1 border-start-0"
-            placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
-        </div>
-      </div>
-    </div>
+        // Schuljahr
+        schuljahre,
+        activeSchuljahr,
+        schuljahrSelectId: 'schuljahrFilter',
+
+        // Suche
+        searchContainerId: 'searchContainer',
+        searchInputId: 'challengesSearch',
+        searchTerm
+      }) %>
+
 
     <div class="table-responsive">
       <div class="row" id="challengesCardContainer">

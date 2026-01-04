@@ -5,37 +5,23 @@
     <a href="/aufgabenpakete/new" class="btn btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
   </div>
 
-  <!-- FILTER UND SUCHLEISTE -->
-  <div class="row mb-4 g-2">
-    <div class="col-md-6">
-      <!-- Kategorien Filter -->
-      <div class="input-group">
-        <span class="input-group-text">Kategorie:</span>
-        <select class="form-select" id="kategorienFilter">
-          <option value="alle" <%=activeKategorie==='alle' ? 'selected' : '' %>>Alle Kategorien</option>
-          <% if (kategorien && kategorien.length> 0) { %>
-            <% kategorien.forEach(kat=> { %>
-              <option value="<%= kat.title %>" <%=activeKategorie===kat.title ? 'selected' : '' %>>
-                <%= kat.title %>
-              </option>
-              <% }) %>
-                <% } %>
-        </select>
-      </div>
-    </div>
 
-    <div class="col-md-6">
-      <!-- Suchleiste -->
-      <div class="position-relative" id="searchContainer">
-        <div class="input-group mb-3">
-          <span class="input-group-text">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" id="aufgabenpaketeSearch" class="form-control p-1 border-start-0"
-            placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
-        </div>
-      </div>
-    </div>
+  <!-- Filter und Suchfunktion - Partial -->
+  <%- include('../../partials/filter_search', {
+
+    showSchuljahr: false,
+    showKategorie: true,
+    showSearch: true,
+
+    kategorien,
+    activeKategorie,
+    kategorieSelectId: 'kategorienFilter',
+    searchContainerId: 'searchContainer',
+    searchInputId: 'aufgabenpaketeSearch',
+    searchTerm
+  }) %>
+
+
 
     <!-- CARDS LAYOUT - NUR DATENSÄTZE -->
     <div class="row" id="aufgabenpaketeCardsContainer">
@@ -50,14 +36,17 @@
           </div>
         </div>
         <% } else { %>
-          <!-- PARTIAL: -->
+
+          <!-- PARTIAL: (intern) -->
           <% aufgabenpakete.forEach(paket=> { %>
               <%- include('./card', { paket }) %>
           <% }) %>
 
-              <% } %>
-    </div> <!-- HIER schließt die row -->
+        <% } %>
+    </div> 
 
+
+    <!-- Lösch - Partial -->
       <%- include('../../partials/deleteModal', {
         modalId: 'confirmDeleteModal',
         formId: 'deleteConfirmForm',

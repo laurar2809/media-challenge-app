@@ -48,8 +48,8 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
       schueler,
       klassen,
       schuljahre,
-      activeKlasseFilter: klasse || 'alle',
-      activeSchuljahrFilter: schuljahr || 'alle',
+      activeKlasse: klasse || 'alle',
+      activeSchuljahr: schuljahr || 'alle',
       searchTerm: search || '',
       activePage: 'schueler'
     });
@@ -59,8 +59,8 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
       schueler: [],
       klassen: [],
       schuljahre: [],
-      activeKlasseFilter: 'alle',
-      activeSchuljahrFilter: 'alle',
+      activeKlasse: 'alle',
+      activeSchuljahr: 'alle',
       searchTerm: '',
       activePage: 'schueler'
     });

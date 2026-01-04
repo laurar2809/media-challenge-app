@@ -1,0 +1,100 @@
+<!-- FILTER UND SUCHLEISTE -->
+<div class="row mb-4 g-2">
+
+
+ <%
+  if (typeof showKlasse === 'undefined') {
+    var showKlasse = false;
+  }
+  if (typeof showKategorie === 'undefined') {
+    var showKategorie = false;
+  }
+  if (typeof showSchuljahr === 'undefined') {
+    var showSchuljahr = false;
+  }
+  if (typeof showSearch === 'undefined') {
+    var showSearch = false;
+  }
+%>
+
+  <% if (showKategorie) { %>
+    <div class="col-md-4">
+      <div class="input-group">
+        <span class="input-group-text">Kategorie:</span>
+        <select class="form-select" id="<%= kategorieSelectId %>">
+          <option value="alle" <%= activeKategorie === 'alle' ? 'selected' : '' %>>
+            Alle Kategorien
+          </option>
+          <% if (kategorien && kategorien.length > 0) { %>
+            <% kategorien.forEach(kat => { %>
+              <option value="<%= kat.title %>" <%= activeKategorie === kat.title ? 'selected' : '' %>>
+                <%= kat.title %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (showKlasse) { %>
+    <div class="col-md-4">
+      <div class="input-group">
+        <span class="input-group-text">Klasse:</span>
+        <select class="form-select" id="<%= klasseSelectId %>">
+          <option value="alle" <%= activeKlasse === 'alle' ? 'selected' : '' %>>
+            Alle Klassen
+          </option>
+          <% if (klassen && klassen.length > 0) { %>
+            <% klassen.forEach(klasse => { %>
+              <option value="<%= klasse.name %>" <%= activeKlasse === klasse.name ? 'selected' : '' %>>
+                <%= klasse.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (showSchuljahr) { %>
+    <div class="col-md-4">
+      <div class="input-group">
+        <span class="input-group-text">Schuljahr:</span>
+        <select class="form-select" id="<%= schuljahrSelectId %>">
+          <option value="alle" <%= activeSchuljahr === 'alle' ? 'selected' : '' %>>
+            Alle Schuljahre
+          </option>
+          <% if (schuljahre && schuljahre.length > 0) { %>
+            <% schuljahre.forEach(jahr => { %>
+              <option value="<%= jahr.name %>" <%= activeSchuljahr === jahr.name ? 'selected' : '' %>>
+                <%= jahr.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (showSearch) { %>
+    <div class="col-md-4">
+      <div class="position-relative" id="<%= searchContainerId %>">
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="text"
+            id="<%= searchInputId %>"
+            class="form-control p-1 border-start-0"
+            placeholder="Suchbegriff eingeben..."
+            value="<%= searchTerm || '' %>"
+            autocomplete="off"
+          >
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+</div>

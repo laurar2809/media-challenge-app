@@ -5,51 +5,32 @@
     <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-4">
-      <div class="input-group">
-        <span class="input-group-text">Klasse:</span>
-        <select class="form-select" id="klassenFilter">
-          <option value="alle" <%=activeKlasseFilter==='alle' ? 'selected' : '' %>>Alle Klassen</option>
-          <% if (klassen && klassen.length> 0) { %>
-            <% klassen.forEach(klasse=> { %>
-              <option value="<%= klasse.name %>" <%=activeKlasseFilter===klasse.name ? 'selected' : '' %>>
-                <%= klasse.name %>
-              </option>
-              <% }) %>
-                <% } %>
-        </select>
-      </div>
-    </div>
+  
 
-    <div class="col-md-4">
-      <div class="input-group">
-        <span class="input-group-text">Schuljahr:</span>
-        <select class="form-select" id="schuljahrFilter">
-          <option value="alle" <%=activeSchuljahrFilter==='alle' ? 'selected' : '' %>>Alle Schuljahre</option>
-          <% if (schuljahre && schuljahre.length> 0) { %>
-            <% schuljahre.forEach(jahr=> { %>
-              <option value="<%= jahr.name %>" <%=activeSchuljahrFilter===jahr.name ? 'selected' : '' %>>
-                <%= jahr.name %>
-              </option>
-              <% }) %>
-                <% } %>
-        </select>
-      </div>
-    </div>
+    <!-- Filter und Suchfunktion -->
+      <%- include('../../partials/filter_search', {
 
-    <div class="col-md-4">
-      <div class="position-relative" id="searchContainer">
-        <div class="input-group mb-3">
-          <span class="input-group-text">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" id="schuelerSearch" class="form-control p-1 border-start-0" placeholder="Schüler suchen..."
-            value="<%= searchTerm %>" autocomplete="off">
-        </div>
-        <div id="searchResults" class="dropdown-menu" style="display: none; min-width: 300px;"></div>
-      </div>
-    </div>
+        showKlasse: true,
+        showSchuljahr: true,
+        showKategorie: false,
+        showSearch: true,
+        
+      
+        //Klassen
+        klassen,
+        activeKlasse,
+        klasseSelectId: 'klassenFilter',
+
+        // Schuljahr
+        schuljahre,
+        activeSchuljahr,
+        schuljahrSelectId: 'schuljahrFilter',
+
+        // Suche
+        searchContainerId: 'schuelerSearchContainer',
+        searchInputId: 'schuelerSearch',
+        searchTerm
+      }) %>
 
     <div class="table-responsive">
       <table class="table table-hover table align-middle m-0 table-light">
