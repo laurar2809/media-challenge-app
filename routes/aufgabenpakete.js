@@ -77,7 +77,7 @@ router.get('/filter/:kategorie',  requireAuth, requireLehrer, async (req, res) =
 // Neues Aufgabenpaket Formular
 router.get('/new',  requireAuth, requireLehrer, async (req, res) => {
   const kategorien = await db('categories').select('*').orderBy('title', 'asc');
-  res.render('admin/aufgabenpakete/formAufgabenpakete', {
+  res.render('admin/aufgabenpakete/aufgabenpaketeForm', {
     item: {},
     kategorien,
     action: '/aufgabenpakete',
@@ -122,7 +122,7 @@ router.get('/:id/edit',  requireAuth, requireLehrer,async (req, res) => {
       return res.redirect('/aufgabenpakete');
     }
 
-    res.render('admin/aufgabenpakete/formAufgabenpakete', {
+    res.render('admin/aufgabenpakete/aufgabenpaketeForm', {
       item: aufgabenpaket,
       kategorien,
       action: `/aufgabenpakete/${aufgabenpaket.id}?_method=PUT`,

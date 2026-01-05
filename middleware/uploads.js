@@ -89,5 +89,5 @@ const uploadAbgabe = multer({
 module.exports = {
   uploadAufgabenpaket,
   uploadCategory,
-  uploadAbgabe // JETZT EXPORTIERT!
+  uploadAbgabe 
 };

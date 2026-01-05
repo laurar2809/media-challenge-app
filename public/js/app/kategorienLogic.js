@@ -7,7 +7,7 @@
       const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
       const itemId = button.getAttribute('data-id');
       // Action auf die richtige ID setzen
-      deleteForm.action = `/categories/${itemId}?_method=DELETE`;
+      deleteForm.action = `/kategorien/${itemId}?_method=DELETE`;
     });
 
 

@@ -1,0 +1,12 @@
+<footer class="border-top py-3 small text-muted">
+        <div class="container">
+          Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads ----
+
+          <% if (currentUser) { %>
+            Eingeloggt als: <%= currentUser.rolle %>
+              <% } else { %>
+                Nicht eingeloggt
+                <% } %>
+
+        </div>
+</footer>

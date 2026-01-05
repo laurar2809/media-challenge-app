@@ -145,7 +145,7 @@ router.get('/new', requireAuth, requireLehrer, async (req, res) => {
       .orderBy('users.nachname', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
-    res.render('admin/challenges/formChallenges', {
+    res.render('admin/challenges/challengesForm', {
       item: {},
       aufgabenpakete,
       teams: [],
@@ -387,7 +387,7 @@ router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
     // 5. RENDER mit KORREKTEN DATEN
-    res.render('admin/challenges/formChallenges', {
+    res.render('admin/challenges/challengesForm', {
       item: {
         id: challenge.id,
         aufgabenpaket_id: challenge.aufgabenpaket_id,

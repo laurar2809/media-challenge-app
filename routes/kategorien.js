@@ -11,9 +11,9 @@ const { requireAuth, requireLehrer} =require('../middleware/auth');
 
 // Neue Kategorie Formular
 router.get('/new', requireAuth, requireLehrer, (req, res) => {
-  res.render('admin/kategorien/formKategorien', {
+  res.render('admin/kategorien/kategorienForm', {
     item: {},
-    action: '/categories',
+    action: '/kategorien',
     method: 'POST',
     title: 'Neue Kategorie anlegen',
     activePage: 'kategorien'
@@ -26,9 +26,9 @@ router.post('/', requireAuth, requireLehrer, uploadCategory.single('iconFile'), 
 
   if (!title || !description) {
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
-    return res.redirect('/categories/new');
+    return res.redirect('/kategorien/new');
   }
-  if (req.file) icon = '/uploads/categories/' + req.file.filename;
+  if (req.file) icon = '/uploads/kategorien/' + req.file.filename;
 
   await db('categories').insert({
     title: title.trim(),
@@ -46,9 +46,9 @@ router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
     req.flash('error', 'Kategorie nicht gefunden.');
     return res.redirect('/');
   }
-  res.render('admin/kategorien/formKategorien', {
+  res.render('admin/kategorien/kategorienForm', {
     item,
-    action: `/categories/${item.id}?_method=PUT`,
+    action: `/kategorien/${item.id}?_method=PUT`,
     method: 'POST',
     title: 'Kategorie bearbeiten',
     activePage: 'kategorien'
@@ -61,7 +61,7 @@ router.put('/:id',requireAuth, requireLehrer, uploadCategory.single('iconFile'),
   const currentItem = await db('categories').where({ id: req.params.id }).first();
   if (!req.file) icon = currentItem.icon;
 
-  if (req.file) icon = '/uploads/categories/' + req.file.filename;
+  if (req.file) icon = '/uploads/kategorien/' + req.file.filename;
 
   await db('categories').where({ id: req.params.id }).update({
     title: title.trim(),

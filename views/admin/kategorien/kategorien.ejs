@@ -11,7 +11,7 @@
         </th>
       </table>
     </div>
-    <a href="/categories/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
+    <a href="/kategorien/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
   </div>
 
   <div class="table-responsive">
@@ -53,10 +53,10 @@
                   <%= item.description %>
                 </td>
                 <td class="text-end">
-                  <a href="/categories/<%= item.id %>/edit"
+                  <a href="/kategorien/<%= item.id %>/edit"
                     class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
 
-                  <form action="/categories/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                  <form action="/kategorien/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
                     <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" data-bs-toggle="modal"
                       data-bs-target="#confirmDeleteModal" data-id="<%= item.id %>">Löschen
                     </button>
@@ -77,4 +77,4 @@
 
   </div>
 
-  <script src="/js/app/categoriesLogic.js"> </script>
+  <script src="/js/app/kategorienLogic.js"> </script>

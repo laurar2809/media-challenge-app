@@ -1,12 +1,12 @@
  document.addEventListener('DOMContentLoaded', function () {
-      console.log(' formChallenges.ejs initialisiert');
+      console.log(' challengesForm.ejs initialisiert');
 
       // === 1. DOM ELEMENTE DEFINIEREN ===
       const availableMembers = document.getElementById('availableMembers');
       const teamDropZone = document.getElementById('teamDropZone');
       const teamsContainer = document.getElementById('teamsContainer');
       const createTeamBtn = document.getElementById('createTeamBtn');
-      const saveTeamBtn = document.getElementById('saveTeamBtn'); // 🛑 NEU: Speichern-Button
+      const saveTeamBtn = document.getElementById('saveTeamBtn'); //  NEU: Speichern-Button
       const teamsDataInput = document.getElementById('teamsData');
       const newTeamName = document.getElementById('newTeamName');
       const nameFilter = document.getElementById('nameFilter');
@@ -576,7 +576,7 @@
 
       // === 6. INITIALISIERUNG ===
       function initialize() {
-        console.log('Initialisiere formChallenges...');
+        console.log('Initialisiere challengesForm...');
 
         // 1. Bestehende Teams laden
         try {
@@ -609,7 +609,7 @@
         updatePlaceholder();
         updateMemberCounter();
 
-        console.log('formChallenges erfolgreich initialisiert');
+        console.log('challengesForm erfolgreich initialisiert');
       }
 
       // Starte Initialisierung
