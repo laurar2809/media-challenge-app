@@ -1,50 +1,50 @@
 <% pageTitle="Login" %>
 
-    <div class="login-container">
-        <div class="login-row">
-            <div class="login-card-wrapper">
-                <div class="login-card">
-                    <div class="login-card-header">
-                        <h4>Login</h4>
+<div class="login-container">
+    <div class="login-row">
+        <div class="login-card-wrapper">
+            <div class="login-card">
+                <div class="login-card-header">
+                    <h4>Login</h4>
+                </div>
+                <div class="login-card-body">
+                    <!-- Schnell-Login Info -->
+                    <div class="login-info-box">
+                        <strong>Einfache Passwörter:</strong><br>
+                        <code>1</code> = Schüler<br>
+                        <code>2</code> = Lehrer<br>
+                        <code>3</code> = Admin
                     </div>
-                    <div class="login-card-body">
-                        <!-- Schnell-Login Info -->
-                        <div class="login-info-box">
-                            <strong>Einfache Passwörter:</strong><br>
-                            <code>1</code> = Schüler<br>
-                            <code>2</code> = Lehrer<br>
-                            <code>3</code> = Admin
+
+                    <form action="/auth/login" method="POST">
+                        <!-- Schnell-Login Input -->
+                        <div class="input-group login-quick-input">
+                            <label class="input-group-text login-quick-label">Schnell-Login</label>
+                            <input type="password" class="form-control login-quick-field" 
+                                   name="password" placeholder="1, 2 oder 3">
                         </div>
 
-                        <form action="/auth/login" method="POST">
-                            <!-- Schnell-Login Input -->
-                            <div class="input-group login-quick-input">
-                                <label class="input-group-text login-quick-label">Schnell-Login</label>
-                                <input type="password" class="form-control login-quick-field" name="password"
-                                    placeholder="1, 2 oder 3">
-                            </div>
+                        <hr class="login-divider">
 
-                            <hr class="login-divider">
+                        <!-- Namens-Login -->
+                        <h6 class="login-name-title">Oder mit Namen einloggen</h6>
 
-                            <!-- Namens-Login -->
-                            <h6 class="login-name-title">Oder mit Namen einloggen</h6>
+                        <div class="input-group login-input-group">
+                            <label class="input-group-text login-label">Vorname</label>
+                            <input type="text" class="form-control login-field" 
+                                   name="vorname" placeholder="Vorname">
+                        </div>
 
-                            <div class="input-group login-input-group">
-                                <label class="input-group-text login-label">Vorname</label>
-                                <input type="text" class="form-control login-field" name="vorname"
-                                    placeholder="Vorname">
-                            </div>
+                        <div class="input-group login-input-group">
+                            <label class="input-group-text login-label">Nachname</label>
+                            <input type="text" class="form-control login-field" 
+                                   name="nachname" placeholder="Nachname">
+                        </div>
 
-                            <div class="input-group login-input-group">
-                                <label class="input-group-text login-label">Nachname</label>
-                                <input type="text" class="form-control login-field" name="nachname"
-                                    placeholder="Nachname">
-                            </div>
-
-                            <button type="submit" class="btn login-submit-btn">Anmelden</button>
-                        </form>
-                    </div>
+                        <button type="submit" class="btn login-submit-btn">Anmelden</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>

@@ -14,7 +14,6 @@
 
 <body>
 
-<<<<<<< Updated upstream
      <!-- // SICHERHEITS-FALLBACK if (typeof currentUser==='undefined' ) { currentUser=null; } 
      // FALLBACK FÜR activePage if (typeof activePage==='undefined' ) { activePage='' ; } -->
 
@@ -37,106 +36,6 @@
         <%- include('partials/footer')%>
 
           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-=======
-  <% if (typeof currentUser==='undefined' ) { currentUser=null; } %>
-    <% if (typeof activePage==='undefined' ) { activePage='' ; } %>
-
-      <nav class="navbar main-navbar">
-       <div class="container position-relative d-flex align-items-center">
-            <span class="brand-text">Multimedia Challenge</span>
-          </a>
-
-          <!-- MITTE: Navigation (ohne Burger, immer sichtbar) -->
-          <div class="navbar-center">
-            <ul class="navbar-nav navbar-nav-center">
-              <% if (currentUser && currentUser.user_role_id !==1) { %>
-                <li class="nav-item">
-                  <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>" href="/">Kategorien</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>"
-                    href="/aufgabenpakete">Aufgabenpakete</a>
-                </li>
-                <% } %>
-
-                  <li class="nav-item">
-                    <a class="nav-link <%= activePage === 'challenges' ? 'active' : '' %>"
-                      href="/challenges">Challenges</a>
-                  </li>
-
-                  <% if (currentUser && currentUser.user_role_id !==1) { %>
-                    <li class="nav-item">
-                      <a class="nav-link <%= activePage === 'schueler' ? 'active' : '' %>" href="/schueler">Schüler</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link <%= activePage === 'lehrer' ? 'active' : '' %>" href="/lehrer">Lehrer</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link <%= activePage === 'teams' ? 'active' : '' %>" href="/teams">Teams</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link <%= activePage === 'bewertung' ? 'active' : '' %>"
-                        href="/bewertung">Abgaben</a>
-                    </li>
-                    <% } %>
-            </ul>
-          </div>
-
-          <!-- RECHTS: User + Logout/Login -->
-          <div class="navbar-user-area">
-            <% if (currentUser) { %>
-              <span class="navbar-text user-info">
-                <i class="bi bi-person"></i>
-                <%= currentUser.vorname %>
-                  <%= currentUser.nachname %>
-                    <small class="user-role">(<%= currentUser.rolle %>)</small>
-              </span>
-              <form action="/auth/logout" method="POST">
-                <button type="submit" class="btn btn-outline-light btn-sm">
-                  Logout <i class="bi bi-box-arrow-right ms-2"></i>
-                </button>
-              </form>
-              <% } else { %>
-                <a href="/auth/login" class="btn btn-outline-light btn-sm">
-                  Login <i class="bi bi-box-arrow-in-right ms-2"></i>
-                </a>
-                <% } %>
-          </div>
-
-        </div>
-      </nav>
-
-
-      <main class="container main-container">
-        <% if (flash && flash.error && flash.error.length) { %>
-          <div class="alert alert-danger">
-            <%= flash.error[0] %>
-          </div>
-          <% } %>
-
-            <% if (flash && flash.success && flash.success.length) { %>
-              <div class="alert alert-success">
-                <%= flash.success[0] %>
-              </div>
-              <% } %>
-
-                <%- body %>
-      </main>
-
-      <footer class="app-footer">
-        <div class="container footer-inner">
-          Beispiel-App • Node.js + Express + Knex (SQLite/PostgreSQL/MySQL) + Bootstrap • REST API & Uploads
-          —
-          <% if (currentUser) { %>
-            Eingeloggt als: <%= currentUser.rolle %>
-              <% } else { %>
-                Nicht eingeloggt
-                <% } %>
-        </div>
-      </footer>
-
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
->>>>>>> Stashed changes
 </body>
 
 </html>
