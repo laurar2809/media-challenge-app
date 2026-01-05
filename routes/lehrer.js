@@ -45,7 +45,7 @@ router.get('/', requireAuth, requireLehrer , async (req, res) => {
 
 // Neuer Lehrer Formular
 router.get('/new',requireAuth, requireLehrer , async (req, res) => {
-  res.render('admin/personen/formLehrer', {
+  res.render('admin/personen/lehrerForm', {
     item: {},
     action: '/lehrer',
     title: 'Neuen Lehrer anlegen',
@@ -87,7 +87,7 @@ router.get('/:id/edit',requireAuth, requireLehrer , async (req, res) => {
       return res.redirect('/lehrer');
     }
 
-    res.render('admin/personen/formLehrer', {
+    res.render('admin/personen/lehrerForm', {
       item: lehrer,
       action: `/lehrer/${lehrer.id}?_method=PUT`,
       title: 'Lehrer bearbeiten',

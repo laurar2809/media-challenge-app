@@ -71,7 +71,7 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
 router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
   const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
-  res.render('admin/personen/formSchueler', {
+  res.render('admin/personen/schuelerForm', {
     item: {},
     klassen,
     schuljahre,
@@ -120,7 +120,7 @@ router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
     const klassen = await db('klassen').select('*').orderBy('name', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
-    res.render('admin/personen/formSchueler', {
+    res.render('admin/personen/schuelerForm', {
       item: schueler,
       klassen,
       schuljahre,
