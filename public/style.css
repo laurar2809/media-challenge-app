@@ -1,75 +1,165 @@
-/* Minimal, moderne Optik */
-body { background: #f8f9fb; }
-.card { border: 1px solid rgba(0,0,0,.06); }
-table td, table th { vertical-align: middle; }
+/* BASISLAYOUT */
 
-/*Navigationsbalken*/
-.navbar.bg-primary {
+body {
+  background: #f8f9fb;
+}
+
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+table td,
+table th {
+  vertical-align: middle;
+}
+
+
+/* NAVIGATION */
+
+/* Navbar-Hintergrund */
+.navbar.bg-primary,
+.main-navbar {
   background: linear-gradient(135deg, #2e4269 0%, #0082ba 120%) !important;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
 }
 
-.navbar-nav .nav-link {
-  position: relative;
-  padding-bottom: 5px; /*Abstand zur Schrift*/
-}
-.navbar-nav .nav-link.active::after {
-  content: "";
-  position: absolute; /*genaue Positionierung des Strichs*/
-  bottom: 0; /*Abstand zum Boden*/
-  left: 25%; /*Abstand des Strichs von der linken Seite*/
-  width: 50%; /*Abstand des Strichs von der rechten Seite*/
-  height: 2px; /*Dicke des Strichs*/
-  background-color: white; /*Farbe*/
+/* Text in Navbar weiß */
+.main-navbar,
+.navbar-inner,
+.navbar-brand-custom,
+.navbar-nav .nav-link,
+.user-info,
+.navbar-text,
+.brand-text {
+  color: white !important;
 }
 
-
-#svgLogoColorHTL,#svgLogoColorBraunau {
- fill: white;
+.main-navbar .nav-link:hover,
+.main-navbar a:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none;
 }
 
-#svgLogoColorDish{
-  fill: rgba(255, 255, 255, .5)
-  
-}
-
-.dropdown-toggle.fixed-width {
-  width: 300px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  text-align: left;
+.main-navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
-.dropdown .fixed-width {
-  min-width: 200px; /* oder was passenderes */
-  max-width: 300px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Inhalte in einer Zeile: links – mitte – rechts */
+.navbar-inner {
+  display: flex;
+  align-items: center;      /* vertikal mittig */
+  justify-content: space-between;
+  padding-top: 0.5rem;      /* optional feintuning */
+  padding-bottom: 0.5rem;   /* optional feintuning */
 }
 
-.center-filters {
+/* Logo-Bereich */
+.navbar-brand-custom {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 2;
+}
+
+.navbar-brand {
+  margin-bottom: 0;
+}
+
+.brand-text {
+  font-weight: 600;
+}
+
+/* Navigation mittig, horizontal */
+.navbar-center {
   position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-/* Custom Button Styles */
+.navbar-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+/* Userbereich rechts */
+.navbar-user-area {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 2;
+}
+
+.user-info {
+  margin-right: 1rem;
+}
+
+/* Aktiver Link mit Unterstrich */
+.navbar-nav .nav-link {
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.navbar-nav .nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background-color: white;
+}
+
+.navbar-text {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+
+/* HAUPTBEREICH UND FOOTER */
+
+/* Main-Container */
+.main-container {
+  margin-top: 2rem; /* Abstand von Oben */
+  margin-bottom: 2rem; /* Abstand von Unten */
+}
+
+/* Footer */
+.app-footer {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.footer-inner {
+  display: flex; /* alle Texte nebeneinander statt untereinander */
+  flex-wrap: wrap; /* springt in nächste Zeile bei wenig Platz (Mobile) */
+  gap: 0.5rem; /* gleichmäßiger Abstand zwischen allen Elementen */
+}
+
+
+/* BUTTONS UND MODALE */
+
+/* Detail-Button */
 .btn-custom-details {
   color: #0082ba !important;
   border-color: #0082ba !important;
 }
+
 .btn-custom-details:hover {
   background-color: #0082ba !important;
   color: white !important;
 }
 
+/* Bearbeiten-Button */
 .btn-custom-edit {
   color: #636e72 !important;
   border-color: #636e72 !important;
@@ -80,6 +170,7 @@ table td, table th { vertical-align: middle; }
   color: white !important;
 }
 
+/* Löschen-Button */
 .btn-custom-delete {
   color: #e9872f !important;
   border-color: #e9872f !important;
@@ -90,18 +181,20 @@ table td, table th { vertical-align: middle; }
   color: white !important;
 }
 
-/*Löschen Fenster*/
+/* Löschen-Modal-Header */
 .modal-header.custom-delete-header {
   background-color: #e9872f !important;
   color: white;
 }
 
+/* Bestätigen-Button im Delete-Modal */
 .btn-custom-danger {
   background-color: #e9872f !important;
   border-color: #e9872f !important;
   color: white !important;
 }
 
+/* Neuer Kategorie/Challenge-Button */
 .btn-custom-newCategorieChallenge {
   background-color: #0082ba !important;
   border-color: #0082ba !important;
@@ -113,6 +206,7 @@ table td, table th { vertical-align: middle; }
   border-color: color-mix(in srgb, #0082ba 85%, black) !important;
 }
 
+/* Speichern-Button */
 .btn-custom-safe {
   background-color: #0082ba !important;
   border-color: #0082ba !important;
@@ -124,86 +218,238 @@ table td, table th { vertical-align: middle; }
   border-color: color-mix(in srgb, #0082ba 85%, black) !important;
 }
 
-/*Filter Fenster*/
+/* Filter-Button */
+.btn-custom-filter {
+  color: #0082ba;
+  border-color: #0082ba;
+  background-color: white;
+}
+
+.btn-custom-filter:hover {
+  background-color: #0082ba;
+  color: white;
+}
+
+
+/* DROPDOWNS UND FILTER*/
+
+/* Dropdown mit fester Breite (Button) */
+.dropdown-toggle.fixed-width {
+  width: 300px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Dropdown-Menüeinträge mit fester Breite */
+.dropdown .fixed-width {
+  min-width: 200px;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dropdown-Items: aktiver Zustand neutral halten */
 .dropdown-item.active,
 .dropdown-item:active {
   background-color: transparent !important;
   color: inherit !important;
 }
 
-/*Schriften*/
-.custom-team-color {
-  color: #0082ba;
+/* Zentrierte Filter-Leiste */
+.center-filters {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* inputgroup text oben*/
+/* Anzeige ausgewählter Elemente (Zähler) */
+.custom-selected-count {
+  color: #0082ba !important;
+}
 
 
-.input-group.align-top-stretch{
+/* FORMULARE UND INPUTS */
+
+/* Inputgruppen: Label oben ausrichten */
+.input-group.align-top-stretch {
   align-items: stretch;
 }
 
-.input-group.align-top-stretch .input-group-text{
+.input-group.align-top-stretch .input-group-text {
   display: flex;
   align-items: flex-start;
 }
 
-/*Kalender Icon ausblenden*/
+/* Datums-Input: Kalender-Icon ausblenden */
 .custom-date-input::-webkit-calendar-picker-indicator {
   display: none !important;
 }
+
 .custom-date-input::-moz-calendar-picker-indicator {
   display: none !important;
 }
+
 .custom-date-input::-ms-clear {
   display: none !important;
 }
 
-
-.member-chip {
-    display: inline-block;
-    padding: 4px 8px;
-    border: 1px solid #0082ba;
-    border-radius: 4px;
-    background: white;
-    color: #0082ba;
-    cursor: grab;
-    font-size: 0.8rem;
-}
-.member-chip.opacity-50 {
-    opacity: 0.5;
-}
-
-.custom-selected-count {
-    color: #0082ba !important; 
-}
-
-/*Focus um die Suchleiste - nicht mehr blau leuchtend*/
+/* Fokus für Selects */
 .form-select:focus {
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15) !important;
-    border-color: #bbb !important;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15) !important;
+  border-color: #bbb !important;
 }
 
+/* Fokus innerhalb einer Input-Group */
 .input-group:focus-within {
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
-    border-radius: 0.375rem; /* gleiche Rundung wie Bootstrap Inputs */
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  border-radius: 0.375rem; /* gleiche Rundung wie Bootstrap Inputs */
 }
 
+/* Fokus für Text-Inputs */
 input.form-control:focus {
-    border-color: #bbb !important;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) !important;
+  border-color: #bbb !important;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) !important;
 }
 
 
-.btn-custom-filter {
-  color: #0082ba; /* Lila */
-  border-color: #0082ba;
-  background-color: white;
+/* DRAG AND DROP (Teams) */
+
+/* Team-Farbe (Drag and Drop) */
+.custom-team-color {
+  color: #0082ba;
+}
+
+/* Mitglieder (Drag & Drop / Auswahl) */
+.member-chip {
+  display: inline-block;
+  padding: 4px 8px;
+  border: 1px solid #0082ba;
+  border-radius: 4px;
+  background: white;
+  color: #0082ba;
+  cursor: grab;
+  font-size: 0.8rem;
+}
+
+.member-chip.opacity-50 { /* wenn Mitglied nicht verfügbar - verblassen */
+  opacity: 0.5;
 }
 
 
+/* LOGIN FORMULAR */
 
-.btn-custom-filter:hover {
-  background-color: #0082ba;
-  color: white;
+/* Login-Container (zentriert) */
+.login-container {
+  max-width: 540px;        
+  margin: 2rem auto 0;   
+  padding: 0 1rem;
 }
+
+/* Row + Zentrierung */
+.login-row {
+  display: flex;
+  justify-content: center;
+}
+
+/* Card mit Abstand */
+.login-card-wrapper {
+  width: 100%;
+}
+
+.login-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+}
+
+/* Card Header */
+.login-card-header {
+  text-align: center;
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.login-card-header h4 {
+  margin: 0;
+}
+
+/* Card Body */
+.login-card-body {
+  padding: 2rem;
+}
+
+/* Info-Box (Schnell-Login) */
+.login-info-box {
+  border: 1px solid #dee2e6;    
+  text-align: center;
+  margin-bottom: 1.5rem;       
+  padding: 1rem;            
+  background: #f8f9fa;          
+  border-radius: 6px;         
+}
+
+/* Input Groups */
+.login-input-group,
+.login-quick-input {
+  margin-bottom: 1rem;         
+}
+
+/* Labels für Input Groups */
+.login-label,
+.login-quick-label {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #e9ecef;
+  border: 1px solid #ced4da;
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Input Felder */
+.login-field,
+.login-quick-field {
+  flex: 1;
+}
+
+.login-quick-field {
+  text-align: center;
+}
+
+/* Divider */
+.login-divider {
+  margin: 1.5rem 0;            
+}
+
+/* Namens-Login Titel */
+.login-name-title {
+  text-align: center;
+  color: #6c757d;             
+  margin-bottom: 1rem;       
+  margin-top: 0;
+}
+
+/* Submit Button */
+.login-submit-btn {
+  width: 100%;
+  background-color: #0082ba !important;
+  border-color: #0082ba !important;
+  color: white !important;
+}
+
+.login-submit-btn:hover {
+  background-color: color-mix(in srgb, #0082ba 85%, black) !important;
+  border-color: color-mix(in srgb, #0082ba 85%, black) !important;
+}
+

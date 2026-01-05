@@ -1,15 +1,15 @@
 <% pageTitle="Login" %>
 
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card mt-5">
-                    <div class="card-header text-center">
-                        <h4 class="mb-0"> Login</h4>
+    <div class="login-container">
+        <div class="login-row">
+            <div class="login-card-wrapper">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <h4>Login</h4>
                     </div>
-                    <div class="card-body">
-                        <!-- EINFACHE VARIANTE (1,2,3) -->
-                        <div class="border border-light text-center mb-4 p-3 bg-light rounded">
+                    <div class="login-card-body">
+                        <!-- Schnell-Login Info -->
+                        <div class="login-info-box">
                             <strong>Einfache Passwörter:</strong><br>
                             <code>1</code> = Schüler<br>
                             <code>2</code> = Lehrer<br>
@@ -17,28 +17,31 @@
                         </div>
 
                         <form action="/auth/login" method="POST">
-                            <div class="input-group mb-3">
-                                <label class="input-group-text">Schnell-Login</label>
-                                <input type="password" class="form-control text-center" name="password"
+                            <!-- Schnell-Login Input -->
+                            <div class="input-group login-quick-input">
+                                <label class="input-group-text login-quick-label">Schnell-Login</label>
+                                <input type="password" class="form-control login-quick-field" name="password"
                                     placeholder="1, 2 oder 3">
                             </div>
 
-                            <hr class="my-4">
+                            <hr class="login-divider">
 
-                            <!-- NAMENS-LOGIN -->
-                            <h6 class="text-center text-muted mb-3">Oder mit Namen einloggen</h6>
+                            <!-- Namens-Login -->
+                            <h6 class="login-name-title">Oder mit Namen einloggen</h6>
 
-                            <div class="input-group mb-3">
-                                <label class="input-group-text">Vorname</label>
-                                <input type="text" class="form-control" name="vorname" placeholder="Vorname">
+                            <div class="input-group login-input-group">
+                                <label class="input-group-text login-label">Vorname</label>
+                                <input type="text" class="form-control login-field" name="vorname"
+                                    placeholder="Vorname">
                             </div>
 
-                            <div class="input-group mb-3">
-                                <label class="input-group-text">Nachname</label>
-                                <input type="text" class="form-control" name="nachname" placeholder="Nachname">
+                            <div class="input-group login-input-group">
+                                <label class="input-group-text login-label">Nachname</label>
+                                <input type="text" class="form-control login-field" name="nachname"
+                                    placeholder="Nachname">
                             </div>
 
-                            <button type="submit" class="btn btn-custom-safe w-100">Anmelden</button>
+                            <button type="submit" class="btn login-submit-btn">Anmelden</button>
                         </form>
                     </div>
                 </div>
