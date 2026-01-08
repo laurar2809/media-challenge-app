@@ -1,59 +1,27 @@
-<% pageTitle="Aufgabenpakete" %>
+<link rel="stylesheet" href="/style.css">
+<div class="aufgabenpakete-header">
+  <h2 class="h4 m-0">Aufgabenpakete</h2>
+  <a href="/aufgabenpakete/new" class="btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
+</div>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="h4 m-0">Aufgabenpakete</h2>
-    <a href="/aufgabenpakete/new" class="btn btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
+
+
+  <div class="aufgabenpakete-grid" id="aufgabenpaketeCardsContainer">
+    <% if (aufgabenpakete.length===0) { %>
+      <div class="full-width">
+        <div class="empty-state">
+          <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
+            Keine Aufgabenpakete gefunden für die ausgewählten Filter
+            <% } else { %>
+              Noch keine Aufgabenpakete vorhanden
+              <% } %>
+        </div>
+      </div>
+      <% } else { %>
+        <% aufgabenpakete.forEach(paket=> { %>
+          <%- include('./card', { paket }) %>
+            <% }) %>
+              <% } %>
   </div>
 
-
-  <!-- Filter und Suchfunktion - Partial -->
-  <%- include('../../partials/filter_search', {
-
-    showSchuljahr: false,
-    showKategorie: true,
-    showSearch: true,
-
-    kategorien,
-    activeKategorie,
-    kategorieSelectId: 'kategorienFilter',
-    searchContainerId: 'searchContainer',
-    searchInputId: 'aufgabenpaketeSearch',
-    searchTerm
-  }) %>
-
-
-
-    <!-- CARDS LAYOUT - NUR DATENSÄTZE -->
-    <div class="row" id="aufgabenpaketeCardsContainer">
-      <% if (aufgabenpakete.length===0) { %>
-        <div class="col-12">
-          <div class="text-center py-4 text-muted">
-            <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
-              Keine Aufgabenpakete gefunden für die ausgewählten Filter
-              <% } else { %>
-                Noch keine Aufgabenpakete vorhanden
-                <% } %>
-          </div>
-        </div>
-        <% } else { %>
-
-          <!-- PARTIAL: (intern) -->
-          <% aufgabenpakete.forEach(paket=> { %>
-              <%- include('./card', { paket }) %>
-          <% }) %>
-
-        <% } %>
-    </div> 
-
-
-    <!-- Lösch - Partial -->
-      <%- include('../../partials/deleteModal', {
-        modalId: 'confirmDeleteModal',
-        formId: 'deleteConfirmForm',
-        submitButtonId: 'confirmDeleteSubmit',
-        title: 'Löschen bestätigen',
-        bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
-      }) %>
-
-
-    <script src="/js/app/aufgabenpaketeLogic.js"></script>
+  
