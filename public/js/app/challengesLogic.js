@@ -119,24 +119,35 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Delete-Modal
-    if (deleteModal && deleteForm) {
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            currentItemIdToDelete = button ? button.getAttribute('data-id') : null;
-        });
-    }
 
-    if (confirmDeleteSubmit && deleteForm) {
-        confirmDeleteSubmit.addEventListener('click', () => {
-            if (currentItemIdToDelete) {
-                deleteForm.action = `/challenges/${currentItemIdToDelete}`;
-                deleteForm.submit();
-            } else {
-                alert('Fehler: Die Challenge-ID konnte nicht ermittelt werden.');
-            }
-        });
-    }
+
+    // Delete Modal -> PARTIAL
+    initDeleteModal({
+    modal: deleteModal,
+    form: deleteForm,
+    submitBtn: confirmDeleteSubmit,
+    buildAction: (id) => `/challenges/${id}?_method=DELETE`
+    });
+
+
+    // // Delete-Modal
+    // if (deleteModal && deleteForm) {
+    //     deleteModal.addEventListener('show.bs.modal', event => {
+    //         const button = event.relatedTarget;
+    //         currentItemIdToDelete = button ? button.getAttribute('data-id') : null;
+    //     });
+    // }
+
+    // if (confirmDeleteSubmit && deleteForm) {
+    //     confirmDeleteSubmit.addEventListener('click', () => {
+    //         if (currentItemIdToDelete) {
+    //             deleteForm.action = `/challenges/${currentItemIdToDelete}`;
+    //             deleteForm.submit();
+    //         } else {
+    //             alert('Fehler: Die Challenge-ID konnte nicht ermittelt werden.');
+    //         }
+    //     });
+    // }
 
     // Initial anwenden
     if (searchInput.value) {

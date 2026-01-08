@@ -28,7 +28,7 @@ router.post('/', requireAuth, requireLehrer, uploadCategory.single('iconFile'), 
     req.flash('error', 'Titel und Beschreibung sind Pflichtfelder.');
     return res.redirect('/kategorien/new');
   }
-  if (req.file) icon = '/uploads/kategorien/' + req.file.filename;
+  if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
   await db('categories').insert({
     title: title.trim(),
@@ -61,7 +61,7 @@ router.put('/:id',requireAuth, requireLehrer, uploadCategory.single('iconFile'),
   const currentItem = await db('categories').where({ id: req.params.id }).first();
   if (!req.file) icon = currentItem.icon;
 
-  if (req.file) icon = '/uploads/kategorien/' + req.file.filename;
+  if (req.file) icon = '/uploads/categories/' + req.file.filename;
 
   await db('categories').where({ id: req.params.id }).update({
     title: title.trim(),

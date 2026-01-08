@@ -13,6 +13,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const deleteForm = document.getElementById('deleteConfirmForm');
     const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
+
+    
+    // Delete Modal -> PARTIAL
+    initDeleteModal({
+    modal: deleteModal,
+    form: deleteForm,
+    submitBtn: confirmDeleteSubmit,
+    buildAction: (id) => `/aufgabenpakete/${id}?_method=DELETE`
+    });
+
+
+    
     if (!searchInput || !kategorienFilter || !cardsContainer) return;
 
     let searchTimeout;
@@ -94,22 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Delete-Modal
-    if (deleteModal && deleteForm) {
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const itemId = button ? button.getAttribute('data-id') : null;
-            if (itemId) {
-                deleteForm.action = `/aufgabenpakete/${itemId}?_method=DELETE`;
-            }
-        });
-    }
 
-     if(confirmDeleteSubmit && deleteForm) {
-        confirmDeleteSubmit.addEventListener('click', () => {
-            deleteForm.submit();
-        });
-    }
 
     // Initial Filter anwenden falls Suchbegriff vorhanden
     if (searchInput.value) {

@@ -6,16 +6,11 @@
     const deleteForm = document.getElementById('deleteConfirmForm');
     const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
-    deleteModal.addEventListener('show.bs.modal', event => {
-      const button = event.relatedTarget;      // Button, der das Modal geöffnet hat
-      const itemId = button.getAttribute('data-id');
-      // Action auf die richtige ID setzen
-      deleteForm.action = `/kategorien/${itemId}?_method=DELETE`;
+      // Delete Modal -> PARTIAL
+    initDeleteModal({
+    modal: deleteModal,
+    form: deleteForm,
+    submitBtn: confirmDeleteSubmit,
+    buildAction: (id) => `/kategorien/${id}?_method=DELETE`
     });
 
-
-     if(confirmDeleteSubmit && deleteForm) {
-        confirmDeleteSubmit.addEventListener('click', () => {
-            deleteForm.submit();
-        });
-    }
