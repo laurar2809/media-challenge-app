@@ -1,3 +1,6 @@
+ // LOGIK: für Kategorien-Seite (löschen)
+ 
+ 
  // Eventlistener für modales Fenster beim Delete
     const deleteModal = document.getElementById('confirmDeleteModal');
     const deleteForm = document.getElementById('deleteConfirmForm');

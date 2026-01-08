@@ -1,3 +1,5 @@
+// LOGIK: für Abgabe-Seite (Abgabe speichern/abgeben, Files hochladen, bereits hochgeladene Dateien löschen, Hilfsfunktionen, Anzeigen von Dateien)
+
 // public/js/app/abgabeLogic.js
 
 document.addEventListener('DOMContentLoaded', function () {

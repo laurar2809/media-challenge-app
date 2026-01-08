@@ -1,3 +1,6 @@
+ // LOGIK: für ChallengesForm-Seite (Teams erstellen, Member Counter anzeigen (Teams), löschen, Team bearbeiten, Filtern & suchen von Schülern,...)
+
+ 
  document.addEventListener('DOMContentLoaded', function () {
       console.log(' challengesForm.ejs initialisiert');
 
@@ -574,7 +577,10 @@
         });
       }
 
+
+
       // === 6. INITIALISIERUNG ===
+
       function initialize() {
         console.log('Initialisiere challengesForm...');
 

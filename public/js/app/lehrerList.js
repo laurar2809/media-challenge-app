@@ -1,3 +1,5 @@
+// LOGIK: für Lehrer-Seite (Suchen, Auflistung der Personen,  löschen)
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('lehrerSearch');
     const searchTermText = document.getElementById('searchTermText');
@@ -33,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     });
 
+    // Auflistung der zu suchenden Lehrkraft
     function applyFilters() {
         const searchValue = searchInput.value.trim().toLowerCase();
         let visibleCount = 0;
@@ -77,6 +80,9 @@ document.addEventListener('DOMContentLoaded', function () {
             applyFilters();
         });
     }
+
+
+    //löschen
 
     if (deleteModal && deleteForm) {
         deleteModal.addEventListener('show.bs.modal', event => {

@@ -1,3 +1,5 @@
+ // LOGIK: für BewertungUebersicht-Seite (Filtern, Suchen)
+ 
  document.addEventListener('DOMContentLoaded', function () {
         const statusFilter = document.getElementById('statusFilter');
         const searchInput = document.getElementById('bewertungSearch');

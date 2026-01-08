@@ -1,3 +1,5 @@
+  // LOGIK: für BewertungDetailLogic-Seite (Ablehnen, Feedback, bewertet setzen,...)
+  
   document.getElementById('btn-ablehnen').addEventListener('click', function () {
         // Setze das verborgene Status-Feld auf 'abgelehnt'
         document.getElementById('status-field').value = 'abgelehnt';
@@ -15,7 +17,7 @@
         form.submit();
     });
 
-    // Stellen Sie sicher, dass der Standard-Button 'bewertet' setzt (sollte Standard sein, aber zur Sicherheit)
+    // Stelle sicher, dass der Standard-Button 'bewertet' setzt (sollte Standard sein, aber zur Sicherheit)
     document.getElementById('btn-bewerten').addEventListener('click', function () {
         document.getElementById('status-field').value = 'bewertet';
         // Das Formular wird automatisch gesendet, da es type="submit" ist

@@ -1,3 +1,6 @@
+// LOGIK: für Schüler-Seite (Filter & Suche, Auflistung der zu suchenden Personen, löschen)
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('schuelerSearch');
     const klassenFilter = document.getElementById('klassenFilter');

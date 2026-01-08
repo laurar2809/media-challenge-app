@@ -1,3 +1,5 @@
+// LOGIK: für Challenges-Seite (Filtern, Suchen, Auflisten, löschen)
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchContainer = document.getElementById('searchContainer');
     const searchInput = document.getElementById('challengesSearch');

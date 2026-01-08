@@ -1,3 +1,5 @@
+// LOGIK: für AufgabenpaketForm-Seite (Dropdown-Funktion, Bild-löschen Funktion, Bildvorschau)
+
 document.addEventListener("DOMContentLoaded", () => {
       const dropdowncategories = document.querySelectorAll(".dropdown-item");
       const dropdownButton = document.querySelector(".dropdown-toggle");

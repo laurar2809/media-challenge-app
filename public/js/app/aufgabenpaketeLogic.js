@@ -1,3 +1,5 @@
+// LOGIK: für Aufgabenpaket-Seite (Suche, Filter, Zu suchende Aufgabenpakete werden angezeigt, löschen)
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('aufgabenpaketeSearch');
     const searchTermText = document.getElementById('searchTermText');
