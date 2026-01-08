@@ -17,10 +17,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Delete Modal -> PARTIAL
     initDeleteModal({
-    modal: deleteModal,
-    form: deleteForm,
-    submitBtn: confirmDeleteSubmit,
-    buildAction: (id) => `/schueler/${id}?_method=DELETE`
+        modal: deleteModal,
+        form: deleteForm,
+        submitBtn: confirmDeleteSubmit,
+        buildAction: (id) => `/schueler/${id}?_method=DELETE`
     });
 
 
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-      // NEU: Suche über FilterUtils
+    // NEU: Suche über FilterUtils
     FilterUtils.initSearchWithBadge({
         input: searchInput,
         badge: searchBadge,

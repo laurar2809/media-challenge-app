@@ -14,19 +14,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
 
-    
+
     // Delete Modal -> PARTIAL
     initDeleteModal({
-    modal: deleteModal,
-    form: deleteForm,
-    submitBtn: confirmDeleteSubmit,
-    buildAction: (id) => `/aufgabenpakete/${id}?_method=DELETE`
+        modal: deleteModal,
+        form: deleteForm,
+        submitBtn: confirmDeleteSubmit,
+        buildAction: (id) => `/aufgabenpakete/${id}?_method=DELETE`
     });
 
 
 
-      // Wenn Filter/Suche-Elemente da sind, Filter aktivieren
-   if (searchInput && kategorienFilter && cardsContainer) {
+    // Wenn Filter/Suche-Elemente da sind, Filter aktivieren
+    if (searchInput && kategorienFilter && cardsContainer) {
         // Kategorie-Filter
         kategorienFilter.addEventListener('change', applyFilters);
 
@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
             textSpan: searchTermText,
             onChange: () => applyFilters()
         });
-   }
-    
+    }
+
 
     function applyFilters() {
         const kategorieValue = kategorienFilter.value.toLowerCase();
@@ -94,8 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
             applyFilters();
         });
     }
-
-
 
     // Initial Filter anwenden falls Suchbegriff vorhanden
     if (searchInput.value) {

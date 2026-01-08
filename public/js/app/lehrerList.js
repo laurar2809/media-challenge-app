@@ -15,16 +15,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!searchInput || lehrerRows.length === 0) return;
 
 
-     // Delete Modal -> PARTIAL
+    // Delete Modal -> PARTIAL
     initDeleteModal({
-    modal: deleteModal,
-    form: deleteForm,
-    submitBtn: confirmDeleteSubmit,
-    buildAction: (id) => `/lehrer/${id}?_method=DELETE`
+        modal: deleteModal,
+        form: deleteForm,
+        submitBtn: confirmDeleteSubmit,
+        buildAction: (id) => `/lehrer/${id}?_method=DELETE`
     });
 
 
-    
+
     // Auflistung der zu suchenden Lehrkraft
     function applyFilters() {
         const searchValue = searchInput.value.trim().toLowerCase();
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-     if (searchInput.value) {
+    if (searchInput.value) {
         applyFilters();
     }
 });

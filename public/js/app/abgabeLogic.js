@@ -7,16 +7,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // 1. DATEN AUS DEM HTML AUSLESEN (Aus dem DATA-CONTAINER)
     const pageData = document.getElementById('pageData');
     const challengeId = pageData.dataset.challengeId;
-    
+
     // Wir müssen die Sperrlogik vom Button im DOM lesen, da isSubmitted nicht mehr aktuell ist, 
     // wenn der Status von "abgelehnt" auf "entwurf" zurückgesetzt wurde.
     const submitButton = document.getElementById('submitBtn');
-    const isLocked = submitButton ? submitButton.disabled : true; 
+    const isLocked = submitButton ? submitButton.disabled : true;
 
     // 2. INITIAL FILES PARSEN (WENN VORHANDEN)
     let initialFiles = [];
     const filesJsonRaw = pageData.dataset.initialFiles;
-    let filesJson = filesJsonRaw ? filesJsonRaw.trim() : '[]'; 
+    let filesJson = filesJsonRaw ? filesJsonRaw.trim() : '[]';
 
     try {
         if (filesJson.length > 0 && filesJson !== 'null') {
@@ -134,22 +134,22 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                uploadedFiles.push(data.file);
-                renderFiles();
-                showMessage(' ' + file.name + ' hochgeladen!', 'success');
-            } else {
-                showMessage(' ' + data.error, 'danger');
-            }
-            if (progressDiv) progressDiv.classList.add('d-none');
-        })
-        .catch(error => {
-            console.error('Upload error:', error);
-            showMessage(' Upload fehlgeschlagen', 'danger');
-            if (progressDiv) progressDiv.classList.add('d-none');
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    uploadedFiles.push(data.file);
+                    renderFiles();
+                    showMessage(' ' + file.name + ' hochgeladen!', 'success');
+                } else {
+                    showMessage(' ' + data.error, 'danger');
+                }
+                if (progressDiv) progressDiv.classList.add('d-none');
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                showMessage(' Upload fehlgeschlagen', 'danger');
+                if (progressDiv) progressDiv.classList.add('d-none');
+            });
     }
 
     function saveAbgabe(status, successMessage) {
@@ -168,25 +168,25 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                showMessage(' ' + result.message, 'success');
-                if (status === 'eingereicht') {
-                    setTimeout(() => {
-                        window.location.href = '/challenges';
-                    }, 2000);
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showMessage(' ' + result.message, 'success');
+                    if (status === 'eingereicht') {
+                        setTimeout(() => {
+                            window.location.href = '/challenges';
+                        }, 2000);
+                    }
+                } else {
+                    showMessage(' ' + result.error, 'danger');
                 }
-            } else {
-                showMessage(' ' + result.error, 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Save error:', error);
-            showMessage(' Speichern fehlgeschlagen', 'danger');
-        });
+            })
+            .catch(error => {
+                console.error('Save error:', error);
+                showMessage(' Speichern fehlgeschlagen', 'danger');
+            });
     }
-    
+
     // Globale Hilfsfunktionen (müssen im globalen scope sein oder auf window gehängt)
     window.formatFileSize = function (bytes) { /* ... */ }; // Implementierung unten
     window.showMessage = function (message, type) { /* ... */ }; // Implementierung unten
@@ -226,23 +226,23 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(`/api/abgaben/media/${fileId}`, {
                 method: 'DELETE'
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.showMessage(' Datei gelöscht!', 'success');
-                    uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
-                    renderFiles();
-                } else {
-                    window.showMessage(' Löschen fehlgeschlagen: ' + data.error, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Lösch-Fehler:', error);
-                window.showMessage(' Löschen fehlgeschlagen (Netzwerkfehler)', 'danger');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.showMessage(' Datei gelöscht!', 'success');
+                        uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
+                        renderFiles();
+                    } else {
+                        window.showMessage(' Löschen fehlgeschlagen: ' + data.error, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Lösch-Fehler:', error);
+                    window.showMessage(' Löschen fehlgeschlagen (Netzwerkfehler)', 'danger');
+                });
         }
     };
-    
+
     // Die renderFiles Funktion muss am Ende definiert sein, da sie andere Funktionen nutzt.
     function renderFiles() {
         if (uploadedFiles.length === 0) {
@@ -258,13 +258,13 @@ document.addEventListener('DOMContentLoaded', function () {
         filesGrid.innerHTML = uploadedFiles.map(file => {
             let preview = '';
             if (file.datei_typ === 'image') {
-                 preview = `<img src="${file.datei_pfad}" class="img-fluid rounded-top" style="height: 120px; object-fit: cover;">`;
+                preview = `<img src="${file.datei_pfad}" class="img-fluid rounded-top" style="height: 120px; object-fit: cover;">`;
             } else if (file.datei_typ === 'video') {
-                 preview = `<div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top" style="height: 120px;">
+                preview = `<div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top" style="height: 120px;">
                     <i class="bi bi-play-circle display-4"></i>
                 </div>`;
             } else {
-                 preview = `<div class="bg-light d-flex align-items-center justify-content-center rounded-top" style="height: 120px;">
+                preview = `<div class="bg-light d-flex align-items-center justify-content-center rounded-top" style="height: 120px;">
                     <i class="bi bi-file-earmark display-4 text-muted"></i>
                 </div>`;
             }

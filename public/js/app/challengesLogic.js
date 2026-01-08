@@ -113,10 +113,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Delete Modal -> PARTIAL
     initDeleteModal({
-    modal: deleteModal,
-    form: deleteForm,
-    submitBtn: confirmDeleteSubmit,
-    buildAction: (id) => `/challenges/${id}?_method=DELETE`
+        modal: deleteModal,
+        form: deleteForm,
+        submitBtn: confirmDeleteSubmit,
+        buildAction: (id) => `/challenges/${id}?_method=DELETE`
     });
 
 
