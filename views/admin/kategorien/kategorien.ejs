@@ -27,7 +27,7 @@
       <tbody>
         <% if (categories.length===0) { %>
           <tr>
-            <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los! 🎯</td>
+            <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los! </td>
           </tr>
           <% } %>
             <% categories.forEach(item=> { %>
@@ -42,7 +42,7 @@
                         <%= item.icon %>
                       </span>
                       <% } else { %>
-                        <span class="fs-4"><img src="/assets/file-image.svg" alt="" class="rounded"
+                        <span class="fs-4"><img src="/categories/file-image.svg" alt="" class="rounded"
                             style="width:20px;height:20px;object-fit:cover"></span>
                         <% } %>
                 </td>
@@ -77,4 +77,6 @@
 
   </div>
 
+
+  <script src="/js/app/utils/deleteModalUtils.js"> </script>
   <script src="/js/app/kategorienLogic.js"> </script>
