@@ -6,7 +6,7 @@
   <a href="/aufgabenpakete/new" class="btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
 </div>
 
-<!-- Filter und Suchfunktion -->
+<!-- Filter und Suchfunktion - NUR EINMAL -->
 <%- include('../../partials/filter_search', {
   showSchuljahr: false,
   showKategorie: true,
@@ -19,7 +19,7 @@
   searchTerm
 }) %>
 
-<!-- EINHEITLICHER Cards Container (keine Duplikate!) -->
+<!-- Cards Container - NUR EINMAL -->
 <div class="row mt-4" id="aufgabenpaketeCardsContainer">
   <% if (aufgabenpakete.length === 0) { %>
     <div class="col-12">
@@ -32,14 +32,13 @@
       </div>
     </div>
   <% } else { %>
-    <!-- PARTIAL: (intern) -->
     <% aufgabenpakete.forEach(paket => { %>
       <%- include('./card', { paket }) %>
     <% }) %>
   <% } %>
 </div>
 
-<!-- Lösch-Modal - von Partnerin (WICHTIG) -->
+<!-- Delete-Modal - NUR EINMAL -->
 <%- include('../../partials/deleteModal', {
   modalId: 'confirmDeleteModal',
   formId: 'deleteConfirmForm',
@@ -48,24 +47,7 @@
   bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
 }) %>
 
-
-<!-- Scripts - von Partnerin (WICHTIG) -->
+<!-- Scripts - NUR EINMAL -->
+<script src="/js/app/utils/filterUtils.js"></script>
 <script src="/js/app/utils/deleteModalUtils.js"></script>
 <script src="/js/app/aufgabenpaketeLogic.js"></script>
-=======
-    <!-- Lösch - Partial -->
-      <%- include('../../partials/deleteModal', {
-        modalId: 'confirmDeleteModal',
-        formId: 'deleteConfirmForm',
-        submitButtonId: 'confirmDeleteSubmit',
-        title: 'Löschen bestätigen',
-        bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
-      }) %>
-
-
-
-    <script src="/js/app/utils/filterUtils.js"></script>
-    <script src="/js/app/utils/deleteModalUtils.js"></script>
-    <script src="/js/app/aufgabenpaketeLogic.js"></script>
-
-  
