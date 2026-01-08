@@ -26,24 +26,14 @@ document.addEventListener('DOMContentLoaded', function () {
     kategorienFilter.addEventListener('change', () => applyFilters());
     schuljahrFilter.addEventListener('change', () => applyFilters());
 
-    // Live-Suche
-    searchInput.addEventListener('input', function () {
-        clearTimeout(searchTimeout);
-        const query = this.value.trim().toLowerCase();
-
-        searchTimeout = setTimeout(() => {
-            applyFilters();
-
-            if (searchBadge && searchTermText) {
-                if (query.length >= 2) {
-                    searchTermText.textContent = query;
-                    searchBadge.style.display = 'flex';
-                } else {
-                    searchBadge.style.display = 'none';
-                }
-            }
-        }, 300);
+    // NEU: Suche über FilterUtils
+    FilterUtils.initSearchWithBadge({
+        input: searchInput,
+        badge: searchBadge,
+        textSpan: searchTermText,
+        onChange: () => applyFilters()
     });
+
 
     function applyFilters() {
         const kategorieValue = kategorienFilter.value.toLowerCase();
@@ -129,25 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
     buildAction: (id) => `/challenges/${id}?_method=DELETE`
     });
 
-
-    // // Delete-Modal
-    // if (deleteModal && deleteForm) {
-    //     deleteModal.addEventListener('show.bs.modal', event => {
-    //         const button = event.relatedTarget;
-    //         currentItemIdToDelete = button ? button.getAttribute('data-id') : null;
-    //     });
-    // }
-
-    // if (confirmDeleteSubmit && deleteForm) {
-    //     confirmDeleteSubmit.addEventListener('click', () => {
-    //         if (currentItemIdToDelete) {
-    //             deleteForm.action = `/challenges/${currentItemIdToDelete}`;
-    //             deleteForm.submit();
-    //         } else {
-    //             alert('Fehler: Die Challenge-ID konnte nicht ermittelt werden.');
-    //         }
-    //     });
-    // }
 
     // Initial anwenden
     if (searchInput.value) {

@@ -24,32 +24,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
+
+      // Wenn Filter/Suche-Elemente da sind, Filter aktivieren
+   if (searchInput && kategorienFilter && cardsContainer) {
+        // Kategorie-Filter
+        kategorienFilter.addEventListener('change', applyFilters);
+
+        // NEU: Suche über FilterUtils
+        FilterUtils.initSearchWithBadge({
+        input: searchInput,
+        badge: searchBadge,
+        textSpan: searchTermText,
+        onChange: () => applyFilters()
+        });
+   }
     
-    if (!searchInput || !kategorienFilter || !cardsContainer) return;
-
-    let searchTimeout;
-
-    // Filter bei Änderung anwenden
-    kategorienFilter.addEventListener('change', applyFilters);
-
-    // LIVE-SUCHE
-    searchInput.addEventListener('input', function () {
-        clearTimeout(searchTimeout);
-        const query = this.value.trim().toLowerCase();
-
-        searchTimeout = setTimeout(() => {
-            applyFilters();
-
-            if (searchBadge && searchTermText) {
-                if (query.length >= 2) {
-                    searchTermText.textContent = query;
-                    searchBadge.style.display = 'flex';
-                } else {
-                    searchBadge.style.display = 'none';
-                }
-            }
-        }, 300);
-    });
 
     function applyFilters() {
         const kategorieValue = kategorienFilter.value.toLowerCase();

@@ -14,24 +14,16 @@ document.addEventListener('DOMContentLoaded', function () {
     let searchTimeout;
     let currentItemIdToDelete = null;
 
-    // --- 2. Lösch-Logik ---
-    if (deleteModal && deleteForm) {
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            currentItemIdToDelete = button ? button.getAttribute('data-id') : null;
-        });
-    }
 
-    if (confirmDeleteSubmit && deleteForm) {
-        confirmDeleteSubmit.addEventListener('click', () => {
-            if (currentItemIdToDelete) {
-                deleteForm.action = `/schueler/${currentItemIdToDelete}`;
-                deleteForm.submit();
-            } else {
-                alert('Fehler: Die Schüler-ID konnte nicht ermittelt werden.');
-            }
-        });
-    }
+    // Delete Modal -> PARTIAL
+    initDeleteModal({
+    modal: deleteModal,
+    form: deleteForm,
+    submitBtn: confirmDeleteSubmit,
+    buildAction: (id) => `/schueler/${id}?_method=DELETE`
+    });
+
+
 
     // --- 3. Filter-/Such-Logik ---
     function applyFilters() {
@@ -75,6 +67,14 @@ document.addEventListener('DOMContentLoaded', function () {
             searchTimeout = setTimeout(applyFilters, 300);
         });
     }
+
+      // NEU: Suche über FilterUtils
+    FilterUtils.initSearchWithBadge({
+        input: searchInput,
+        badge: searchBadge,
+        textSpan: searchTermText,
+        onChange: () => applyFilters()
+    });
 
     if (searchInput && searchInput.value) {
         applyFilters();
