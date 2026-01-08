@@ -56,9 +56,13 @@
       </div>
     </div>
 
-    <%- include('../../partials/deleteModal', { modalId: 'confirmDeleteModal' , formId: 'deleteConfirmFormChallenge' ,
-      submitButtonId: 'confirmDeleteSubmitChallenge' , title: 'Löschen bestätigen' ,
-      bodyText: 'Bist du sicher, dass du diese Challenge löschen möchtest?' }) %>
+    <%- include('../../partials/deleteModal', { 
+      modalId: 'confirmDeleteModal' , 
+      formId: 'deleteConfirmFormChallenge' ,
+      submitButtonId: 'confirmDeleteSubmitChallenge' , 
+      title: 'Löschen bestätigen' ,
+      bodyText: 'Bist du sicher, dass du diese Challenge löschen möchtest?' 
+    }) %>
 
 
       <script src="/js/app/challengesLogic.js"></script>
