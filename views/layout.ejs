@@ -14,28 +14,22 @@
 
 <body>
 
-     <!-- // SICHERHEITS-FALLBACK if (typeof currentUser==='undefined' ) { currentUser=null; } 
+  <!-- // SICHERHEITS-FALLBACK if (typeof currentUser==='undefined' ) { currentUser=null; } 
      // FALLBACK FÜR activePage if (typeof activePage==='undefined' ) { activePage='' ; } -->
 
+  <!-- NAVBAR PARTIAL-->
+  <%- include('partials/navbar')%>
+  
+    <!-- ALERTS PARTIAL-->
+    <main class="container my-4">
+      <%- include('partials/alerts')%>
+        <%- body %>
+    </main>
 
-    
-<!-- NAVBAR PARTIAL-->
-      <%- include('partials/navbar')%>
+    <!-- FOOTER PARTIAL -->
+    <%- include('partials/footer')%>
 
-
-
-<!-- ALERTS PARTIAL-->
-        <main class="container my-4">
-          <%- include('partials/alerts')%>
-            <%- body %>
-        </main>
-
-
-
-<!-- FOOTER PARTIAL -->
-        <%- include('partials/footer')%>
-
-          <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

@@ -1,5 +1,8 @@
+/*----------------------------------------------------------------------------------
 /* BASISLAYOUT */
+/*----------------------------------------------------------------------------------
 
+/*Body*/
 body {
   background: #f8f9fb;
 }
@@ -13,8 +16,12 @@ table th {
   vertical-align: middle;
 }
 
+/*----------------------------------------------------------------------------------
 
+
+/*----------------------------------------------------------------------------------
 /* NAVIGATION */
+/*----------------------------------------------------------------------------------
 
 /* Navbar-Hintergrund */
 .navbar.bg-primary,
@@ -51,10 +58,13 @@ table th {
 /* Inhalte in einer Zeile: links – mitte – rechts */
 .navbar-inner {
   display: flex;
-  align-items: center;      /* vertikal mittig */
+  align-items: center;
+  /* vertikal mittig */
   justify-content: space-between;
-  padding-top: 0.5rem;      /* optional feintuning */
-  padding-bottom: 0.5rem;   /* optional feintuning */
+  padding-top: 0.5rem;
+  /* optional feintuning */
+  padding-bottom: 0.5rem;
+  /* optional feintuning */
 }
 
 /* Logo-Bereich */
@@ -121,13 +131,19 @@ table th {
   margin-bottom: 0;
 }
 
+/*----------------------------------------------------------------------------------
 
+
+/*----------------------------------------------------------------------------------
 /* HAUPTBEREICH UND FOOTER */
+/*----------------------------------------------------------------------------------
 
 /* Main-Container */
 .main-container {
-  margin-top: 2rem; /* Abstand von Oben */
-  margin-bottom: 2rem; /* Abstand von Unten */
+  margin-top: 2rem;
+  /* Abstand von Oben */
+  margin-bottom: 2rem;
+  /* Abstand von Unten */
 }
 
 /* Footer */
@@ -140,13 +156,20 @@ table th {
 }
 
 .footer-inner {
-  display: flex; /* alle Texte nebeneinander statt untereinander */
-  flex-wrap: wrap; /* springt in nächste Zeile bei wenig Platz (Mobile) */
-  gap: 0.5rem; /* gleichmäßiger Abstand zwischen allen Elementen */
+  display: flex;
+  /* alle Texte nebeneinander statt untereinander */
+  flex-wrap: wrap;
+  /* springt in nächste Zeile bei wenig Platz (Mobile) */
+  gap: 0.5rem;
+  /* gleichmäßiger Abstand zwischen allen Elementen */
 }
 
+/*----------------------------------------------------------------------------------
 
+
+/*----------------------------------------------------------------------------------
 /* BUTTONS UND MODALE */
+/*----------------------------------------------------------------------------------
 
 /* Detail-Button */
 .btn-custom-details {
@@ -230,8 +253,31 @@ table th {
   color: white;
 }
 
+.btn-custom-newCategorieChallenge {
+  background-color: #0d6efd; /* Blau wie Bootstrap primary */
+  color: #fff;
+  border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  transition: background-color 0.2s ease-in-out;
+  text-decoration-line: none;
+}
 
+.btn-custom-newCategorieChallenge:hover {
+  background-color: #0b5ed7; /* dunkler bei Hover */
+  color: #fff;
+}
+
+
+
+/*----------------------------------------------------------------------------------
+
+
+/*----------------------------------------------------------------------------------
 /* DROPDOWNS UND FILTER*/
+/*----------------------------------------------------------------------------------
 
 /* Dropdown mit fester Breite (Button) */
 .dropdown-toggle.fixed-width {
@@ -276,8 +322,12 @@ table th {
   color: #0082ba !important;
 }
 
+/*----------------------------------------------------------------------------------
 
+
+/*----------------------------------------------------------------------------------
 /* FORMULARE UND INPUTS */
+/*----------------------------------------------------------------------------------
 
 /* Inputgruppen: Label oben ausrichten */
 .input-group.align-top-stretch {
@@ -311,7 +361,8 @@ table th {
 /* Fokus innerhalb einer Input-Group */
 .input-group:focus-within {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
-  border-radius: 0.375rem; /* gleiche Rundung wie Bootstrap Inputs */
+  border-radius: 0.375rem;
+  /* gleiche Rundung wie Bootstrap Inputs */
 }
 
 /* Fokus für Text-Inputs */
@@ -320,8 +371,13 @@ input.form-control:focus {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.15) !important;
 }
 
+/*----------------------------------------------------------------------------------
 
-/* DRAG AND DROP (Teams) */
+
+
+/*--------------------------------------------------------------------------------
+/* DRAG AND DROP (Teams und Abgabe) */
+/*--------------------------------------------------------------------------------
 
 /* Team-Farbe (Drag and Drop) */
 .custom-team-color {
@@ -340,17 +396,35 @@ input.form-control:focus {
   font-size: 0.8rem;
 }
 
-.member-chip.opacity-50 { /* wenn Mitglied nicht verfügbar - verblassen */
+.member-chip.opacity-50 {
+  /* wenn Mitglied nicht verfügbar - verblassen */
   opacity: 0.5;
 }
 
+/* Style - Dropzone (Abgabe) */
+.drop-zone {
+  border: 2px dashed #ced4da;
+  transition: all 0.3s;
+  cursor: pointer;
+}
 
+.drop-zone:hover {
+  border-color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+/*----------------------------------------------------------------------------------
+
+
+
+/*----------------------------------------------------------------------------------
 /* LOGIN FORMULAR */
+/*----------------------------------------------------------------------------------
 
 /* Login-Container (zentriert) */
 .login-container {
-  max-width: 540px;        
-  margin: 2rem auto 0;   
+  max-width: 540px;
+  margin: 2rem auto 0;
   padding: 0 1rem;
 }
 
@@ -389,18 +463,18 @@ input.form-control:focus {
 
 /* Info-Box (Schnell-Login) */
 .login-info-box {
-  border: 1px solid #dee2e6;    
+  border: 1px solid #dee2e6;
   text-align: center;
-  margin-bottom: 1.5rem;       
-  padding: 1rem;            
-  background: #f8f9fa;          
-  border-radius: 6px;         
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
 }
 
 /* Input Groups */
 .login-input-group,
 .login-quick-input {
-  margin-bottom: 1rem;         
+  margin-bottom: 1rem;
 }
 
 /* Labels für Input Groups */
@@ -429,14 +503,14 @@ input.form-control:focus {
 
 /* Divider */
 .login-divider {
-  margin: 1.5rem 0;            
+  margin: 1.5rem 0;
 }
 
 /* Namens-Login Titel */
 .login-name-title {
   text-align: center;
-  color: #6c757d;             
-  margin-bottom: 1rem;       
+  color: #6c757d;
+  margin-bottom: 1rem;
   margin-top: 0;
 }
 
@@ -453,3 +527,57 @@ input.form-control:focus {
   border-color: color-mix(in srgb, #0082ba 85%, black) !important;
 }
 
+/*----------------------------------------------------------------------------------
+
+
+/*----------------------------------------------------------------------------------
+/* Cards
+/*----------------------------------------------------------------------------------
+
+/* File card */
+
+.file-card {
+  transition: transform 0.2s;
+}
+
+.file-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Header für Aufgabenpakete */
+.aufgabenpakete-header {
+  display: flex;
+  align-items: center;          /* Vertikal zentrieren */
+  justify-content: space-between; /* WICHTIG: verteilt auf gesamte Breite */
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+#aufgabenpaketeCardsContainer {
+  display: flex;
+  flex-wrap: wrap;        /* Zeilen umbrechen */
+  gap: 1.5rem;            /* Abstand horizontal + vertikal */
+  margin-top: 3rem;
+}
+
+#aufgabenpaketeCardsContainer > * {
+  flex: 1 1 calc(33.333% - 1rem); /* 3 Cards pro Reihe, Abstand berücksichtigen */
+  box-sizing: border-box;         /* Padding/Border in Breite einbeziehen */
+}
+
+/* RESPONSIVE: Tablets */
+@media (max-width: 991.98px) {
+  #aufgabenpaketeCardsContainer > * {
+    flex: 1 1 calc(50% - 1rem); /* 2 Cards pro Reihe */
+  }
+}
+
+/* RESPONSIVE: Handys */
+@media (max-width: 575.98px) {
+  #aufgabenpaketeCardsContainer > * {
+    flex: 1 1 100%; /* 1 Card pro Reihe */
+  }
+}
+
+
+/*----------------------------------------------------------------------------------

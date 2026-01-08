@@ -1,10 +1,32 @@
-<% pageTitle="Aufgabenpakete" %>
+<link rel="stylesheet" href="/style.css">
+<div class="aufgabenpakete-header">
+  <h2 class="h4 m-0">Aufgabenpakete</h2>
+  <a href="/aufgabenpakete/new" class="btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
+</div>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="h4 m-0">Aufgabenpakete</h2>
-    <a href="/aufgabenpakete/new" class="btn btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
+
+
+  <div class="aufgabenpakete-grid" id="aufgabenpaketeCardsContainer">
+    <% if (aufgabenpakete.length===0) { %>
+      <div class="full-width">
+        <div class="empty-state">
+          <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
+            Keine Aufgabenpakete gefunden für die ausgewählten Filter
+            <% } else { %>
+              Noch keine Aufgabenpakete vorhanden
+              <% } %>
+        </div>
+      </div>
+      <% } else { %>
+        <% aufgabenpakete.forEach(paket=> { %>
+          <%- include('./card', { paket }) %>
+            <% }) %>
+              <% } %>
   </div>
 
+<<<<<<< HEAD
+  
+=======
 
   <!-- Filter und Suchfunktion - Partial -->
   <%- include('../../partials/filter_search', {
@@ -59,3 +81,4 @@
     <script src="/js/app/utils/filterUtils.js"></script>
     <script src="/js/app/utils/deleteModalUtils.js"></script>
     <script src="/js/app/aufgabenpaketeLogic.js"></script>
+>>>>>>> a6d8d95a812a3218dd2a912ad91f26e9c29df434
