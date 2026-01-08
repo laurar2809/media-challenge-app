@@ -14,27 +14,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!searchInput || lehrerRows.length === 0) return;
 
-    let searchTimeout;
 
-    // LIVE-SUCHE
-    searchInput.addEventListener('input', function () {
-        clearTimeout(searchTimeout);
-        const query = this.value.trim().toLowerCase();
-
-        searchTimeout = setTimeout(() => {
-            applyFilters();
-
-            if (searchBadge && searchTermText) {
-                if (query.length >= 2) {
-                    searchTermText.textContent = query;
-                    searchBadge.style.display = 'flex';
-                } else {
-                    searchBadge.style.display = 'none';
-                }
-            }
-        }, 300);
+     // Delete Modal -> PARTIAL
+    initDeleteModal({
+    modal: deleteModal,
+    form: deleteForm,
+    submitBtn: confirmDeleteSubmit,
+    buildAction: (id) => `/lehrer/${id}?_method=DELETE`
     });
 
+
+    
     // Auflistung der zu suchenden Lehrkraft
     function applyFilters() {
         const searchValue = searchInput.value.trim().toLowerCase();
@@ -72,6 +62,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+    // LIVE-SUCHE jetzt über FilterUtils
+    FilterUtils.initSearchWithBadge({
+        input: searchInput,
+        badge: searchBadge,
+        textSpan: searchTermText,
+        onChange: () => applyFilters()
+    });
+
+
+
     if (clearSearch) {
         clearSearch.addEventListener('click', function (e) {
             e.preventDefault();
@@ -81,26 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-    //löschen
-
-    if (deleteModal && deleteForm) {
-        deleteModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            const itemId = button ? button.getAttribute('data-id') : null;
-            if (itemId) {
-                deleteForm.action = `/lehrer/${itemId}?_method=DELETE`;
-            }
-        });
-    }
-
-    if (searchInput.value) {
+     if (searchInput.value) {
         applyFilters();
-    }
-
-    if(confirmDeleteSubmit && deleteForm) {
-        confirmDeleteSubmit.addEventListener('click', () => {
-            deleteForm.submit();
-        });
     }
 });

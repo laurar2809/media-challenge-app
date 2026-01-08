@@ -19,6 +19,7 @@
   searchTerm
 }) %>
 
+<<<<<<< HEAD
 <!-- EINHEITLICHER Cards Container (keine Duplikate!) -->
 <div class="row mt-4" id="aufgabenpaketeCardsContainer">
   <% if (aufgabenpakete.length === 0) { %>
@@ -26,6 +27,56 @@
       <div class="text-center py-4 text-muted">
         <% if (searchTerm || (activeKategorie && activeKategorie !== 'alle')) { %>
           Keine Aufgabenpakete gefunden für die ausgewählten Filter
+=======
+
+  <div class="aufgabenpakete-grid" id="aufgabenpaketeCardsContainer">
+    <% if (aufgabenpakete.length===0) { %>
+      <div class="full-width">
+        <div class="empty-state">
+          <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
+            Keine Aufgabenpakete gefunden für die ausgewählten Filter
+            <% } else { %>
+              Noch keine Aufgabenpakete vorhanden
+              <% } %>
+        </div>
+      </div>
+      <% } else { %>
+        <% aufgabenpakete.forEach(paket=> { %>
+          <%- include('./card', { paket }) %>
+            <% }) %>
+              <% } %>
+  </div>
+
+  <!-- Filter und Suchfunktion - Partial -->
+  <%- include('../../partials/filter_search', {
+
+    showSchuljahr: false,
+    showKategorie: true,
+    showSearch: true,
+
+    kategorien,
+    activeKategorie,
+    kategorieSelectId: 'kategorienFilter',
+    searchContainerId: 'searchContainer',
+    searchInputId: 'aufgabenpaketeSearch',
+    searchTerm
+  }) %>
+
+
+
+    <!-- CARDS LAYOUT - NUR DATENSÄTZE -->
+    <div class="row" id="aufgabenpaketeCardsContainer">
+      <% if (aufgabenpakete.length===0) { %>
+        <div class="col-12">
+          <div class="text-center py-4 text-muted">
+            <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
+              Keine Aufgabenpakete gefunden für die ausgewählten Filter
+              <% } else { %>
+                Noch keine Aufgabenpakete vorhanden
+                <% } %>
+          </div>
+        </div>
+>>>>>>> cbf7924d6e54399c8661f47bf136317a6abf4a49
         <% } else { %>
           Noch keine Aufgabenpakete vorhanden
         <% } %>
@@ -48,6 +99,25 @@
   bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
 }) %>
 
+<<<<<<< HEAD
 <!-- Scripts - von Partnerin (WICHTIG) -->
 <script src="/js/app/utils/deleteModalUtils.js"></script>
 <script src="/js/app/aufgabenpaketeLogic.js"></script>
+=======
+    <!-- Lösch - Partial -->
+      <%- include('../../partials/deleteModal', {
+        modalId: 'confirmDeleteModal',
+        formId: 'deleteConfirmForm',
+        submitButtonId: 'confirmDeleteSubmit',
+        title: 'Löschen bestätigen',
+        bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
+      }) %>
+
+
+
+    <script src="/js/app/utils/filterUtils.js"></script>
+    <script src="/js/app/utils/deleteModalUtils.js"></script>
+    <script src="/js/app/aufgabenpaketeLogic.js"></script>
+
+    
+>>>>>>> cbf7924d6e54399c8661f47bf136317a6abf4a49
