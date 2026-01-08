@@ -32,10 +32,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // NEU: Suche über FilterUtils
         FilterUtils.initSearchWithBadge({
-        input: searchInput,
-        badge: searchBadge,
-        textSpan: searchTermText,
-        onChange: () => applyFilters()
+            input: searchInput,
+            badge: searchBadge,
+            textSpan: searchTermText,
+            onChange: () => applyFilters()
         });
    }
     

@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-
     // LIVE-SUCHE jetzt über FilterUtils
     FilterUtils.initSearchWithBadge({
         input: searchInput,
