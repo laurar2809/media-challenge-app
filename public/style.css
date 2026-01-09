@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------------
 /* BASISLAYOUT */
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------*/
 
 /*Body*/
 body {
@@ -9,6 +9,10 @@ body {
 
 .card {
   border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  background: white;
+  overflow: hidden;
 }
 
 table td,
@@ -16,12 +20,17 @@ table th {
   vertical-align: middle;
 }
 
-/*----------------------------------------------------------------------------------
-
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
 
 /*----------------------------------------------------------------------------------
 /* NAVIGATION */
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------*/
 
 /* Navbar-Hintergrund */
 .navbar.bg-primary,
@@ -59,12 +68,9 @@ table th {
 .navbar-inner {
   display: flex;
   align-items: center;
-  /* vertikal mittig */
   justify-content: space-between;
-  padding-top: 0.5rem;
-  /* optional feintuning */
-  padding-bottom: 0.5rem;
-  /* optional feintuning */
+  padding: 0.5rem 1rem;
+  width: 100%;
 }
 
 /* Logo-Bereich */
@@ -94,6 +100,9 @@ table th {
   display: flex;
   flex-direction: row;
   gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* Userbereich rechts */
@@ -113,6 +122,7 @@ table th {
 .navbar-nav .nav-link {
   position: relative;
   padding-bottom: 5px;
+  text-decoration: none;
 }
 
 .navbar-nav .nav-link.active::after {
@@ -132,44 +142,41 @@ table th {
 }
 
 /*----------------------------------------------------------------------------------
-
-
-/*----------------------------------------------------------------------------------
 /* HAUPTBEREICH UND FOOTER */
-/*----------------------------------------------------------------------------------
-
-/* Main-Container */
-.main-container {
-  margin-top: 2rem;
-  /* Abstand von Oben */
-  margin-bottom: 2rem;
-  /* Abstand von Unten */
-}
+/*----------------------------------------------------------------------------------*/
 
 /* Footer */
 .app-footer {
   border-top: 1px solid #dee2e6;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding: 1rem 0;
   font-size: 0.875rem;
   color: #6c757d;
 }
 
 .footer-inner {
   display: flex;
-  /* alle Texte nebeneinander statt untereinander */
   flex-wrap: wrap;
-  /* springt in nächste Zeile bei wenig Platz (Mobile) */
   gap: 0.5rem;
-  /* gleichmäßiger Abstand zwischen allen Elementen */
 }
 
 /*----------------------------------------------------------------------------------
-
-
-/*----------------------------------------------------------------------------------
 /* BUTTONS UND MODALE */
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------*/
+
+/* Basis Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  text-align: center;
+}
 
 /* Detail-Button */
 .btn-custom-details {
@@ -219,26 +226,33 @@ table th {
 
 /* Neuer Kategorie/Challenge-Button */
 .btn-custom-newCategorieChallenge {
-  background-color: #0082ba !important;
-  border-color: #0082ba !important;
-  color: white !important;
+  background-color: #0082ba;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
 }
 
 .btn-custom-newCategorieChallenge:hover {
-  background-color: color-mix(in srgb, #0082ba 85%, black) !important;
-  border-color: color-mix(in srgb, #0082ba 85%, black) !important;
+  background-color: color-mix(in srgb, #0082ba 85%, black);
+  color: white;
+  text-decoration: none;
 }
 
 /* Speichern-Button */
 .btn-custom-safe {
-  background-color: #0082ba !important;
-  border-color: #0082ba !important;
-  color: white !important;
+  background-color: #0082ba;
+  border-color: #0082ba;
+  color: white;
 }
 
 .btn-custom-safe:hover {
-  background-color: color-mix(in srgb, #0082ba 85%, black) !important;
-  border-color: color-mix(in srgb, #0082ba 85%, black) !important;
+  background-color: color-mix(in srgb, #0082ba 85%, black);
+  border-color: color-mix(in srgb, #0082ba 85%, black);
+  color: white;
 }
 
 /* Filter-Button */
@@ -253,31 +267,22 @@ table th {
   color: white;
 }
 
-.btn-custom-newCategorieChallenge {
-  background-color: #0d6efd; /* Blau wie Bootstrap primary */
-  color: #fff;
-  border-radius: 0.25rem;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
-  transition: background-color 0.2s ease-in-out;
-  text-decoration-line: none;
+/* Zurück-Button */
+.btn-outline-secondary {
+  background-color: transparent;
+  color: #6c757d;
+  border-color: #6c757d;
 }
 
-.btn-custom-newCategorieChallenge:hover {
-  background-color: #0b5ed7; /* dunkler bei Hover */
-  color: #fff;
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
 }
-
-
-
-/*----------------------------------------------------------------------------------
-
 
 /*----------------------------------------------------------------------------------
 /* DROPDOWNS UND FILTER*/
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------*/
 
 /* Dropdown mit fester Breite (Button) */
 .dropdown-toggle.fixed-width {
@@ -323,15 +328,13 @@ table th {
 }
 
 /*----------------------------------------------------------------------------------
-
-
-/*----------------------------------------------------------------------------------
 /* FORMULARE UND INPUTS */
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------*/
 
 /* Inputgruppen: Label oben ausrichten */
 .input-group.align-top-stretch {
   align-items: stretch;
+  display: flex;
 }
 
 .input-group.align-top-stretch .input-group-text {
@@ -362,7 +365,6 @@ table th {
 .input-group:focus-within {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
   border-radius: 0.375rem;
-  /* gleiche Rundung wie Bootstrap Inputs */
 }
 
 /* Fokus für Text-Inputs */
@@ -372,12 +374,8 @@ input.form-control:focus {
 }
 
 /*----------------------------------------------------------------------------------
-
-
-
-/*--------------------------------------------------------------------------------
 /* DRAG AND DROP (Teams und Abgabe) */
-/*--------------------------------------------------------------------------------
+/*--------------------------------------------------------------------------------*/
 
 /* Team-Farbe (Drag and Drop) */
 .custom-team-color {
@@ -397,7 +395,6 @@ input.form-control:focus {
 }
 
 .member-chip.opacity-50 {
-  /* wenn Mitglied nicht verfügbar - verblassen */
   opacity: 0.5;
 }
 
@@ -409,17 +406,13 @@ input.form-control:focus {
 }
 
 .drop-zone:hover {
-  border-color: #0d6efd;
+  border-color: #0082ba;
   background-color: rgba(13, 110, 253, 0.05);
 }
 
 /*----------------------------------------------------------------------------------
-
-
-
-/*----------------------------------------------------------------------------------
 /* LOGIN FORMULAR */
-/*----------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------------*/
 
 /* Login-Container (zentriert) */
 .login-container {
@@ -475,6 +468,7 @@ input.form-control:focus {
 .login-input-group,
 .login-quick-input {
   margin-bottom: 1rem;
+  display: flex;
 }
 
 /* Labels für Input Groups */
@@ -528,14 +522,10 @@ input.form-control:focus {
 }
 
 /*----------------------------------------------------------------------------------
-
-
-/*----------------------------------------------------------------------------------
-/* Cards
-/*----------------------------------------------------------------------------------
+/* CARDS UND KOMPONENTEN */
+/*----------------------------------------------------------------------------------*/
 
 /* File card */
-
 .file-card {
   transition: transform 0.2s;
 }
@@ -545,39 +535,105 @@ input.form-control:focus {
 }
 
 /* Header für Aufgabenpakete */
+.page-header,
 .aufgabenpakete-header {
   display: flex;
-  align-items: center;          /* Vertikal zentrieren */
-  justify-content: space-between; /* WICHTIG: verteilt auf gesamte Breite */
-  margin-bottom: 2rem;
-  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  margin-bottom: 0.4rem;
 }
 
-#aufgabenpaketeCardsContainer {
+.page-title,
+.h4 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Card-spezifische Styles */
+.card-header {
+  background: #2e4269;
+  color: white;
+  padding: 1rem 1.25rem;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.card-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.header-content {
   display: flex;
-  flex-wrap: wrap;        /* Zeilen umbrechen */
-  gap: 1.5rem;            /* Abstand horizontal + vertikal */
-  margin-top: 3rem;
+  justify-content: space-between;
+  align-items: center;
 }
 
-#aufgabenpaketeCardsContainer > * {
-  flex: 1 1 calc(33.333% - 1rem); /* 3 Cards pro Reihe, Abstand berücksichtigen */
-  box-sizing: border-box;         /* Padding/Border in Breite einbeziehen */
+.image-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-/* RESPONSIVE: Tablets */
-@media (max-width: 991.98px) {
-  #aufgabenpaketeCardsContainer > * {
-    flex: 1 1 calc(50% - 1rem); /* 2 Cards pro Reihe */
-  }
+.card-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
 }
 
-/* RESPONSIVE: Handys */
-@media (max-width: 575.98px) {
-  #aufgabenpaketeCardsContainer > * {
-    flex: 1 1 100%; /* 1 Card pro Reihe */
-  }
+.icon-display {
+  font-size: 4rem;
+  line-height: 1;
+  display: block;
 }
 
+.image-container.empty .card-image {
+  opacity: 0.5;
+}
 
-/*----------------------------------------------------------------------------------
+.no-image-text {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.description-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-label {
+  color: #6c757d;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.description-text {
+  font-size: 1.25rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.meta-info {
+  color: #6c757d;
+  font-size: 0.875rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.meta-item {
+  padding: 0.75rem 0;
+}
+
+.footer-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/*----------------------------------------------------------------------------------*/

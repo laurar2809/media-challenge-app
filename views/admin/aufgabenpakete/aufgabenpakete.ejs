@@ -1,53 +1,40 @@
 <link rel="stylesheet" href="/style.css">
 
-<!-- Header: Korrigiere für Button-Rechts-Ausrichtung -->
-<div class="aufgabenpakete-header d-flex justify-content-between align-items-center">
+<div class="aufgabenpakete-header">
   <h2 class="h4 m-0">Aufgabenpakete</h2>
   <a href="/aufgabenpakete/new" class="btn-custom-newCategorieChallenge">+ Neues Aufgabenpaket</a>
 </div>
 
-<!-- Filter und Suchfunktion - NUR EINMAL -->
-<%- include('../../partials/filter_search', {
-  showSchuljahr: false,
-  showKategorie: true,
-  showSearch: true,
-  kategorien,
-  activeKategorie,
-  kategorieSelectId: 'kategorienFilter',
-  searchContainerId: 'searchContainer',
-  searchInputId: 'aufgabenpaketeSearch',
-  searchTerm
-}) %>
+<!-- Filter und Suchfunktion -->
+<%- include('../../partials/filter_search', { showSchuljahr: false, showKategorie: true, showSearch: true, kategorien,
+  activeKategorie, kategorieSelectId: 'kategorienFilter' , searchContainerId: 'searchContainer' ,
+  searchInputId: 'aufgabenpaketeSearch' , searchTerm }) %>
 
-<!-- Cards Container - NUR EINMAL -->
-<div class="row mt-4" id="aufgabenpaketeCardsContainer">
-  <% if (aufgabenpakete.length === 0) { %>
-    <div class="col-12">
-      <div class="text-center py-4 text-muted">
-        <% if (searchTerm || (activeKategorie && activeKategorie !== 'alle')) { %>
-          Keine Aufgabenpakete gefunden für die ausgewählten Filter
-        <% } else { %>
-          Noch keine Aufgabenpakete vorhanden
-        <% } %>
+  <!-- Cards Container -->
+  <div class="row mt-4" id="aufgabenpaketeCardsContainer">
+    <% if (aufgabenpakete.length===0) { %>
+      <div class="col-12">
+        <div class="text-center py-4 text-muted">
+          <% if (searchTerm || (activeKategorie && activeKategorie !=='alle' )) { %>
+            Keine Aufgabenpakete gefunden für die ausgewählten Filter
+            <% } else { %>
+              Noch keine Aufgabenpakete vorhanden
+              <% } %>
+        </div>
       </div>
-    </div>
-  <% } else { %>
-    <% aufgabenpakete.forEach(paket => { %>
-      <%- include('./card', { paket }) %>
-    <% }) %>
-  <% } %>
-</div>
+      <% } else { %>
+        <% aufgabenpakete.forEach(paket=> { %>
+          <%- include('./card', { paket }) %>
+            <% }) %>
+              <% } %>
+  </div>
 
-<!-- Delete-Modal - NUR EINMAL -->
-<%- include('../../partials/deleteModal', {
-  modalId: 'confirmDeleteModal',
-  formId: 'deleteConfirmForm',
-  submitButtonId: 'confirmDeleteSubmit',
-  title: 'Löschen bestätigen',
-  bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
-}) %>
+  <!-- Delete-Modal -->
+  <%- include('../../partials/deleteModal', { modalId: 'confirmDeleteModal' , formId: 'deleteConfirmForm' ,
+    submitButtonId: 'confirmDeleteSubmit' , title: 'Löschen bestätigen' ,
+    bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?' }) %>
 
-<!-- Scripts - NUR EINMAL -->
-<script src="/js/app/utils/filterUtils.js"></script>
-<script src="/js/app/utils/deleteModalUtils.js"></script>
-<script src="/js/app/aufgabenpaketeLogic.js"></script>
+    <!-- Scripts - NUR EINMAL -->
+    <script src="/js/app/utils/filterUtils.js"></script>
+    <script src="/js/app/utils/deleteModalUtils.js"></script>
+    <script src="/js/app/aufgabenpaketeLogic.js"></script>
