@@ -16,7 +16,15 @@
                     </span>
                 </div>
             </div>
-            <a href="/challenges" class="btn btn-outline-secondary btn-sm">
+
+            <% if (challenge.zusatzinfos) { %>
+                <div class="alert alert-secondary mb-3">
+                    <strong>Zusatzinformationen:</strong><br>
+                    <%= challenge.zusatzinfos %>
+                </div>
+            <% } %>
+
+                <a href="/challenges/<%= challenge.id %>/detail" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left"></i> Zurück
             </a>
         </div>

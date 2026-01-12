@@ -134,6 +134,57 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+
+//  in challenges.js mit Rollencheck
+router.get('/:id/detail', requireAuth, async (req, res) => {
+  if (!req.currentUser || req.currentUser.user_role_id !== 1) {
+    req.flash('error', 'Keine Berechtigung für diese Ansicht.');
+    return res.redirect('/');
+  }
+
+  const challenge = await req.db('challenges')
+    .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+    .leftJoin('teams', 'challenges.team_id', 'teams.id')
+    .where('challenges.id', req.params.id)
+    .select(
+      'challenges.*',
+      'aufgabenpakete.title as aufgabenpaket_title',
+      'aufgabenpakete.description as aufgabenpaket_description',
+      'aufgabenpakete.icon as aufgabenpaket_icon',
+      'teams.name as team_name'
+    )
+    .first();
+
+  if (!challenge) {
+    req.flash('error', 'Challenge nicht gefunden.');
+    return res.redirect('/challenges');
+  }
+
+  // Teammitglieder laden (nur wenn Team existiert)
+  let teamMitglieder = [];
+  if (challenge.team_id) {
+    teamMitglieder = await req.db('team_mitglieder')
+      .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
+      .where('team_mitglieder.team_id', challenge.team_id)
+      .select(
+        'users.vorname',
+        'users.nachname',
+        'klassen.name as klasse_name'
+      );
+  }
+
+  res.render('schueler/challenges/challengesDetail', {
+    title: 'Challenge-Details',
+    challenge,
+    teamMitglieder,
+    activePage: 'challenges'
+  });
+});
+
+
+
+
 // Neue Challenge Formular
 router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   try {

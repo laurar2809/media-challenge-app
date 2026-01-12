@@ -1,0 +1,104 @@
+<% pageTitle = 'Challenge-Details' %>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="h4 mb-1"><%= challenge.aufgabenpaket_title || challenge.title %></h2>
+      <div class="text-muted small">
+        <!-- Kategorie -->
+        <span class="badge bg-secondary"><%= challenge.kategorie %></span>
+
+        <!-- Schuljahr -->
+        <% if (challenge.schuljahr_id) { %>
+          <span class="ms-2">
+            Schuljahr: <%= challenge.schuljahr_id %> <!-- optional später Name joinen -->
+          </span>
+        <% } %>
+
+        <!-- Abgabedatum -->
+        <% if (challenge.abgabedatum) { %>
+          <span class="ms-2">
+            Abgabe bis:
+            <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
+          </span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Zurück zur Schüler-Challenge-Liste -->
+    <a href="/challenges" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Zurück
+    </a>
+  </div>
+
+  <!-- Aufgabenbeschreibung -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>Aufgabenbeschreibung</h5>
+      <p><%= challenge.aufgabenpaket_description || challenge.beschreibung %></p>
+
+      <% if (challenge.zusatzinfos) { %>
+        <hr>
+        <h6>Zusatzinformationen</h6>
+        <p class="mb-0"><%= challenge.zusatzinfos %></p>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Team-Informationen -->
+  <div class="card mb-3">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="bi bi-people"></i> Team</h5>
+  </div>
+  <div class="card-body">
+    <p class="mb-2">
+      <strong>Teamname:</strong> <%= challenge.team_name || 'Kein Team' %>
+    </p>
+
+    <% if (teamMitglieder && teamMitglieder.length > 0) { %>
+      <ul class="list-unstyled mb-0">
+        <% teamMitglieder.forEach(m => { %>
+          <li class="mb-1">
+            <%= m.vorname %> <%= m.nachname %>
+            <% if (m.klasse_name) { %>
+              <span class="text-muted small">(<%= m.klasse_name %>)</span>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="text-muted mb-0">Keine Teammitglieder gefunden.</p>
+    <% } %>
+  </div>
+</div>
+
+  <!-- Beispieldateien (Platzhalter) -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-images"></i> Beispieldateien</h5>
+    </div>
+    <div class="card-body">
+      <% if (challenge.aufgabenpaket_icon) { %>
+      <div class="text-center">
+        <img
+          src="<%= challenge.aufgabenpaket_icon %>"
+          alt="Beispielbild zur Challenge"
+          class="img-fluid rounded"
+          style="max-height: 250px; object-fit: cover;"
+        >
+      </div>
+    <% } else { %>
+      <p class="text-muted mb-0">
+        Keine Beispieldatei für dieses Aufgabenpaket hinterlegt.
+      </p>
+    <% } %>
+    </div>
+  </div>
+
+  <!-- Button Abgabe einreichen -->
+  <div class="d-flex justify-content-end">
+    <a href="/challenges/<%= challenge.id %>/abgabe" class="btn btn-primary">
+      Abgabe einreichen
+    </a>
+  </div>
+</div>

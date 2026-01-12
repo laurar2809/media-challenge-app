@@ -81,6 +81,10 @@ router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   });
 });
 
+
+
+
+
 // Schüler speichern
 router.post('/', requireAuth, requireLehrer, async (req, res) => {
   const { vorname, nachname, klasse_id, schuljahr_id } = req.body;
