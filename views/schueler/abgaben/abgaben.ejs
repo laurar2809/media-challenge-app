@@ -1,0 +1,82 @@
+<% pageTitle = 'Meine Abgaben' %>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 m-0">Meine Abgaben</h1>
+  </div>
+
+  <% if (!abgaben || abgaben.length === 0) { %>
+    <div class="alert alert-info">
+      Du hast aktuell keine Challenges zugewiesen oder noch keine Abgaben erstellt.
+    </div>
+  <% } else { %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Challenge</th>
+            <th>Kategorie</th>
+            <th>Team</th>
+            <th>Status</th>
+            <th>Abgabedatum</th>
+            <th>Eingereicht am</th>
+            <th class="text-end">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% abgaben.forEach(item => { %>
+            <tr>
+              <td><%= item.aufgabenpaket_title %></td>
+              <td><span class="badge bg-secondary"><%= item.kategorie %></span></td>
+              <td><%= item.team_name %></td>
+              <td>
+                <% 
+                  let status = item.status || 'offen';
+                  let statusClass = 'secondary';
+                  let statusText = status.charAt(0).toUpperCase() + status.slice(1);
+
+                  if (status === 'entwurf') statusClass = 'warning text-dark';
+                  if (status === 'eingereicht') { statusClass = 'info text-dark'; statusText = 'Eingereicht'; }
+                  if (status === 'bewertet') statusClass = 'success';
+                  if (status === 'abgelehnt') statusClass = 'danger';
+                  if (status === 'offen') { statusClass = 'light text-dark'; statusText = 'Noch nicht abgegeben'; }
+                %>
+                <span class="badge bg-<%= statusClass %>">
+                  <%= statusText %>
+                </span>
+              </td>
+              <td>
+                <% if (item.abgabedatum) { %>
+                  <%= new Date(item.abgabedatum).toLocaleDateString('de-DE') %>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+              <td>
+                <% if (item.created_at) { %>
+                  <%= new Date(item.created_at).toLocaleDateString('de-DE') %>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+              <td class="text-end">
+                <a href="/challenges/<%= item.challenge_id %>/detail" class="btn btn-sm btn-outline-secondary">
+                  Details
+                </a>
+                <a href="/challenges/<%= item.challenge_id %>/abgabe" class="btn btn-sm btn-primary ms-1">
+                  <% if (item.status === 'eingereicht') { %>
+                    Abgabe ansehen
+                  <% } else if (item.status === 'bewertet' || item.status === 'abgelehnt') { %>
+                    Feedback ansehen
+                  <% } else { %>
+                    Abgabe einreichen
+                  <% } %>
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>

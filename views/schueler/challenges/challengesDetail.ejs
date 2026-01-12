@@ -31,19 +31,60 @@
     </a>
   </div>
 
-  <!-- Aufgabenbeschreibung -->
-  <div class="card mb-3">
-    <div class="card-body">
-      <h5>Aufgabenbeschreibung</h5>
-      <p><%= challenge.aufgabenpaket_description || challenge.beschreibung %></p>
 
-      <% if (challenge.zusatzinfos) { %>
-        <hr>
-        <h6>Zusatzinformationen</h6>
-        <p class="mb-0"><%= challenge.zusatzinfos %></p>
-      <% } %>
+  <!-- Beispieldateien  -->
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-images"></i> Beispieldateien</h5>
+    </div>
+    <div class="card-body">
+      <% if (challenge.aufgabenpaket_icon) { %>
+      <div class="text-center">
+        <img
+          src="<%= challenge.aufgabenpaket_icon %>"
+          alt="Beispielbild zur Challenge"
+          class="img-fluid rounded"
+          style="max-height: 250px; object-fit: cover;"
+        >
+      </div>
+    <% } else { %>
+      <p class="text-muted mb-0">
+        Keine Beispieldatei für dieses Aufgabenpaket hinterlegt.
+      </p>
+    <% } %>
     </div>
   </div>
+
+
+  
+  <!-- Zusatzinfos (Kameraeinstellungen...) -->
+
+  <div class="card mb-3">
+  <div class="card-body">
+    <h5>Aufgabenbeschreibung</h5>
+    <p><%= challenge.aufgabenpaket_description || challenge.beschreibung %></p>
+
+    <% if (challenge.zusatzinfos) { %>
+      <hr>
+      <h6>Zusatzinformationen & Kameraeinstellungen</h6>
+       <p class="mb-0">
+             <%- challenge.zusatzinfos
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // **Text** → <strong>Text</strong>
+          .replace(/\r?\n/g, '<br>')                        // Zeilenumbrüche
+    %>
+        </p>
+    <% } else { %>
+      <hr>
+      <h6>Zusatzinformationen & Kameraeinstellungen</h6>
+      <p class="text-muted mb-0">
+        Für diese Challenge wurden noch keine Zusatzinformationen hinterlegt.
+      </p>
+    <% } %>
+  </div>
+</div>
+
+
+
 
   <!-- Team-Informationen -->
   <div class="card mb-3">
@@ -72,28 +113,11 @@
   </div>
 </div>
 
-  <!-- Beispieldateien (Platzhalter) -->
-  <div class="card mb-3">
-    <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-images"></i> Beispieldateien</h5>
-    </div>
-    <div class="card-body">
-      <% if (challenge.aufgabenpaket_icon) { %>
-      <div class="text-center">
-        <img
-          src="<%= challenge.aufgabenpaket_icon %>"
-          alt="Beispielbild zur Challenge"
-          class="img-fluid rounded"
-          style="max-height: 250px; object-fit: cover;"
-        >
-      </div>
-    <% } else { %>
-      <p class="text-muted mb-0">
-        Keine Beispieldatei für dieses Aufgabenpaket hinterlegt.
-      </p>
-    <% } %>
-    </div>
-  </div>
+  
+
+  
+
+
 
   <!-- Button Abgabe einreichen -->
   <div class="d-flex justify-content-end">

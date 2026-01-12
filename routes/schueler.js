@@ -67,6 +67,54 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
   }
 });
 
+// Meine Abgaben – Übersicht für eingeloggten Schüler
+router.get('/abgaben', requireAuth, async (req, res) => {
+  try {
+    const userId = req.currentUser.id;
+
+    // 1. Teams des Schülers im aktuellen/allen Schuljahren
+    const teamIds = await req.db('team_mitglieder')
+      .where('team_mitglieder.user_id', userId)
+      .pluck('team_mitglieder.team_id');
+
+    let abgaben = [];
+
+    if (teamIds.length > 0) {
+      // 2. Challenges + Abgaben für diese Teams
+      abgaben = await req.db('challenges')
+        .leftJoin('challenge_abgaben', function () {
+          this.on('challenge_abgaben.challenge_id', '=', 'challenges.id')
+              .andOn('challenge_abgaben.team_id', '=', 'challenges.team_id');
+        })
+        .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+        .leftJoin('teams', 'challenges.team_id', 'teams.id')
+        .whereIn('challenges.team_id', teamIds)
+        .select(
+          'challenges.id as challenge_id',
+          'challenges.abgabedatum',
+          'aufgabenpakete.title as aufgabenpaket_title',
+          'aufgabenpakete.kategorie',
+          'teams.name as team_name',
+          'challenge_abgaben.id as abgabe_id',
+          'challenge_abgaben.status',
+          'challenge_abgaben.created_at'
+        )
+        .orderBy('challenges.abgabedatum', 'asc');
+    }
+
+    res.render('schueler/abgaben/abgaben', {
+      title: 'Meine Abgaben',
+      activePage: 'schueler-abgaben',
+      abgaben
+    });
+  } catch (err) {
+    console.error('Fehler beim Laden der Schüler-Abgaben:', err);
+    req.flash('error', 'Fehler beim Laden deiner Abgaben.');
+    res.redirect('/challenges');
+  }
+});
+
+
 // Neuer Schüler Formular
 router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   const klassen = await db('klassen').select('*').orderBy('name', 'asc');
