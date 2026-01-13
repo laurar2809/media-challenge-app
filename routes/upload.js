@@ -1,4 +1,4 @@
-// routes/upload.js - ERWEITERT MIT CLEAN-UP & DYNAMISCHEM PFAD
+// routes/upload.js 
 
 const express = require('express');
 const router = express.Router();

@@ -1,4 +1,4 @@
-// LOGIK: für Abgabe-Seite (Abgabe speichern/abgeben, Files hochladen, bereits hochgeladene Dateien löschen, Hilfsfunktionen, Anzeigen von Dateien)
+// LOGIK: für (Schüler) Abgabe-Seite (Abgabe speichern/abgeben, Files hochladen, bereits hochgeladene Dateien löschen, Hilfsfunktionen, Anzeigen von Dateien)
 
 // public/js/app/abgabeLogic.js
 
