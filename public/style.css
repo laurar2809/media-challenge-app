@@ -252,19 +252,19 @@ table td, table th {
 }
 
 .btn-custom-newCategorieChallenge:hover,
-.btn-custom-safe:hover {
-  background-color: color-mix(in srgb, #0082ba 85%, black);
+.btn-custom-safe {
+  background-color: #0082ba;
+  border-color: #0082ba;
+  color: #f5f5f5; /* leicht gräulich statt reinweiß */
 }
 
-.btn-custom-filter {
-  color: #0082ba;
-  border-color: #0082ba;
-  background: white;
+.btn-custom-newCategorieChallenge:hover,
+.btn-custom-safe:hover {
+  background-color: #006a99; /* dunkleres Blau */
+  border-color: #006a99;
+  color: #f5f5f5; /* bleibt gleich */
 }
-.btn-custom-filter:hover {
-  background-color: #0082ba;
-  color: white;
-}
+
 
 /*--------------------------------------
   Zurück-Button
