@@ -8,59 +8,73 @@
         <% } %>
     </div>
 
-    <% if (challenges && challenges.length> 0) { %>
-      <div class="row">
-        <% challenges.forEach(challenge=> { %>
-          <div class="col-md-6 mb-4">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title">
-                  <%= challenge.title %>
-                </h5>
-                <p class="card-text">
-                  <%= challenge.beschreibung %>
-                </p>
 
-                <!-- Kategorie Badge -->
-                <span class="badge bg-secondary mb-2">
-                  <%= challenge.kategorie %>
-                </span>
+    <!-- Filter und Suchfunktion -->
+      <%- include('../../partials/filter_search', {
 
-                <!-- Abgabedatum -->
-                <% if (challenge.abgabedatum) { %>
-                  <p class="card-text">
-                    <small class="text-muted">
-                      Abgabedatum: <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
-                    </small>
-                  </p>
-                  <% } %>
-              </div>
+        showKlasse: false,
+        showSchuljahr: false,
+        showKategorie: false,
+        showSearch: true,
 
-              <div class="card-footer">
-             
-                    <!-- Nur für Lehrer/Admin: Bearbeiten -->
+        // Suche
+        searchContainerId: 'studentChallengesSearchContainer',
+        searchInputId: 'challengesSearchStudent',
+        searchTerm: ''
+      }) %>
+  
+
+        <% if (challenges && challenges.length> 0) { %>
+          <div class="row" id="studentChallengesContainer">
+            <% challenges.forEach(challenge=> { %>
+              <div class="col-md-6 mb-4 challenge-card-wrapper">
+                <div class="card h-100 challenge-card" data-title="<%= challenge.title %>"
+                  data-team="<%= challenge.team_name || '' %>" data-category="<%= challenge.kategorie || '' %>">
+                  <div class="card-body">
+                    <h5 class="card-title">
+                      <%= challenge.title %>
+                    </h5>
+                    <p class="card-text">
+                      <%= challenge.beschreibung %>
+                    </p>
+
+                    <span class="badge bg-secondary mb-2">
+                      <%= challenge.kategorie %>
+                    </span>
+
+                    <% if (challenge.abgabedatum) { %>
+                      <p class="card-text">
+                        <small class="text-muted">
+                          Abgabedatum: <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
+                        </small>
+                      </p>
+                      <% } %>
+                  </div>
+
+                  <div class="card-footer">
                     <% if (currentUser && currentUser.user_role_id===1) { %>
                       <a href="/challenges/<%= challenge.id %>/detail" class="btn btn-sm">
                         Details
                       </a>
                       <% } %>
-
-
+                  </div>
+                </div>
               </div>
-            </div>
+              <% }); %>
           </div>
-          <% }); %>
-      </div>
-      <% } else { %>
-        <div class="alert alert-info">
-          <% if (currentUser && currentUser.user_role_id===1) { %>
-            <h4>Keine Challenges verfügbar</h4>
-            <p>Du hast aktuell keine Challenges zugewiesen bekommen.</p>
-            <% } else { %>
-              <h4>Noch keine Challenges vorhanden</h4>
-              <p>Erstelle die erste Challenge für deine Schüler.</p>
-              <a href="/challenges/new" class="btn btn-primary">Erste Challenge erstellen</a>
-              <% } %>
-        </div>
-        <% } %>
+
+          <% } else { %>
+            <div class="alert alert-info">
+              <% if (currentUser && currentUser.user_role_id===1) { %>
+                <h4>Keine Challenges verfügbar</h4>
+                <p>Du hast aktuell keine Challenges zugewiesen bekommen.</p>
+                <% } else { %>
+                  <h4>Noch keine Challenges vorhanden</h4>
+                  <p>Erstelle die erste Challenge für deine Schüler.</p>
+                  <a href="/challenges/new" class="btn btn-primary">Erste Challenge erstellen</a>
+                  <% } %>
+            </div>
+            <% } %>
   </div>
+
+  <script src="/js/app/schueler/challengesLogic.js"></script>

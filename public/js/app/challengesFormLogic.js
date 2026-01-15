@@ -22,6 +22,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const teamModal = document.getElementById('teamModal'); // Referenz auf das Modal-Element
   const teamModalLabel = document.getElementById('teamModalLabel');
 
+
+  let teamModalInstance = null;
+  if (teamModal) {
+    teamModalInstance = new bootstrap.Modal(teamModal);
+  }
+
+
   // === 2. DATEN LADEN ===
   // Schüler-Daten
   const schuelerDataElement = document.getElementById('schuelerData');
@@ -186,8 +193,9 @@ document.addEventListener('DOMContentLoaded', function () {
     saveTeamBtn.style.display = 'block';
 
     // 4. Modal anzeigen
-    const modal = new bootstrap.Modal(teamModal);
-    modal.show();
+    if (teamModalInstance) {
+      teamModalInstance.show();
+    }
   }
 
   // Teams rendern
@@ -401,8 +409,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.target === this || e.target.tagName === 'P' || e.target.classList.contains('text-muted')) {
       // Nur öffnen, wenn nicht im Bearbeiten-Modus
       if (!isEditMode) {
-        const modal = new bootstrap.Modal(teamModal);
-        modal.show();
+        if (teamModalInstance) {
+          teamModalInstance.show();
+        }
       }
     }
   });
@@ -455,8 +464,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log(`Team erstellt: "${teamName}" mit ${members.length} Mitgliedern`);
 
     // Modal schließen und zurücksetzen
-    const modal = bootstrap.Modal.getInstance(teamModal);
-    if (modal) modal.hide();
+    if (teamModalInstance) {
+      teamModalInstance.hide();
+    }
 
     renderTeams();
     clearTeamForm();
@@ -485,8 +495,9 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log(`Team ${teamName} erfolgreich aktualisiert.`);
 
     // 2. Modal schließen und Ansicht aktualisieren
-    const modal = bootstrap.Modal.getInstance(teamModal);
-    if (modal) modal.hide();
+    if (teamModalInstance) {
+      teamModalInstance.hide();
+    }
 
     renderTeams();
     // Die Statusvariablen werden im hidden.bs.modal Event zurückgesetzt
@@ -558,16 +569,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     teamModal.addEventListener('hidden.bs.modal', function () {
       console.log('Modal geschlossen');
-      //  WICHTIG: Bearbeitungs-Status zurücksetzen
       isEditMode = false;
       currentEditIndex = -1;
       clearTeamForm();
-
-      // Buttons auf Erstellen zurücksetzen
       teamModalLabel.textContent = "Neues Team erstellen";
       createTeamBtn.style.display = 'block';
       saveTeamBtn.style.display = 'none';
     });
+
+
+
   }
 
   // Date Input Picker
