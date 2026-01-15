@@ -18,13 +18,13 @@ function getFileType(mimetype) {
 
 //  HELPER: Funktion zur Bereinigung der temporär gespeicherten Datei
 async function cleanUpFile(req) {
-  // Greife auf den gespeicherten Pfad des Multer-Uploads zu
-    const filePathToDelete = req.file ? req.file.path : null; 
-    
+    // Greife auf den gespeicherten Pfad des Multer-Uploads zu
+    const filePathToDelete = req.file ? req.file.path : null;
+
     if (filePathToDelete) {
         await fs.unlink(filePathToDelete).catch(err => {
             // "ENOENT" ist in Ordnung, da die Datei vielleicht schon verschoben/gelöscht wurde.
-            if (err.code !== 'ENOENT') { 
+            if (err.code !== 'ENOENT') {
                 console.error('Cleanup Error:', err);
             }
         });
@@ -33,15 +33,15 @@ async function cleanUpFile(req) {
 
 // HELPER: Datei über den in der DB gespeicherten Pfad löschen (z.B. "/uploads/abgaben/2025/26/team-21/...")
 async function deletePhysicalFile(dbPath) {
-  if (!dbPath) return;
+    if (!dbPath) return;
 
-  const fullPath = path.join(__dirname, '..', 'public', dbPath);
+    const fullPath = path.join(__dirname, '..', 'public', dbPath);
 
-  await fs.unlink(fullPath).catch(err => {
-    if (err.code !== 'ENOENT') {
-      console.error('Delete file error:', err);
-    }
-  });
+    await fs.unlink(fullPath).catch(err => {
+        if (err.code !== 'ENOENT') {
+            console.error('Delete file error:', err);
+        }
+    });
 }
 
 
@@ -49,12 +49,12 @@ async function deletePhysicalFile(dbPath) {
 router.delete('/api/abgaben/media/:mediaId', async (req, res) => {
     try {
         const mediaId = req.params.mediaId;
-        
+
         // 1. Prüfen ob Benutzer eingeloggt und im Team (optional, aber sicher)
         if (!req.currentUser) {
             return res.json({ success: false, error: 'Nicht angemeldet.' });
         }
-        
+
         // 2. Mediendatensatz und Pfad aus der DB holen
         const mediaEntry = await db('abgabe_medien')
             .where('id', mediaId)
@@ -71,7 +71,7 @@ router.delete('/api/abgaben/media/:mediaId', async (req, res) => {
         const deletedRows = await db('abgabe_medien')
             .where('id', mediaId)
             .del();
-        
+
         if (deletedRows === 0) {
             return res.json({ success: false, error: 'Datenbankeintrag konnte nicht gelöscht werden.' });
         }
@@ -112,11 +112,11 @@ router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res)
         }
 
         // 1. Challenge mit Team-ID und Schuljahr-ID holen
-       // 1. Challenge mit Team-ID und Schuljahr-ID holen
-            challenge = await db('challenges')
+        // 1. Challenge mit Team-ID und Schuljahr-ID holen
+        challenge = await db('challenges')
             .where('challenges.id', challengeId)
-            .join('teams', 'challenges.team_id', 'teams.id')         
-            .join('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id') 
+            .join('teams', 'challenges.team_id', 'teams.id')
+            .join('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
             .select('teams.id as team_id', 'schuljahre.name as schuljahr_name')
             .first();
 
@@ -126,6 +126,13 @@ router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res)
         }
 
         schuljahrName = challenge.schuljahr_name;
+
+        // Schuljahr-Namen in einen sicheren Ordnernamen umwandeln, z.B. "2025/26" -> "2025-26"
+        const safeSchuljahrName = (schuljahrName || 'unbekannt')
+            .toString()
+            .trim()
+            .replace(/\//g, '-');   // alle "/" durch "-" ersetzen
+
 
         // --- PRÜFUNG 4: Schüler im Team? ---
         const isTeamMember = await db('team_mitglieder')
@@ -166,7 +173,8 @@ router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res)
         const currentPath = req.file.path;
 
         // Ziel: /uploads/abgaben/2025-2026/team-15
-        const newRelativeDir = `/uploads/abgaben/${schuljahrName || 'unbekannt'}/team-${challenge.team_id}`;
+        const newRelativeDir = `/uploads/abgaben/${safeSchuljahrName}/team-${challenge.team_id}`;
+
 
         const newFullPath = path.join(__dirname, '..', 'public', newRelativeDir, req.file.filename);
         const newDbPath = `${newRelativeDir}/${req.file.filename}`; // Der Pfad für die Datenbank
