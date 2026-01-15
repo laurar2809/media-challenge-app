@@ -73,9 +73,16 @@ table td, table th {
 .navbar-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0.5rem 1rem;
   width: 100%;
+}
+
+.navbar-center {
+  margin-left: 1.5rem; /* kleiner Abstand zum Logo */
+}
+
+.navbar-user-area {
+  margin-left: auto;
 }
 
 /*--------------------------------------
@@ -244,9 +251,6 @@ table td, table th {
   background-color: #0082ba;
   color: white;
   border: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
   text-decoration: none;
   transition: background-color 0.2s ease;
 }
@@ -489,6 +493,16 @@ input.form-control:focus {
   border-color: color-mix(in srgb, #0082ba 85%, black) !important;
 }
 
+.btn-link{
+  text-decoration: none;
+  color: white;
+}
+
+.btn-link:hover {
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none;
+}
+
 /*==================================================================================
   CARDS UND KOMPONENTEN
 ==================================================================================*/
@@ -510,7 +524,7 @@ input.form-control:focus {
 }
 
 .card-body {
-  padding: 1.25rem;
+  padding: 0.60rem;
 }
 
 .card-footer {
@@ -519,13 +533,12 @@ input.form-control:focus {
   background-color: rgba(0, 0, 0, 0.03);
 }
 
-.page-header,
-.aufgabenpakete-header {
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0rem;
 }
 
 .page-title {
