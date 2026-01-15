@@ -18,21 +18,21 @@
     <% } %>
 
     <div class="card-body">
-      <div class="mb-3">
+      <div class="mb-2">
         <strong class="d-block">Aufgabenpaket:</strong>
         <span class="fw-medium">
           <%= challenge.aufgabenpaket_title || 'Kein Aufgabenpaket' %>
         </span>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-1">
         <strong class="d-block">Kategorie:</strong>
         <span class="badge bg-secondary">
           <%= challenge.kategorie %>
         </span>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-1">
         <strong class="d-block">Team:</strong>
         <% if (challenge.team_name) { %>
           <div class="text-muted">
@@ -46,7 +46,7 @@
         <% } %>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-1">
         <strong class="d-block">Abgabetermin:</strong>
         <span class="text-body-secondary">
           <% if (challenge.abgabedatum) { %>

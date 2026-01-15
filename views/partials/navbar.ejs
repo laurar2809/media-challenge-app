@@ -1,52 +1,72 @@
 <nav class="navbar main-navbar">
-  <div class="container position-relative d-flex align-items-center">
+  <div class="container d-flex align-items-center">
+
+    <!-- LINKS: Brand -->
+    <a class="navbar-brand d-flex align-items-center me-4" href="/">
+      <span class="brand-text">Multimedia Challenge</span>
+    </a>
+
+    <!-- LINKS daneben: Navigation -->
+    <ul class="navbar-nav d-flex flex-row gap-3">
+
+  <% if (currentUser && currentUser.user_role_id !== 1) { %>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>" href="/">Kategorien</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>" href="/aufgabenpakete">
+        Aufgabenpakete
+      </a>
+    </li>
+  <% } %>
+
+  <li class="nav-item">
+    <a class="nav-link <%= activePage === 'challenges' ? 'active' : '' %>" href="/challenges">
+      Challenges
+    </a>
+  </li>
+
+  <% if (currentUser && currentUser.user_role_id == 1) { %>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'schueler-abgaben' ? 'active' : '' %>"
+         href="/schueler/abgaben">
+        Abgaben
+      </a>
+    </li>
+  <% } %>
+
+  <% if (currentUser && currentUser.user_role_id !== 1) { %>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'schueler' ? 'active' : '' %>" href="/schueler">Schüler</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'lehrer' ? 'active' : '' %>" href="/lehrer">Lehrer</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'teams' ? 'active' : '' %>" href="/teams">Teams</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= activePage === 'bewertung' ? 'active' : '' %>" href="/bewertung">
+        Abgaben
+      </a>
+    </li>
+  <% } %>
+
+</ul>
 
 
-    </svg> <span class="brand-text">Multimedia Challenge</span> </a>
-
-    <!-- MITTE: Navigation (ohne Burger, immer sichtbar) -->
-    <div class="navbar-center">
-      <ul class="navbar-nav navbar-nav-center">
-        <% if (currentUser && currentUser.user_role_id !==1) { %>
-          <li class="nav-item"> <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>"
-              href="/">Kategorien</a> </li>
-          <li class="nav-item"> <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>"
-              href="/aufgabenpakete">Aufgabenpakete</a> </li>
-          <% } %>
-
-            <li class="nav-item"> <a class="nav-link <%= activePage === 'challenges' ? 'active' : '' %>"
-                href="/challenges">Challenges</a> </li>
-                
-            <% if (currentUser && currentUser.user_role_id ==1) { %>
-            <li class="nav-item">
-              <a class="nav-link <%= activePage === 'schueler-abgaben' ? 'active' : '' %>" href="/schueler/abgaben">
-                Abgaben
-              </a>
-            </li>
-            <%}%>
-
-            <% if (currentUser && currentUser.user_role_id !==1) { %>
-              <li class="nav-item"> <a class="nav-link <%= activePage === 'schueler' ? 'active' : '' %>"
-                  href="/schueler">Schüler</a> </li>
-              <li class="nav-item"> <a class="nav-link <%= activePage === 'lehrer' ? 'active' : '' %>"
-                  href="/lehrer">Lehrer</a> </li>
-              <li class="nav-item"> <a class="nav-link <%= activePage === 'teams' ? 'active' : '' %>"
-                  href="/teams">Teams</a> </li>
-              <li class="nav-item"> <a class="nav-link <%= activePage === 'bewertung' ? 'active' : '' %>"
-                  href="/bewertung">Abgaben</a> </li>
-              <% } %>
-      </ul>
-    </div> <!-- RECHTS: User + Logout/Login -->
-    <div class="navbar-user-area">
-      <% if (currentUser) { %> <span class="navbar-text user-info"> <i class="bi bi-person"></i>
-          <%= currentUser.vorname %>
-            <%= currentUser.nachname %> <small class="user-role">(<%= currentUser.rolle %>)</small>
+    <!-- RECHTS: User-Bereich -->
+    <div class="navbar-user-area ms-auto d-flex align-items-center gap-3">
+      <% if (currentUser) { %>
+        <span class="navbar-text">
+          <i class="bi bi-person px-1"></i>
+          <%= currentUser.vorname %> <%= currentUser.nachname %>
         </span>
-        <form action="/auth/logout" method="POST"> <button type="submit" class="btn btn-outline-light btn-sm">
-            Logout <i class="bi bi-box-arrow-right ms-2"></i> </button> </form>
-        <% } else { %> <a href="/auth/login" class="btn btn-outline-light btn-sm"> Login <i
-              class="bi bi-box-arrow-in-right ms-2"></i> </a>
-          <% } %>
+        <form action="/auth/logout" method="POST">
+          <button class="btn btn-link btn-sm">Logout<i class="bi bi-box-arrow-right px-2"></i></button>
+        </form>
+      <% } %>
     </div>
+
   </div>
 </nav>
