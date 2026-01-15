@@ -1,105 +1,94 @@
-<% pageTitle="Schüler" %>
+<% pageTitle = "Schüler" %>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="h4 m-0">Schüler</h2>
-    <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
-  </div>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 m-0">Schüler</h2>
+  <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Schüler</a>
+</div>
 
+<!-- Filter und Suchfunktion -->
+<%- include('../../partials/filter_search', {
+  showKlasse: true,
+  showSchuljahr: true,
+  showKategorie: false,
+  showSearch: true,
   
+  //Klassen
+  klassen,
+  activeKlasse,
+  klasseSelectId: 'klassenFilter',
 
-    <!-- Filter und Suchfunktion -->
-      <%- include('../../partials/filter_search', {
+  // Schuljahr
+  schuljahre,
+  activeSchuljahr,
+  schuljahrSelectId: 'schuljahrFilter',
 
-        showKlasse: true,
-        showSchuljahr: true,
-        showKategorie: false,
-        showSearch: true,
-        
-      
-        //Klassen
-        klassen,
-        activeKlasse,
-        klasseSelectId: 'klassenFilter',
+  // Suche
+  searchContainerId: 'schuelerSearchContainer',
+  searchInputId: 'schuelerSearch',
+  searchTerm
+}) %>
 
-        // Schuljahr
-        schuljahre,
-        activeSchuljahr,
-        schuljahrSelectId: 'schuljahrFilter',
+<div class="table-responsive">
+  <table class="table table-hover table align-middle m-0 table-light">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Vorname</th>
+        <th scope="col">Nachname</th>
+        <th scope="col">Klasse</th>
+        <th scope="col">Schuljahr</th>
+        <th scope="col" class="text-end actions-column">Aktionen</th>
+      </tr>
+    </thead>
 
-        // Suche
-        searchContainerId: 'schuelerSearchContainer',
-        searchInputId: 'schuelerSearch',
-        searchTerm
-      }) %>
+    <tbody id="schuelerTableBody">
+      <% if (schueler && schueler.length === 0) { %>
+        <tr>
+          <td colspan="5" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
+        </tr>
+      <% } %>
 
-    <div class="table-responsive">
-      <table class="table table-hover table align-middle m-0 table-light">
-        <thead class="table-light">
-          <tr>
-            <th scope="col">Vorname</th>
-            <th scope="col">Nachname</th>
-            <th scope="col">Klasse</th>
-            <th scope="col">Schuljahr</th>
-            <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
+      <% if (schueler && schueler.length > 0) { %>
+        <% schueler.forEach(schueler => { %>
+          <tr class="schueler-row" 
+              data-id="<%= schueler.id %>"
+              data-vorname="<%= schueler.vorname.toLowerCase() %>"
+              data-nachname="<%= schueler.nachname.toLowerCase() %>"
+              data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>"
+              data-schuljahr="<%= (schueler.schuljahr_name || '').toLowerCase() %>">
+            <td class="fw-medium">
+              <%= schueler.vorname %>
+            </td>
+            <td class="fw-medium">
+              <%= schueler.nachname %>
+            </td>
+            <td class="text-body-secondary">
+              <%= schueler.klasse_name || 'Keine Klasse' %>
+            </td>
+            <td class="text-body-secondary">
+              <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
+            </td>
+            <td class="text-end nowrap-column">
+              <a href="/schueler/<%= schueler.id %>/edit"
+                 class="btn btn-outline-secondary btn-custom-edit btn-sm">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn-custom-delete btn-sm"
+                      data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
+                      data-id="<%= schueler.id %>">Löschen</button>
+            </td>
           </tr>
-        </thead>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
 
-        <tbody id="schuelerTableBody">
-          <% if (schueler && schueler.length===0) { %>
-            <tr>
-              <td colspan="5" class="text-center py-4 text-muted">Noch keine Schüler eingetragen</td>
-            </tr>
-            <% } %>
+  <%- include('../../partials/deleteModal', {
+    modalId: 'confirmDeleteModal',
+    formId: 'deleteConfirmForm',
+    submitButtonId: 'confirmDeleteSubmit',
+    title: 'Schüler löschen',
+    bodyText: 'Bist du sicher, dass du diesen Schüler löschen möchtest?'
+  }) %>
+</div>
 
-              <% if (schueler && schueler.length> 0) { %>
-                <% schueler.forEach(schueler=> { %>
-                  <tr class="schueler-row" data-id="<%= schueler.id %>"
-                    data-vorname="<%= schueler.vorname.toLowerCase() %>"
-                    data-nachname="<%= schueler.nachname.toLowerCase() %>"
-                    data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>"
-                    data-schuljahr="<%= (schueler.schuljahr_name || '').toLowerCase() %>">
-                    <td class="fw-medium">
-                      <%= schueler.vorname %>
-                    </td>
-                    <td class="fw-medium">
-                      <%= schueler.nachname %>
-                    </td>
-                    <td class="text-body-secondary">
-                      <%= schueler.klasse_name || 'Keine Klasse' %>
-                    </td>
-                    <td class="text-body-secondary">
-                      <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
-                    </td>
-                    <td class="text-end" style="white-space: nowrap;">
-                      <a href="/schueler/<%= schueler.id %>/edit"
-                        class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
-                      <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm"
-                        data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
-                        data-id="<%= schueler.id %>">Löschen</button>
-                    </td>
-                  </tr>
-                  <% }) %>
-                    <% } %>
-        </tbody>
-      </table>
-
-      <%- include('../../partials/deleteModal', {
-        modalId: 'confirmDeleteModal',
-        formId: 'deleteConfirmForm',
-        submitButtonId: 'confirmDeleteSubmit',
-        title: 'Löschen bestätigen',
-        bodyText: 'Bist du sicher, dass du diesen Schüler löschen möchtest?'
-      }) %>
-
-    </div>
-
-    <script src="/js/app/utils/filterUtils.js"></script>
-    <script src ="/js/app/utils/deleteModalUtils.js"> </script>
-    <script src ="/js/app/schuelerList.js"> </script>
- 
-<!-- <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true"> -->
-   <!--  <h5 class="modal-title">Löschen bestätigen</h5> -->
-    <!--  Bist du sicher, dass du diesen Schüler löschen möchtest? -->
-    <!-- <form id="deleteConfirmForm" method="POST" action=""> -->
-    <!--  <button type="button" class="btn btn-custom-danger" id="confirmDeleteSubmit">Ja, löschen</button> -->
-   
+<script src="/js/app/utils/filterUtils.js"></script>
+<script src="/js/app/utils/deleteModalUtils.js"></script>
+<script src="/js/app/schuelerList.js"></script>

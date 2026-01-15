@@ -1,82 +1,76 @@
-<% pageTitle = "Kategorien" %>
+<% pageTitle="Kategorien" %>
 
-<div class="d-flex align-categories-center justify-content-between mb-3">
-  <div class="d-flex align-categories-center">
-    <table>
-      <th>
-        <h2 class="h4 m-0">Kategorien</h2>
-      </th>
-      <th>
-        <h2> </h2>
-      </th>
-    </table>
+  <div class="d-flex align-categories-center justify-content-between mb-3">
+    <div class="d-flex align-categories-center">
+      <table>
+        <th>
+          <h2 class="h4 m-0">Kategorien</h2>
+        </th>
+        <th>
+        </th>
+      </table>
+    </div>
+    <a href="/kategorien/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
   </div>
-  <a href="/kategorien/new" class="btn btn-custom-newCategorieChallenge">+ Neue Kategorie</a>
-</div>
 
-<div class="table-responsive">
-  <table class="table table-hover table align-middle m-0 table-light">
-    <thead class="table-light">
-      <tr>
-        <th class="text-center" scope="col">Icon</th>
-        <th scope="col">Name</th>
-        <th scope="col">Beschreibung</th>
-        <th scope="col" class="text-end">Aktionen</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (categories.length === 0) { %>
+  <div class="table-responsive">
+    <table class="table table-hover table align-middle m-0 table-light">
+      <thead class="table-light">
         <tr>
-          <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los!</td>
+          <th class="text-center" scope="col">Icon</th>
+          <th scope="col">Name</th>
+          <th scope="col">Beschreibung</th>
+          <th scope="col" class="text-end">Aktionen</th>
         </tr>
-      <% } %>
-      
-      <% categories.forEach(item => { %>
-        <tr>
-          <td class="text-center">
-            <% if (item.icon && isUploadPath(item.icon)) { %>
-              <img src="<%= item.icon %>" alt="" class="rounded category-icon">
-            <% } else if (item.icon && isUrl(item.icon)) { %>
-              <img src="<%= item.icon %>" alt="" class="rounded category-icon">
-            <% } else { %>
-              <span class="fs-4">
-                <img src="/categories/file-image.svg" alt="" class="rounded category-icon">
-              </span>
-            <% } %>
-          </td>
-          <td class="fw-medium">
-            <%= item.title %>
-          </td>
-          <td class="text-body-secondary">
-            <%= item.description %>
-          </td>
-          <td class="text-end">
-            <a href="/kategorien/<%= item.id %>/edit"
-               class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
+      </thead>
+      <tbody>
+        <% if (categories.length===0) { %>
+          <tr>
+            <td colspan="4" class="text-center py-4 text-muted">Noch keine Einträge. Leg gleich los!</td>
+          </tr>
+          <% } %>
 
-            <form action="/kategorien/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
-              <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" 
-                      data-bs-toggle="modal"
-                      data-bs-target="#confirmDeleteModal" 
-                      data-id="<%= item.id %>">
-                Löschen
-              </button>
-            </form>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+            <% categories.forEach(item=> { %>
+              <tr>
+                <td class="text-center">
+                  <% if (item.icon && isUploadPath(item.icon)) { %>
+                    <img src="<%= item.icon %>" alt="" class="rounded category-icon">
+                    <% } else if (item.icon && isUrl(item.icon)) { %>
+                      <img src="<%= item.icon %>" alt="" class="rounded category-icon">
+                      <% } else { %>
+                        <span class="fs-4">
+                          <img src="/categories/file-image.svg" alt="" class="rounded category-icon">
+                        </span>
+                        <% } %>
+                </td>
+                <td class="fw-medium">
+                  <%= item.title %>
+                </td>
+                <td class="text-body-secondary">
+                  <%= item.description %>
+                </td>
+                <td class="text-end">
+                  <a href="/kategorien/<%= item.id %>/edit"
+                    class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
 
-  <%- include('../../partials/deleteModal', {
-    modalId: 'confirmDeleteModal',
-    formId: 'deleteConfirmForm',
-    submitButtonId: 'confirmDeleteSubmit',
-    title: 'Kategorie löschen',
-    bodyText: 'Bist du sicher, dass du diese Kategorie löschen möchtest?',
-    deleteUrl: `/kategorien/${item.id}`  // ← Für Kategorien!
-  }) %>
-</div>
+                  <form action="/kategorien/<%= item.id %>?_method=DELETE" method="POST" class="d-inline delete-form">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-custom-delete" data-bs-toggle="modal"
+                      data-bs-target="#confirmDeleteModal" data-id="<%= item.id %>">
+                      Löschen
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+      </tbody>
+    </table>
 
-<script src="/js/app/utils/deleteModalUtils.js"></script>
-<script src="/js/app/kategorienLogic.js"></script>
+    <!-- Delete-Modal Include (KEIN deleteUrl, da dynamisch per JS) -->
+    <%- include('../../partials/deleteModal', { modalId: 'confirmDeleteModal' , formId: 'deleteConfirmForm' ,
+      submitButtonId: 'confirmDeleteSubmit' , title: 'Kategorie löschen' ,
+      bodyText: 'Bist du sicher, dass du diese Kategorie löschen möchtest?' }) %>
+
+  </div>
+
+  <script src="/js/app/utils/deleteModalUtils.js"></script>
+  <script src="/js/app/kategorienLogic.js"></script>

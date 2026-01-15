@@ -1,81 +1,80 @@
-<% pageTitle="Lehrer" %>
+<% pageTitle = "Lehrer" %>
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="h4 m-0">Lehrer</h2>
-    <a href="/lehrer/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Lehrer</a>
-  </div>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 m-0">Lehrer</h2>
+  <a href="/lehrer/new" class="btn btn-custom-newCategorieChallenge">+ Neuer Lehrer</a>
+</div>
 
-  <div class="col-md-6">
-      <!-- Suchleiste -->
-      <div class="position-relative" id="searchContainer">
-        <div class="input-group mb-3">
-          <span class="input-group-text">
-            <i class="bi bi-search"></i>
-          </span>
-          <input type="text" id="lehrerSearch" class="form-control p-1 border-start-0"
-            placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
-        </div>
-      </div>
+<div class="col-md-6">
+  <!-- Suchleiste -->
+  <div class="position-relative" id="searchContainer">
+    <div class="input-group mb-3">
+      <span class="input-group-text">
+        <i class="bi bi-search"></i>
+      </span>
+      <input type="text" id="lehrerSearch" class="form-control p-1 border-start-0"
+             placeholder="Suchbegriff eingeben..." value="<%= searchTerm || '' %>" autocomplete="off">
     </div>
+  </div>
+</div>
 
-  <!-- Such-Badge -->
-  <div class="table-responsive">
-    <table class="table table-hover table align-middle m-0 table-light">
-      <thead class="table-light">
+<!-- Such-Badge -->
+<div class="table-responsive">
+  <table class="table table-hover table align-middle m-0 table-light">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Vorname</th>
+        <th scope="col">Nachname</th>
+        <th scope="col" class="text-end actions-column">Aktionen</th>
+      </tr>
+    </thead>
+
+    <tbody id="lehrerTableBody">
+      <% if (lehrer && lehrer.length === 0) { %>
         <tr>
-          <th scope="col">Vorname</th>
-          <th scope="col">Nachname</th>
-          <th class="text-end" style="min-width: 200px;" scope="col">Aktionen</th>
+          <td colspan="3" class="text-center py-4 text-muted">
+            <% if (searchTerm) { %>
+              Keine Lehrer gefunden für die Suche
+            <% } else { %>
+              Noch keine Lehrer eingetragen
+            <% } %>
+          </td>
         </tr>
-      </thead>
+      <% } %>
 
-      <tbody id="lehrerTableBody">
-        <% if (lehrer && lehrer.length===0) { %>
-          <tr>
-            <td colspan="3" class="text-center py-4 text-muted">
-              <% if (searchTerm) { %>
-                Keine Lehrer gefunden für die Suche
-                <% } else { %>
-                  Noch keine Lehrer eingetragen
-                  <% } %>
+      <% if (lehrer && lehrer.length > 0) { %>
+        <% lehrer.forEach(lehrer => { %>
+          <tr class="lehrer-row" 
+              data-vorname="<%= lehrer.vorname.toLowerCase() %>"
+              data-nachname="<%= lehrer.nachname.toLowerCase() %>">
+            <td class="fw-medium">
+              <%= lehrer.vorname %>
             </td>
-          </tr>
-          <% } %>
-
-            <% if (lehrer && lehrer.length> 0) { %>
-              <% lehrer.forEach(lehrer=> { %>
-                <tr class="lehrer-row" data-vorname="<%= lehrer.vorname.toLowerCase() %>"
-                  data-nachname="<%= lehrer.nachname.toLowerCase() %>">
-                  <td class="fw-medium">
-                    <%= lehrer.vorname %>
-                  </td>
-                  <td class="fw-medium">
-                    <%= lehrer.nachname %>
-                  </td>
-                  <td class="text-end" style="white-space: nowrap;">
-                    <a href="/lehrer/<%= lehrer.id %>/edit"
-                      class="btn btn-outline-secondary btn-custom-edit btn btn-sm">Bearbeiten</a>
-                    <button type="button" class="btn btn-outline-danger btn-custom-delete btn btn-sm"
+            <td class="fw-medium">
+              <%= lehrer.nachname %>
+            </td>
+            <td class="text-end nowrap-column">
+              <a href="/lehrer/<%= lehrer.id %>/edit"
+                 class="btn btn-outline-secondary btn-custom-edit btn-sm">Bearbeiten</a>
+              <button type="button" class="btn btn-outline-danger btn-custom-delete btn-sm"
                       data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
                       data-id="<%= lehrer.id %>">Löschen</button>
-                  </td>
-                </tr>
-                <% }) %>
-                  <% } %>
-      </tbody>
-    </table>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
 
-      <%- include('../../partials/deleteModal', {
-        modalId: 'confirmDeleteModal',
-        formId: 'deleteConfirmForm',
-        submitButtonId: 'confirmDeleteSubmit',
-        title: 'Löschen bestätigen',
-        bodyText: 'Bist du sicher, dass du diese Lehrkraft löschen möchtest?'
-      }) %>
+  <%- include('../../partials/deleteModal', {
+    modalId: 'confirmDeleteModal',
+    formId: 'deleteConfirmForm',
+    submitButtonId: 'confirmDeleteSubmit',
+    title: 'Lehrer löschen',
+    bodyText: 'Bist du sicher, dass du diese Lehrkraft löschen möchtest?'
+  }) %>
+</div>
 
-
-  </div>
-
-  <script src="/js/app/utils/filterUtils.js"></script>
-  <script src="/js/app/utils/deleteModalUtils.js"></script>
-  <script src="/js/app/lehrerList.js"></script>
+<script src="/js/app/utils/filterUtils.js"></script>
+<script src="/js/app/utils/deleteModalUtils.js"></script>
+<script src="/js/app/lehrerList.js"></script>
