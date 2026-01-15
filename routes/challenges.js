@@ -135,53 +135,60 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 
-//  in challenges.js mit Rollencheck
+// in challenges.js mit Rollencheck
 router.get('/:id/detail', requireAuth, async (req, res) => {
-  if (!req.currentUser || req.currentUser.user_role_id !== 1) {
-    req.flash('error', 'Keine Berechtigung für diese Ansicht.');
-    return res.redirect('/');
-  }
+  try {
+    if (!req.currentUser || req.currentUser.user_role_id !== 1) {
+      req.flash('error', 'Keine Berechtigung für diese Ansicht.');
+      return res.redirect('/');
+    }
 
-  const challenge = await req.db('challenges')
-    .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
-    .leftJoin('teams', 'challenges.team_id', 'teams.id')
-    .where('challenges.id', req.params.id)
-    .select(
-      'challenges.*',
-      'aufgabenpakete.title as aufgabenpaket_title',
-      'aufgabenpakete.description as aufgabenpaket_description',
-      'aufgabenpakete.icon as aufgabenpaket_icon',
-      'teams.name as team_name'
-    )
-    .first();
-
-  if (!challenge) {
-    req.flash('error', 'Challenge nicht gefunden.');
-    return res.redirect('/challenges');
-  }
-
-  // Teammitglieder laden (nur wenn Team existiert)
-  let teamMitglieder = [];
-  if (challenge.team_id) {
-    teamMitglieder = await req.db('team_mitglieder')
-      .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
-      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
-      .where('team_mitglieder.team_id', challenge.team_id)
+    const challenge = await req.db('challenges')
+      .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .where('challenges.id', req.params.id)
       .select(
-        'users.vorname',
-        'users.nachname',
-        'klassen.name as klasse_name'
-      );
+        'challenges.*',
+        'aufgabenpakete.title as aufgabenpaket_title',
+        'aufgabenpakete.description as aufgabenpaket_description',
+        'aufgabenpakete.icon as aufgabenpaket_icon',
+        'teams.name as team_name'
+      )
+      .first();
+
+    if (!challenge) {
+      req.flash('error', 'Challenge nicht gefunden.');
+      return res.redirect('/challenges');
+    }
+
+    const returnTo = req.query.returnTo || '/challenges';
+
+    let teamMitglieder = [];
+    if (challenge.team_id) {
+      teamMitglieder = await req.db('team_mitglieder')
+        .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
+        .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
+        .where('team_mitglieder.team_id', challenge.team_id)
+        .select(
+          'users.vorname',
+          'users.nachname',
+          'klassen.name as klasse_name'
+        );
+    }
+
+    res.render('schueler/challenges/challengesDetail', {
+      title: 'Challenge-Details',
+      challenge,
+      teamMitglieder,
+      activePage: 'challenges',
+      returnTo
+    });
+  } catch (error) {
+    console.error('Fehler in Schüler-Challenge-Detail:', error);
+    req.flash('error', 'Fehler beim Laden der Challenge-Details.');
+    res.redirect('/challenges');
   }
-
-  res.render('schueler/challenges/challengesDetail', {
-    title: 'Challenge-Details',
-    challenge,
-    teamMitglieder,
-    activePage: 'challenges'
-  });
 });
-
 
 
 
@@ -729,8 +736,7 @@ router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
   }
 });
 
-
-// Abgabe-Seite anzeigen - KORRIGIERT MIT MEDIEN-LADUNG
+// Abgabe-Seite anzeigen - mit Medien & dynamischem Zurück-Link
 router.get('/:id/abgabe', requireAuth, async (req, res) => {
   try {
     const challengeId = req.params.id;
@@ -774,33 +780,28 @@ router.get('/:id/abgabe', requireAuth, async (req, res) => {
       })
       .first();
 
-    //  HIER WIRD DER MEDIEN-CODE EINGEFÜGT:
+    // Medien laden
     if (abgabe) {
       const medien = await db('abgabe_medien')
         .where('abgabe_id', abgabe.id)
         .orderBy('reihenfolge', 'asc');
 
-      // Füge die Medien zum Abgabe-Objekt hinzu
       abgabe.medien = medien;
     }
 
-
-    //  NEU: 4. Bewertungsinformationen laden (falls vorhanden)
+    // Bewertungsinformationen laden
     if (abgabe) {
-      // Wir laden die Bewertung vom aktuell angemeldeten Lehrer, 
-      // oder falls mehrere Lehrer bewerten, die relevanteste (hier: die erste gefundene).
       const bewertung = await db('abgabe_bewertungen')
         .where('abgabe_id', abgabe.id)
-        .first(); // Lädt den ersten oder einzigen Bewertungs-Eintrag
+        .first();
 
-      // Füge die Bewertung dem Abgabe-Objekt hinzu
       abgabe.bewertung = bewertung || null;
     }
-    //  ENDE BEWERTUNGS-LADUNG
 
-    //  ENDE MEDIEN-CODE
+    // 4. Ziel für "Zurück"-Button bestimmen
+    const returnTo = req.query.returnTo || `/challenges/${challengeId}/detail`;
 
-    // 4. HTML-Seite rendern
+    // 5. HTML-Seite rendern
     res.render('schueler/challenges/abgabe', {
       title: 'Abgabe einreichen',
       challenge: challenge,
@@ -808,9 +809,10 @@ router.get('/:id/abgabe', requireAuth, async (req, res) => {
         name: challenge.team_name,
         mitglieder: teamMitglieder
       },
-      abgabe: abgabe || null, // Enthält jetzt abgabe.medien oder ist null
+      abgabe: abgabe || null, // enthält ggf. medien & bewertung
       daysLeft: 7, // Testwert
-      currentUser: req.currentUser
+      currentUser: req.currentUser,
+      returnTo
     });
 
   } catch (error) {
@@ -819,6 +821,7 @@ router.get('/:id/abgabe', requireAuth, async (req, res) => {
     res.redirect('/challenges');
   }
 });
+
 
 
 module.exports = router;
