@@ -1,75 +1,79 @@
-<% pageTitle=title %>
-  <h1 class="h4 mb-3">
-    <%= title %>
-  </h1>
-  <form action="<%= action %>" method="POST" enctype="multipart/form-data" id="aufgabenpaketForm">
+<% pageTitle = title %>
 
-    <% if (item.id) { %>
+<h1 class="h4 mb-3">
+  <%= title %>
+</h1>
 
-      <% } %>
+<form action="<%= action %>" method="POST" enctype="multipart/form-data" id="aufgabenpaketForm">
 
+  <% if (item.id) { %>
+    <% } %>
 
-        <div class="dropdown mb-3">
-          <button class="btn btn-secondary dropdown-toggle fixed-width" type="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            <%= item.kategorie || 'Kategorien' %>
-          </button>
-          <ul class="dropdown-menu">
-            <% kategorien.forEach(kategorie=> { %>
-              <li><a class="dropdown-item" href="#" data-value="<%= kategorie.title %>">
-                  <%= kategorie.title %>
-                </a></li>
-              <% }) %>
-          </ul>
-        </div>
+  <div class="dropdown mb-3">
+    <button class="btn btn-secondary dropdown-toggle fixed-width" type="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+      <%= item.kategorie || 'Kategorien' %>
+    </button>
+    <ul class="dropdown-menu">
+      <% kategorien.forEach(kategorie => { %>
+        <li>
+          <a class="dropdown-item" href="#" data-value="<%= kategorie.title %>">
+            <%= kategorie.title %>
+          </a>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
 
-        <input type="hidden" name="kategorie" id="selectedKategorie" value="<%= item.kategorie || '' %>" required>
+  <input type="hidden" name="kategorie" id="selectedKategorie"
+         value="<%= item.kategorie || '' %>" required>
 
-        <!-- Titel Feld -->
-        <div class="input-group mb-3">
-          <label class="input-group-text">Titel des Aufgabenpaketes *</label>
-          <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
-        </div>
+  <!-- Titel Feld -->
+  <div class="input-group mb-3">
+    <label class="input-group-text">Titel des Aufgabenpaketes *</label>
+    <input type="text" name="title" class="form-control" required value="<%= item.title || '' %>">
+  </div>
 
-        <div class="input-group mb-3 align-top-stretch">
-          <label class="input-group-text">Beschreibung *</label>
-          <textarea name="description" class="form-control" rows="4" required><%= item.description || '' %></textarea>
-        </div>
+  <div class="input-group mb-3 align-top-stretch">
+    <label class="input-group-text">Beschreibung *</label>
+    <textarea name="description" class="form-control" rows="4" required>
+      <%= item.description || '' %>
+    </textarea>
+  </div>
 
+  <!-- Bild sichtbar, wenn hochgeladen MIT LÖSCH-BUTTON -->
+  <% if (item.icon) { %>
+    <div class="mb-2 p-3 border rounded bg-light">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <p class="text-muted mb-0">
+          <strong>Aktuelles Bild:</strong>
+        </p>
+        <button type="button" class="btn btn-outline-danger btn-sm" id="deleteImageBtn">
+          Bild löschen
+        </button>
+      </div>
+      <img src="<%= item.icon %>" alt="Current image"
+           class="img-thumbnail d-block mx-auto image-fixed-height">
+      <input type="hidden" name="keep_existing_image" value="true" id="keepExistingImage">
+    </div>
+  <% } %>
 
-        <!-- Bild sichtbar, wenn hochgeladen MIT LÖSCH-BUTTON -->
-        <% if (item.icon) { %>
-          <div class="mb-2 p-3 border rounded bg-light">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <p class="text-muted mb-0"><strong>Aktuelles Bild:</strong></p>
-              <button type="button" class="btn btn-outline-danger btn-sm" id="deleteImageBtn">Bild löschen</button>
-            </div>
-            <img src="<%= item.icon %>" alt="Current image" style="max-height: 150px;"
-              class="img-thumbnail d-block mx-auto">
-            <input type="hidden" name="keep_existing_image" value="true" id="keepExistingImage">
-          </div>
-          <% } %>
+  <!-- Neues Bild hochladen -->
+  <div class="form-text">Optional. Füge dem Aufgabenpaket ein Bild hinzu.</div>
+  <div class="input-group mb-3">
+    <label class="input-group-text">Bild hochladen</label>
+    <input type="file" name="iconFile" class="form-control">
+  </div>
 
-            <!-- Neues Bild hochladen -->
-            <div class="form-text">Optional. Füge dem Aufgabenpaket ein Bild hinzu.</div>
-            <div class="input-group mb-3">
-              <label class="input-group-text">Bild hochladen</label>
-              <input type="file" name="iconFile" class="form-control">
-            </div>
+  <!-- Bild-Vorschau für neues Bild -->
+  <div id="imagePreview" class="mt-2 d-none">
+    <p class="text-muted mb-1"><strong>Neue Bild-Vorschau:</strong></p>
+    <img id="preview" src="#" alt="Vorschau"
+         class="img-thumbnail image-fixed-height d-none">
+  </div>
 
+  <button type="submit" class="btn btn-custom-safe">Speichern</button>
+  <a href="/aufgabenpakete" class="btn btn-secondary">Abbrechen</a>
+</form>
 
-
-
-
-            <!-- Bild-Vorschau für neues Bild -->
-            <div id="imagePreview" class="mt-2" style="display: none;">
-              <p class="text-muted mb-1"><strong>Neue Bild-Vorschau:</strong></p>
-              <img id="preview" src="#" alt="Vorschau" style="max-height: 150px; display: none;" class="img-thumbnail">
-            </div>
-            </div>
-
-            <button type="submit" class="btn btn-custom-safe">Speichern</button>
-            <a href="/aufgabenpakete" class="btn btn-secondary">Abbrechen</a>
-  </form>
-
-  <script src="/js/app/aufgabenpaketeFormLogic.js"> </script>
+<script src="/js/app/aufgabenpaketeFormLogic.js"></script>

@@ -637,3 +637,184 @@ input.form-control:focus {
 }
 
 /*----------------------------------------------------------------------------------*/
+
+/* Aufgabenpakete details */
+/* Bild im Aufgabenpaket (max-height: 200px) */
+.card-image {
+  max-height: 200px; /* Bildhöhe begrenzen, Breite bleibt responsive */
+  width: auto;
+}
+
+/* Platzhalter-Container ohne Bild */
+.image-container.empty .card-image {
+  opacity: 0.5; /* leicht transparent wie vorher */
+}
+
+/* Optional: zentrierter Bild-Container */
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*aufgabenpakete Form*/
+/* Einheitliche Bildhöhe (ersetzt max-height: 150px;) */
+.image-fixed-height {
+  max-height: 150px;   /* Begrenzte Höhe wie zuvor */
+  width: auto;         /* Seitenverhältnis beibehalten */
+}
+
+/* Utility-Klasse für "display: none" (ersetzt inline style="display: none;") */
+.d-none {
+  display: none;
+}
+
+/*Cards*/
+/* Einheitliche Kartenbild-Höhe + Cropping wie bisher */
+.card-img-fixed-height {
+  height: 200px;        /* entspricht deinem bisherigen inline height */
+  width: 100%;          /* volle Kartenbreite */
+  object-fit: cover;    /* Bild füllt den Bereich und wird bei Bedarf beschnitten */
+}
+
+/*Bewertung Detail*/
+/* Container für Vorschaumedien: Höhe und Overflow wie zuvor */
+.media-container-fixed {
+  height: 150px;       /* vorher: style="height: 150px; overflow: hidden;" */
+  overflow: hidden;
+}
+
+/*Bewertung Übersicht*/
+/* Bild im Mediacontainer: wie vorher object-fit: cover; height/width 100% */
+.media-image-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ersetzt: style="min-width: 150px;" auf der Aktionen-Spalte */
+.min-width-actions {
+  min-width: 150px;
+}
+
+/*challenges Cards*/
+/* Einheitliche Kartenbild-Höhe für Challenges */
+.card-img-fixed-height {
+  height: 150px;     /* ersetzt: style="height: 150px;" */
+  width: 100%;
+  object-fit: cover; /* ersetzt: object-fit: cover; auf dem img */
+}
+
+/*challenges Details*/
+/* Container für Bildzentrierung */
+.challenge-image-container {
+  display: flex;
+  justify-content: center;
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+/* Vollständiges Bild ohne Cropping */
+.challenge-detail-image-full {
+  max-height: 160px;
+  max-width: 250px;
+  width: auto;
+  height: auto;
+  object-fit: contain;  /* GANZES Bild sichtbar, kein Cropping */
+  object-position: center;
+}
+
+.challenge-main-placeholder {
+  width: 250px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+
+
+
+
+/*challenges Forms*/
+/* Kalender-Icon klickbar */
+.date-picker-icon {
+  cursor: pointer;
+}
+
+/* Scrollbare Mitgliederliste */
+.scrollable-members {
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+
+/* Drag & Drop Bereich */
+.team-drop-zone {
+  min-height: 100px;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 5px;
+  transition: all 0.3s;
+}
+
+/* Versteckt (ersetzt display: none) */
+.d-none {
+  display: none !important;
+}
+
+/* Buttons im Modal */
+.save-team-btn,
+.create-team-btn {
+  display: none;
+}
+
+.btn-custom-delete {
+  color: #e9872f !important;
+  border-color: #e9872f !important;
+}
+
+.btn-custom-delete:hover {
+  background-color: #e9872f !important;
+  color: white !important;
+}
+
+/*challenges details*/
+/* Buttons-Container (ersetzt style="max-width: 250px;") */
+.buttons-container {
+  max-width: 250px;
+}
+
+/* Bild-Container und Bild-Styles (bereits vorhanden) */
+.challenge-image-container {
+  display: flex;
+  justify-content: center;
+  max-width: 250px;
+  margin: 0 auto;
+}
+
+.challenge-detail-image-full {
+  max-height: 160px;
+  max-width: 250px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.challenge-main-placeholder {
+  width: 250px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+
+
+
+

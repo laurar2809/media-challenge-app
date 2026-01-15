@@ -5,15 +5,12 @@
   <h1 class="h4 mb-3">
     <%= title %>
   </h1>
+
   <form action="<%= action %>" method="POST" id="challengeForm">
 
-
     <% if (item.id) { %>
-
-<input type="hidden" name="_method" value="PUT">
-
-<% } %>
-
+      <input type="hidden" name="_method" value="PUT">
+      <% } %>
 
         <div class="row g-3">
           <div class="col-md-6">
@@ -23,8 +20,7 @@
                 <option value="">Bitte wählen...</option>
                 <% aufgabenpakete.forEach(paket=> { %>
                   <option value="<%= paket.id %>" <%=(Number(item.aufgabenpaket_id)===Number(paket.id)) ? 'selected'
-                    : '' %>
-                    >
+                    : '' %>>
                     <%= paket.title %> (<%= paket.kategorie %>)
                   </option>
                   <% }) %>
@@ -46,10 +42,9 @@
             </div>
           </div>
 
-
           <div class="col-md-3">
             <div class="input-group mb-3">
-              <span class="input-group-text" style="cursor: pointer;"
+              <span class="input-group-text date-picker-icon"
                 onclick="document.getElementById('dateInput').showPicker()">
                 <i class="bi bi-calendar"></i>
               </span>
@@ -61,7 +56,9 @@
           <div class="input-group mb-3 align-top-stretch">
             <span class="input-group-text">Challenge-Zusatzinformationen</span>
             <textarea name="zusatzinfos" class="form-control" rows="3"
-              placeholder="Spezielle Anweisungen oder Hinweise für diese Challenge"><%= item.zusatzinfos || '' %></textarea>
+              placeholder="Spezielle Anweisungen oder Hinweise für diese Challenge">
+        <%= item.zusatzinfos || '' %>
+      </textarea>
           </div>
         </div>
 
@@ -77,8 +74,7 @@
               <i class="bi bi-plus-circle"></i> Neues Team erstellen
             </button>
           </div>
-          <div id="teamsContainer">
-          </div>
+          <div id="teamsContainer"></div>
           <div id="noTeamsMessage" class="border rounded bg-light p-3 text-muted align-items-center w-100">
             <i class="bi bi-people me-2"></i>
             Noch keine Teams verfügbar
@@ -97,7 +93,6 @@
                   <label class="form-label">Team Name *</label>
                   <input type="text" class="form-control" id="newTeamName" placeholder="Team Name eingeben...">
                 </div>
-
 
                 <div class="row g-2 mb-2">
                   <div class="col-md-6">
@@ -127,8 +122,7 @@
                           <% }) %>
                             <% } else { %>
                               <% const schuljahrIds=[...new Set(schueler.map(s=>
-                                s.schuljahr_id).filter(Boolean).sort())];
-                                %>
+                                s.schuljahr_id).filter(Boolean).sort())]; %>
                                 <% schuljahrIds.forEach(id=> { %>
                                   <option value="<%= id %>">
                                     Schuljahr ID: <%= id %>
@@ -145,8 +139,8 @@
                         <p class="small text-muted mb-3 text-center" id="filterHint">
                           Verwenden Sie die Suchfilter oben, um Schüler anzuzeigen
                         </p>
-                        <div class="available-members-container border rounded p-2 bg-light"
-                          style="max-height: 200px; overflow-y: auto; display: none;" id="availableMembersContainer">
+                        <div class="available-members-container border rounded p-2 bg-light scrollable-members"
+                          id="availableMembersContainer">
                           <div class="d-flex flex-wrap gap-1" id="availableMembers">
                           </div>
                         </div>
@@ -156,27 +150,26 @@
 
                   <div class="mb-3">
                     <label class="form-label">Teammitglieder auswählen</label>
-                    <div class="drag-area border rounded p-3" id="teamDropZone"
-                      style="min-height: 100px; background-color: #f8f9fa; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 5px; transition: all 0.3s;">
+                    <div class="drag-area border rounded p-3 team-drop-zone" id="teamDropZone">
                       <p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>
                     </div>
                   </div>
                 </div>
-                <div class="modal-footer">
-                  <small class="text-muted me-auto" id="memberCount">0 Mitglieder ausgewählt</small>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+              </div>
+              <div class="modal-footer">
+                <small class="text-muted me-auto" id="memberCount">0 Mitglieder ausgewählt</small>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
 
-                  <button type="button" class="btn btn-custom-safe" id="saveTeamBtn" style="display:none;">
-                    <i class="bi bi-save"></i> Änderungen speichern
-                  </button>
-                  <button type="button" class="btn btn-custom-safe" id="createTeamBtn">
-                    <i class="bi bi-plus"></i> Team erstellen
-                  </button>
-                </div>
+                <button type="button" class="btn btn-custom-safe save-team-btn" id="saveTeamBtn">
+                  <i class="bi bi-save"></i> Änderungen speichern
+                </button>
+                <button type="button" class="btn btn-custom-safe create-team-btn" id="createTeamBtn">
+                  <i class="bi bi-plus"></i> Team erstellen
+                </button>
               </div>
             </div>
           </div>
-
+        </div>
         </div>
 
         <input type="hidden" name="teams_data" id="teamsData" value="">
@@ -184,9 +177,8 @@
         <button type="submit" class="btn btn-custom-safe">Challenge speichern</button>
         <a href="/challenges" class="btn btn-secondary">Abbrechen</a>
 
-        <div id="schuelerData" style="display: none;" data-schueler='<%= JSON.stringify(schueler) %>'></div>
+        <div id="schuelerData" class="d-none" data-schueler='<%= JSON.stringify(schueler) %>'></div>
   </form>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <script src="/js/app/challengesFormLogic.js"> </script>
+  <script src="/js/app/challengesFormLogic.js"></script>

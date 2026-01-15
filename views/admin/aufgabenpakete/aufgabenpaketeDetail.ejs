@@ -1,63 +1,60 @@
-<% pageTitle=aufgabenpaket.title %>
+<% pageTitle = aufgabenpaket.title %>
 
-  <div class="card">
-    <div class="card-header">
-      <div class="header-content">
-        <h2 class="card-title">
-          <%= aufgabenpaket.title %>
-        </h2>
+<div class="card">
+  <div class="card-header">
+    <div class="header-content">
+      <h2 class="card-title">
+        <%= aufgabenpaket.title %>
+      </h2>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Icon/Image -->
+    <% if (aufgabenpaket.icon && aufgabenpaket.icon.startsWith('/uploads/')) { %>
+      <div class="image-container">
+        <img src="<%= aufgabenpaket.icon %>" class="card-image">
       </div>
+    <% } else if (aufgabenpaket.icon && (aufgabenpaket.icon.startsWith('http') || aufgabenpaket.icon.startsWith('data:'))) { %>
+      <div class="image-container">
+        <img src="<%= aufgabenpaket.icon %>" class="card-image">
+      </div>
+    <% } else if (aufgabenpaket.icon) { %>
+      <div class="image-container">
+        <span class="icon-display">
+          <%= aufgabenpaket.icon %>
+        </span>
+      </div>
+    <% } else { %>
+      <div class="image-container empty">
+        <img src="/assets/file-image.svg" class="card-image">
+        <p class="no-image-text">Kein Bild vorhanden</p>
+      </div>
+    <% } %>
+
+    <div class="description-section">
+      <h5 class="section-label">Beschreibung</h5>
+      <p class="description-text">
+        <%= aufgabenpaket.description %>
+      </p>
     </div>
 
-    <div class="card-body">
-      <!-- Icon/Image -->
-      <% if (aufgabenpaket.icon && aufgabenpaket.icon.startsWith('/uploads/')) { %>
-        <div class="image-container">
-          <img src="<%= aufgabenpaket.icon %>" class="card-image" style="max-height: 200px;">
-        </div>
-        <% } else if (aufgabenpaket.icon && (aufgabenpaket.icon.startsWith('http') ||
-          aufgabenpaket.icon.startsWith('data:'))) { %>
-          <div class="image-container">
-            <img src="<%= aufgabenpaket.icon %>" class="card-image" style="max-height: 200px;">
-          </div>
-          <% } else if (aufgabenpaket.icon) { %>
-            <div class="image-container">
-              <span class="icon-display">
-                <%= aufgabenpaket.icon %>
-              </span>
-            </div>
-            <% } else { %>
-              <div class="image-container empty">
-                <img src="/assets/file-image.svg" class="card-image" style="max-height: 200px; opacity: 0.5;">
-                <p class="no-image-text">Kein Bild vorhanden</p>
-              </div>
-              <% } %>
-
-                <div class="description-section">
-                  <h5 class="section-label">Beschreibung</h5>
-                  <p class="description-text">
-                    <%= aufgabenpaket.description %>
-                  </p>
-                </div>
-
-                <div class="meta-info">
-                  <div class="meta-item">
-                    <strong>Erstellt:</strong>
-                    <%= aufgabenpaket.created_at ? new Date(aufgabenpaket.created_at).toLocaleDateString('de-DE')
-                      : 'Unbekannt' %>
-                  </div>
-                  <div class="meta-item">
-                    <strong>Geändert:</strong>
-                    <%= aufgabenpaket.updated_at ? new Date(aufgabenpaket.updated_at).toLocaleDateString('de-DE')
-                      : 'Unbekannt' %>
-                  </div>
-                </div>
-    </div>
-
-    <div class="card-footer">
-      <div class="footer-actions">
-        <a href="/aufgabenpakete/<%= aufgabenpaket.id %>/edit" class="btn btn-custom-safe">Bearbeiten</a>
-        <a href="/aufgabenpakete" class="btn btn-outline-secondary">← Zurück zur Übersicht</a>
+    <div class="meta-info">
+      <div class="meta-item">
+        <strong>Erstellt:</strong>
+        <%= aufgabenpaket.created_at ? new Date(aufgabenpaket.created_at).toLocaleDateString('de-DE') : 'Unbekannt' %>
+      </div>
+      <div class="meta-item">
+        <strong>Geändert:</strong>
+        <%= aufgabenpaket.updated_at ? new Date(aufgabenpaket.updated_at).toLocaleDateString('de-DE') : 'Unbekannt' %>
       </div>
     </div>
   </div>
+
+  <div class="card-footer">
+    <div class="footer-actions">
+      <a href="/aufgabenpakete/<%= aufgabenpaket.id %>/edit" class="btn btn-custom-safe">Bearbeiten</a>
+      <a href="/aufgabenpakete" class="btn btn-outline-secondary">← Zurück zur Übersicht</a>
+    </div>
+  </div>
+</div>

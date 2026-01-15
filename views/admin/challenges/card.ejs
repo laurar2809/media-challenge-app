@@ -1,73 +1,78 @@
-<div class="col-md-6 col-lg-4 mb-4 challenge-card" data-id="<%= challenge.id %>"
-    data-aufgabenpaket="<%= (challenge.aufgabenpaket_title || '').toLowerCase() %>"
-    data-team="<%= (challenge.team_name || '').toLowerCase() %>"
-    data-kategorie="<%= (challenge.kategorie || '').toLowerCase() %>"
-    data-schuljahr="<%= (challenge.schuljahr_name || '').toLowerCase() %>"
-    data-teammitglieder="<%= (challenge.team_mitglieder_names || '').toLowerCase() %>">
+<div class="col-md-6 col-lg-4 mb-4 challenge-card"
+     data-id="<%= challenge.id %>"
+     data-aufgabenpaket="<%= (challenge.aufgabenpaket_title || '').toLowerCase() %>"
+     data-team="<%= (challenge.team_name || '').toLowerCase() %>"
+     data-kategorie="<%= (challenge.kategorie || '').toLowerCase() %>"
+     data-schuljahr="<%= (challenge.schuljahr_name || '').toLowerCase() %>"
+     data-teammitglieder="<%= (challenge.team_mitglieder_names || '').toLowerCase() %>">
 
-    <div class="card h-100 shadow-sm">
-        <% if (challenge.aufgabenpaket_icon) { %>
-            <img src="<%= challenge.aufgabenpaket_icon %>" class="card-img-top"
-                alt="<%= challenge.aufgabenpaket_title %>" style="height: 150px; object-fit: cover;">
-            <% } else { %>
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                    style="height: 150px;">
-                    <span class="text-muted">Kein Bild</span>
-                </div>
-                <% } %>
+  <div class="card h-100 shadow-sm">
+    <% if (challenge.aufgabenpaket_icon) { %>
+      <img src="<%= challenge.aufgabenpaket_icon %>"
+           class="card-img-top card-img-fixed-height"
+           alt="<%= challenge.aufgabenpaket_title %>">
+    <% } else { %>
+      <div class="card-img-top bg-light d-flex align-items-center justify-content-center card-img-fixed-height">
+        <span class="text-muted">Kein Bild</span>
+      </div>
+    <% } %>
 
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <strong class="d-block">Aufgabenpaket:</strong>
-                            <span class="fw-medium">
-                                <%= challenge.aufgabenpaket_title || 'Kein Aufgabenpaket' %>
-                            </span>
-                        </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <strong class="d-block">Aufgabenpaket:</strong>
+        <span class="fw-medium">
+          <%= challenge.aufgabenpaket_title || 'Kein Aufgabenpaket' %>
+        </span>
+      </div>
 
-                        <div class="mb-3">
-                            <strong class="d-block">Kategorie:</strong>
-                            <span class="badge bg-secondary">
-                                <%= challenge.kategorie %>
-                            </span>
-                        </div>
+      <div class="mb-3">
+        <strong class="d-block">Kategorie:</strong>
+        <span class="badge bg-secondary">
+          <%= challenge.kategorie %>
+        </span>
+      </div>
 
-                        <div class="mb-3">
-                            <strong class="d-block">Team:</strong>
-                            <% if (challenge.team_name) { %>
-                                <div class="text-muted">
-                                    <%= challenge.team_name %>
-                                </div>
-                                <small class="text-body-secondary">
-                                    <%= challenge.team_mitglieder_names || 'Keine Mitglieder' %>
-                                </small>
-                                <% } else { %>
-                                    <span class="text-muted">Kein Team</span>
-                                    <% } %>
-                        </div>
+      <div class="mb-3">
+        <strong class="d-block">Team:</strong>
+        <% if (challenge.team_name) { %>
+          <div class="text-muted">
+            <%= challenge.team_name %>
+          </div>
+          <small class="text-body-secondary">
+            <%= challenge.team_mitglieder_names || 'Keine Mitglieder' %>
+          </small>
+        <% } else { %>
+          <span class="text-muted">Kein Team</span>
+        <% } %>
+      </div>
 
-                        <div class="mb-3">
-                            <strong class="d-block">Abgabetermin:</strong>
-                            <span class="text-body-secondary">
-                                <% if (challenge.abgabedatum) { %>
-                                    <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
-                                        <% } else { %>
-                                            <span class="text-muted">Nicht festgelegt</span>
-                                            <% } %>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="card-footer bg-transparent">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="/challenges/detail/<%= challenge.id %>"
-                                class="btn btn-custom-details btn-sm">Details</a>
-                            <div class="d-flex gap-2">
-                                <a href="/challenges/<%= challenge.id %>/edit"
-                                    class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
-                                <button type="button" class="btn btn-custom-delete btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#confirmDeleteModal" data-id="<%= challenge.id %>">Löschen</button>
-                            </div>
-                        </div>
-                    </div>
+      <div class="mb-3">
+        <strong class="d-block">Abgabetermin:</strong>
+        <span class="text-body-secondary">
+          <% if (challenge.abgabedatum) { %>
+            <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
+          <% } else { %>
+            <span class="text-muted">Nicht festgelegt</span>
+          <% } %>
+        </span>
+      </div>
     </div>
+
+    <div class="card-footer bg-transparent">
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="/challenges/detail/<%= challenge.id %>"
+           class="btn btn-custom-details btn-sm">Details</a>
+        <div class="d-flex gap-2">
+          <a href="/challenges/<%= challenge.id %>/edit"
+             class="btn btn-outline-secondary btn-sm">Bearbeiten</a>
+          <button type="button" class="btn btn-custom-delete btn-sm"
+                  data-bs-toggle="modal"
+                  data-bs-target="#confirmDeleteModal"
+                  data-id="<%= challenge.id %>">
+            Löschen
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
