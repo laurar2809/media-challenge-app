@@ -95,7 +95,7 @@
 
   <!-- Buttons unten -->
 <div class="card-footer bg-transparent p-3 border-0">
-  <div class="d-flex gap-2" style="max-width: 250px;">
+  <div class="d-flex gap-2 buttons-compact">
     <a href="/challenges/<%= challenge.id %>/edit" class="btn btn-custom-safe btn-sm px-3">Bearbeiten</a>
     <button type="button" class="btn btn-custom-delete btn-sm px-3" 
             data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
@@ -103,6 +103,7 @@
     </button>
   </div>
 </div>
+
 
 <%- include('../../partials/deleteModal', {
   modalId: 'confirmDeleteModal',

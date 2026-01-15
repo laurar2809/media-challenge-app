@@ -733,6 +733,21 @@ input.form-control:focus {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 }
 
+/* Kompakte Buttons ohne volle Breite */
+.buttons-compact {
+  max-width: 250px;
+}
+
+/*Kategorien*/
+/* Tabellen-Icons (20x20px, object-fit: cover) */
+.category-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+}
+
+
+
 
 
 
@@ -782,37 +797,6 @@ input.form-control:focus {
   color: white !important;
 }
 
-/*challenges details*/
-/* Buttons-Container (ersetzt style="max-width: 250px;") */
-.buttons-container {
-  max-width: 250px;
-}
-
-/* Bild-Container und Bild-Styles (bereits vorhanden) */
-.challenge-image-container {
-  display: flex;
-  justify-content: center;
-  max-width: 250px;
-  margin: 0 auto;
-}
-
-.challenge-detail-image-full {
-  max-height: 160px;
-  max-width: 250px;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  object-position: center;
-}
-
-.challenge-main-placeholder {
-  width: 250px;
-  height: 160px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
 
 
 
