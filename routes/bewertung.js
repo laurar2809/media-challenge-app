@@ -49,6 +49,7 @@ router.get('/', requireLehrer, async (req, res) => {
                     status: abgabe ? abgabe.status : 'offen',
                     created_at: abgabe ? abgabe.created_at : null
                 };
+
             })
         );
 

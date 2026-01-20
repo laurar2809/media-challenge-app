@@ -161,14 +161,14 @@
           </h5>
         </div>
         <div class="card-body">
-          <div class="mb-3">
+          <!-- <div class="mb-3">
             <label class="form-label">Titel deiner Abgabe</label>
             <input type="text" class="form-control" id="abgabeTitel"
                    placeholder="z.B. 'Meine Naturfotos'"
                    value="<%= abgabe && abgabe.titel ? abgabe.titel : '' %>">
-          </div>
+          </div> -->
           <div class="mb-3">
-            <label class="form-label">Beschreibung (optional)</label>
+            <label class="form-label">Informationen zur Abgabe (Einstellungen, etc.)</label>
             <textarea class="form-control" id="abgabeBeschreibung" rows="3"
                       placeholder="Beschreibe deine Arbeit..."><%= abgabe && abgabe.beschreibung ? abgabe.beschreibung : '' %></textarea>
           </div>
