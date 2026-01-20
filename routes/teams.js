@@ -5,48 +5,41 @@ const router = express.Router();
 const { requireAuth, requireLehrer } = require('../middleware/auth'); // Brauchen wir für die Sicherheit
 const { db } = require('../db'); // Direkter DB-Import
 
-// Teams Übersicht (Nur für Lehrer/Admin zugänglich)
 router.get('/', requireAuth, requireLehrer, async (req, res) => {
-    try {
-        console.log('Zugriff auf Team Übersicht durch Admin/Lehrer.');
+  try {
+    const teams = await db('teams')
+      .leftJoin('schuljahre', 'teams.schuljahr_id', 'schuljahre.id')  // <-- schuljahrid!
+      .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.teamid')  // teamid!
+      .leftJoin('users', 'team_mitglieder.user_id', 'users.id')  // userid!
+      .leftJoin('klassen', 'users.klasse_id', 'klassen.id')  // klasseid!
+      .select(
+        'teams.id',
+        'teams.name',
+        'schuljahre.name as schuljahr_name',
+        db.raw('COUNT(DISTINCT team_mitglieder.id) as mitglieder_count'),
+        db.raw('GROUP_CONCAT(DISTINCT CONCAT(users.vorname, " ", users.nachname, " (", COALESCE(klassen.name, "N/A"), ")") SEPARATOR ", ") as mitglieder')
+      )
+      .groupBy('teams.id', 'teams.name', 'schuljahre.id')
+      .orderBy('teams.name');
 
-        // 1. Alle Teams laden
-        const teamsRaw = await db('teams')
-            .leftJoin('schuljahre', 'teams.schuljahr_id', 'schuljahre.id')
-            .select('teams.id', 'teams.name', 'schuljahre.name as schuljahr_name')
-            .orderBy('teams.name', 'asc');
+    const schuljahre = await db('schuljahre').select('id', 'name');
+    const kategorien = await db('categories').select('id', 'title');
 
-        // 2. Mitglieder für jedes Team laden
-        const teamsWithMembers = await Promise.all(
-            teamsRaw.map(async (team) => {
-                const mitglieder = await db('team_mitglieder')
-                    .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
-                    .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
-                    .where('team_mitglieder.team_id', team.id)
-                    .select(
-                        'users.vorname',
-                        'users.nachname',
-                        'klassen.name as klasse_name',
-                        'team_mitglieder.rolle'
-                    );
+    console.log('Teams geladen:', teams.length); // DEBUG
 
-                team.mitglieder = mitglieder;
-                team.mitglieder_count = mitglieder.length;
-                return team;
-            })
-        );
-
-        res.render('admin/personen/teams', {
-            title: 'Team Übersicht',
-            activePage: 'teams', // Für die aktive Navigationsleiste
-            teams: teamsWithMembers
-        });
-
-    } catch (error) {
-        console.error(' Fehler beim Laden der Team Übersicht:', error);
-        req.flash('error', 'Fehler beim Laden der Team Übersicht.');
-        res.status(500).redirect('/');
-    }
+    res.render('admin/personen/teams', {
+      teams,
+      schuljahre,
+      kategorien,
+      activeSchuljahr: req.query.schuljahr || '',
+      activeKategorie: req.query.kategorie || '',
+      searchTerm: req.query.search || ''
+    });
+  } catch (error) {
+    console.error('Teams Error:', error);
+    res.status(500).redirect('/');
+  }
 });
+
 
 module.exports = router;

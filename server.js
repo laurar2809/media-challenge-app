@@ -93,7 +93,7 @@ app.use((req, res, next) => {
 });
 
 // Routen einbinden
-app.use('/', require('./routes/ansichten'));
+
 app.use('/challenges', require('./routes/challenges'));
 app.use('/schueler', require('./routes/schueler'));
 app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
@@ -102,8 +102,9 @@ app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
 app.use('/auth', require('./routes/auth'));
 app.use('/teams', require('./routes/teams'));
-app.use('/', require('./routes/upload'));
 app.use('/bewertung', require('./routes/bewertung'));
+app.use('/', require('./routes/ansichten'));
+app.use('/', require('./routes/upload'));
 
 // ========== NUR EIN 404 HANDLER ==========
 app.use((req, res) => {

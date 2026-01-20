@@ -2,6 +2,32 @@
 
 <h1 class="h4 mb-4">Alle Teams</h1>
 
+
+    <!-- Filter und Suchfunktion -->
+    <%- include('../../partials/filter_search', {
+    showKlasse: false,
+    showSchuljahr: false,
+    showKategorie: true,
+    showSearch: true,
+    
+
+    // // Schuljahr
+    // schuljahre,
+    // activeSchuljahr,
+    // schuljahrSelectId: 'schuljahrFilter',
+
+    // Schuljahr
+    kategorie,
+    activeKategorie,
+    kategorieSelectId: 'kategorieFilter',
+
+    // Suche
+    searchContainerId: 'teamsSearchContainer',
+    searchInputId: 'teamsSearch',
+    searchTerm
+    }) %>
+
+
 <div class="table-responsive">
     <table class="table table-hover table align-middle m-0 table-light">
         <thead class="table-light">
@@ -45,6 +71,6 @@
     </table>
 </div>
 
-<script>
-    // Eventuell benötigtes JS für Sortierung/Filterung kann hier folgen
-</script>
+<script src="/js/app/utils/filterUtils.js"></script>
+
+<script src="/js/app/teamsLogic.js"></script>
