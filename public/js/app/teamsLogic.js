@@ -1,38 +1,34 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Filter-Elemente
-    const klasseFilter = document.getElementById('teamKlasseFilter');
-    const schuljahrFilter = document.getElementById('teamSchuljahrFilter');
-    const searchInput = document.getElementById('teamSearchInput');
-    
-    // Debounce für Search
-    let searchTimeout;
-    function updateFilters() {
-        const params = new URLSearchParams(window.location.search);
-        params.set('klasse', klasseFilter?.value || 'alle');
-        params.set('schuljahr', schuljahrFilter?.value || 'alle');
-        params.set('search', searchInput?.value || '');
-        
-        // Suche nur bei Enter oder nach 500ms Pause
-        if (searchInput && searchInput.value) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                window.location.search = params.toString();
-            }, 500);
-        } else {
-            window.location.search = params.toString();
-        }
-    }
-    
-    // Event Listener
-    if (klasseFilter) klasseFilter.addEventListener('change', updateFilters);
-    if (schuljahrFilter) schuljahrFilter.addEventListener('change', updateFilters);
-    if (searchInput) {
-        searchInput.addEventListener('input', updateFilters);
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                updateFilters();
-                e.preventDefault();
-            }
-        });
-    }
+// === NEUE createTeamBtn für TEAMS ===
+createTeamBtn.addEventListener('click', function () {
+  const teamName = newTeamName.value.trim();
+  const members = Array.from(teamDropZone.querySelectorAll('.btn[data-id]'));
+
+  if (!teamName || members.length === 0) {
+    alert('Name + Mitglieder erforderlich!');
+    return;
+  }
+
+  const team = {
+    name: teamName,
+    mitglieder: members.map(m => ({
+      id: parseInt(m.dataset.id),
+      vorname: m.dataset.vorname,
+      nachname: m.dataset.nachname,
+      klasse: m.dataset.klasse
+    }))
+  };
+
+  // POST zu Teams-Route
+  fetch('/teams', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(team)
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(`"${teamName}" erstellt!`);
+    if (teamModalInstance) teamModalInstance.hide();
+    location.reload();
+  })
+  .catch(err => console.error('Fehler:', err));
 });

@@ -3,6 +3,111 @@
 <h1 class="h4 mb-4">Alle Teams</h1>
 
 
+
+
+        <div class="mb-3">
+          
+            <button type="button" class="btn btn-custom-safe" data-bs-toggle="modal" data-bs-target="#teamModal"
+              id="openCreateTeamModal">
+              <i class="bi bi-plus-circle me-2"></i> Neues Team erstellen
+            </button>
+          
+
+
+       <!--     
+        <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="teamModalLabel">Neues Team erstellen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Team Name *</label>
+                  <input type="text" class="form-control" id="newTeamName" placeholder="Team Name eingeben...">
+                </div>
+
+                <div class="row g-2 mb-2">
+                  <div class="col-md-6">
+                    <input type="text" class="form-control form-control-sm" id="nameFilter"
+                      placeholder="Namen suchen...">
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select form-select-sm" id="classFilter">
+                      <option value="">Alle Klassen</option>
+                      <% const klassen=[...new Set(schueler.map(s=> s.klasse_name).filter(Boolean).sort())]; %>
+                        <% klassen.forEach(klasse=> { %>
+                          <option value="<%= klasse %>">
+                            <%= klasse %>
+                          </option>
+                          <% }) %>
+                    </select>
+                  </div>
+
+                  <div class="col-md-3">
+                    <select class="form-select form-select-sm" id="teamSchuljahrFilter">
+                      <option value="">Alle Schuljahre</option>
+                      <% if (schuljahre && schuljahre.length) { %>
+                        <% schuljahre.forEach(schuljahr=> { %>
+                          <option value="<%= schuljahr.id %>">
+                            <%= schuljahr.name %>
+                          </option>
+                          <% }) %>
+                            <% } else { %>
+                              <% const schuljahrIds=[...new Set(schueler.map(s=>
+                                s.schuljahr_id).filter(Boolean).sort())]; %>
+                                <% schuljahrIds.forEach(id=> { %>
+                                  <option value="<%= id %>">
+                                    Schuljahr ID: <%= id %>
+                                  </option>
+                                  <% }) %>
+                                    <% } %>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Verfügbare Teammitglieder</label>
+                    <div class="card">
+                      <div class="card-body p-3">
+                        <p class="small text-muted mb-3 text-center" id="filterHint">
+                          Verwenden Sie die Suchfilter oben, um Schüler anzuzeigen
+                        </p>
+                        <div class="available-members-container border rounded p-2 bg-light scrollable-members"
+                          id="availableMembersContainer">
+                          <div class="d-flex flex-wrap gap-1" id="availableMembers">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Teammitglieder auswählen</label>
+                    <div class="drag-area border rounded p-3 team-drop-zone" id="teamDropZone">
+                      <p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <small class="text-muted me-auto" id="memberCount">0 Mitglieder ausgewählt</small>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+
+                <button type="button" class="btn btn-custom-safe save-team-btn" id="saveTeamBtn">
+                  <i class="bi bi-save"></i> Änderungen speichern
+                </button>
+                <button type="button" class="btn btn-custom-safe create-team-btn" id="createTeamBtn">
+                  <i class="bi bi-plus"></i> Team erstellen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+ -->
+
+
 <!-- FILTER EINBINDEN -->
 <%- include('../../partials/filter_search', {
     showKlasse: false,
@@ -68,5 +173,161 @@
 </div>
 
 
+
+
+
+
+
+           <!-- RICHTIG -->
+<%- include('../../partials/teamModal', { 
+  modalId: 'teamModal', 
+  schueler: schueler,
+  schuljahre: schuljahre,
+  klassen: klassen 
+}) %>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  console.log(' Challenge Team Modal - ANGEPASST');
+  
+  // Schüler aus data-schueler
+  const schuelerDataEl = document.getElementById('schuelerData');
+  let alleSchueler = [];
+  if (schuelerDataEl) {
+    alleSchueler = JSON.parse(schuelerDataEl.dataset.schueler);
+    console.log(' Schüler geladen:', alleSchueler.length);
+  } else {
+    alleSchueler = [ // Fallback-Test
+     
+    ];
+    console.log(' Test-Schüler:', alleSchueler.length);
+  }
+  
+  const modal = document.getElementById('teamModal');
+  
+  // Filter + Available updaten
+  const updateAvailable = () => {
+    const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
+    const classFilter = document.getElementById('classFilter').value;
+    const schuljahrFilter = document.getElementById('teamSchuljahrFilter').value;
+    
+    const gefilterte = alleSchueler.filter(s => 
+      (!nameFilter || s.vorname.toLowerCase().includes(nameFilter) || s.nachname.toLowerCase().includes(nameFilter)) &&
+      (!classFilter || s.klasse_name.includes(classFilter)) &&
+      (!schuljahrFilter || s.schuljahr_id == schuljahrFilter)
+    );
+    
+    const container = document.getElementById('availableMembers');
+    container.innerHTML = '';
+    
+    gefilterte.forEach(s => {
+      const badge = document.createElement('span');
+      badge.className = 'badge bg-primary me-1 mb-1 draggable';
+      badge.draggable = true;
+      badge.dataset.schuelerId = s.id;
+      badge.dataset.vorname = s.vorname;
+      badge.dataset.nachname = s.nachname;
+      badge.textContent = `${s.vorname} ${s.nachname}`;
+      container.appendChild(badge);
+    });
+    
+    document.getElementById('filterHint').textContent = `${gefilterte.length} Schüler gefunden`;
+  };
+  
+  // Modal shown → Filter initial
+  modal.addEventListener('shown.bs.modal', updateAvailable);
+  
+  // Live Filter
+  ['nameFilter', 'classFilter', 'teamSchuljahrFilter'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateAvailable);
+  });
+  
+  // Drag & Drop
+  document.addEventListener('dragstart', e => {
+    if (e.target.classList.contains('draggable')) {
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        id: e.target.dataset.schuelerId,
+        vorname: e.target.dataset.vorname,
+        nachname: e.target.dataset.nachname
+      }));
+    }
+  });
+  
+  const dropZone = document.getElementById('teamDropZone');
+  dropZone.addEventListener('dragover', e => e.preventDefault());
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    try {
+      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      const badge = document.createElement('span');
+      badge.className = 'badge bg-success me-2 mb-2';
+      badge.innerHTML = `${data.vorname} ${data.nachname} <button class="btn-close ms-1" data-id="${data.id}"></button>`;
+      dropZone.appendChild(badge);
+      updateMemberCount();
+    } catch {}
+  });
+  
+  // Member Count
+  const updateMemberCount = () => {
+    const count = dropZone.querySelectorAll('.badge').length;
+    document.getElementById('memberCount').textContent = `${count} Mitglieder ausgewählt`;
+  };
+  
+  // Save Buttons
+  document.getElementById('createTeamBtn').addEventListener('click', () => {
+    const teamName = document.getElementById('newTeamName').value;
+    if (!teamName) return alert('Team-Name eingeben!');
+    
+    const mitglieder = Array.from(dropZone.querySelectorAll('.badge')).map(b => 
+      b.dataset.id || b.querySelector('[data-id]').dataset.id
+    );
+    
+    console.log(' Neues Team:', {name: teamName, mitglieder});
+    alert(`Team "${teamName}" mit ${mitglieder.length} Mitgliedern! (Console checken)`);
+    
+    // Hier später: POST /teams → Challenge zuweisen
+    bootstrap.Modal.getInstance(modal).hide();
+  });
+  
+  // Close → Clear
+  modal.addEventListener('hidden.bs.modal', () => {
+    dropZone.innerHTML = '<p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen</p>';
+    document.getElementById('newTeamName').value = '';
+    updateMemberCount();
+  });
+  
+  console.log(' Challenge Team Modal bereit!');
+});
+</script>
+
+
+<div id="dataContainer" 
+     data-schueler='<%- JSON.stringify(schueler) %>'
+     style="display:none;">
+</div>
+
+<script src="/js/app/teamModalLogic.js"></script>
+<script>
+const dataContainer = document.getElementById('dataContainer');
+const schuelerData = JSON.parse(dataContainer.dataset.schueler);
+
+new TeamModal({
+  modalId: 'teamModal',
+  schueler: schuelerData,
+  onSave: team => {
+    fetch('/teams', {method: 'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify(team)})
+    .then(res => res.json())
+    .then(() => location.reload());
+  }
+});
+</script>
+
+
+
+
 <script src="js/app/utils/filterUtils.js"></script>
-<script src="js/app/teamsLogic.js"></script>
+
+
