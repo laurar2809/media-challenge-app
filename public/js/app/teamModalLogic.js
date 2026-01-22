@@ -2,7 +2,7 @@ class TeamModal {
     constructor(config = {}) {
         this.modalId = config.modalId || 'teamModal';
         this.schuelerData = config.schueler || [];
-        this.onSave = config.onSave || (() => {});
+        this.onSave = config.onSave || (() => { });
         this.init();
     }
 
@@ -45,29 +45,39 @@ class TeamModal {
     }
 
     filterSchueler() {
-        const nameTerm = this.nameFilter.value.toLowerCase();
-        const klasseTerm = this.classFilter.value;
-        const schuljahrTerm = this.schuljahrFilter?.value;
+       
 
-        // Zeige Container nur, wenn ein Filter aktiv ist
-        if (!nameTerm && !klasseTerm && !schuljahrTerm) {
-            this.availableContainer.style.display = 'none';
-            this.filterHint.style.display = 'block';
-            return;
-        }
+    const nameTerm = this.nameFilter.value.toLowerCase();
+    const klasseTerm = this.classFilter.value;
+    const schuljahrTerm = this.schuljahrFilter?.value;
 
-        this.availableContainer.style.display = 'block';
-        this.filterHint.style.display = 'none';
-
-        const filtered = this.schuelerData.filter(s => {
-            const matchesName = !nameTerm || `${s.vorname} ${s.nachname}`.toLowerCase().includes(nameTerm);
-            const matchesKlasse = !klasseTerm || s.klasse_name === klasseTerm;
-            const matchesSchuljahr = !schuljahrTerm || String(s.schuljahr_id) === schuljahrTerm;
-            return matchesName && matchesKlasse && matchesSchuljahr;
-        });
-
-        this.renderSchueler(filtered);
+    // Nur anzeigen, wenn mindestens ein Filter aktiv ist
+    if (!nameTerm && !klasseTerm && !schuljahrTerm) {
+        this.availableContainer.style.display = 'none';
+        this.filterHint.style.display = 'block';
+        return;
     }
+
+    this.availableContainer.style.display = 'block';
+    this.filterHint.style.display = 'none';
+
+    const filtered = this.schuelerData.filter(s => {
+        // 1. Suche nach Vorname + Nachname
+        const fullName = `${s.vorname} ${s.nachname}`.toLowerCase();
+        const matchesName = !nameTerm || fullName.includes(nameTerm);
+        
+        // 2. Suche nach Klasse (Muss s.klasse_name sein!)
+        const matchesKlasse = !klasseTerm || s.klasse_name === klasseTerm;
+        
+        // 3. Suche nach Schuljahr (Wichtig: s.schuljahr_id prüfen und null abfangen)
+        const sSchuljahr = s.schuljahr_id ? String(s.schuljahr_id) : '';
+        const matchesSchuljahr = !schuljahrTerm || sSchuljahr === schuljahrTerm;
+        
+        return matchesName && matchesKlasse && matchesSchuljahr;
+    });
+
+    this.renderSchueler(filtered);
+}
 
     renderSchueler(filtered) {
         this.availableMembers.innerHTML = '';

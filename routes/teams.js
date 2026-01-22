@@ -7,30 +7,33 @@ const { db } = require('../db'); // Direkter DB-Import
 
 router.get('/', requireAuth, requireLehrer, async (req, res) => {
     try {
-        const { klasse, schuljahr, search } = req.query;
+        // Diese Filter gelten NUR für die Team-Tabelle unten
+        const { search, klasse, schuljahr } = req.query;
 
-        // Basis-Daten für Dropdowns
         const klassen = await db('klassen').orderBy('name');
         const schuljahre = await db('schuljahre').orderBy('name');
 
-        // In routes/teams.js
+        // --- SCHRITT 1: SCHÜLER FÜR DAS MODAL (IMMER ALLE) ---
+        // 1. SCHÜLER FÜR DAS MODAL LADEN (Wichtig: "as klasse_name")
         const schueler = await db('users')
             .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
             .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
             .where('user_roles.rolle', 'Schüler')
             .select(
-                'users.id',
+                'users.id as id',
                 'users.vorname',
                 'users.nachname',
-                'klassen.name as klasse_name', // Dieser Name muss fix sein!
+                'klassen.name as klasse_name', // Hier wird der Name festgelegt!
                 'users.schuljahr_id'
             );
-        // TEAMS-QUERY MIT SUCHE
+
+        // --- SCHRITT 2: TEAMS FÜR DIE TABELLE (FILTERBAR) ---
         let teamsQuery = db('teams')
             .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
             .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
             .leftJoin('schuljahre', 'teams.schuljahr_id', 'schuljahre.id');
 
+        // Nur die Teams werden durch die URL-Suche eingeschränkt
         if (search) {
             teamsQuery.where(builder => {
                 builder.where('teams.name', 'like', `%${search}%`)
@@ -50,23 +53,22 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
             .groupBy('teams.id', 'teams.name', 'schuljahre.name');
 
         res.render('admin/personen/teams', {
-            schueler,
-            teams,
+            schueler, // <--- IMMER VOLLSTÄNDIG FÜR DEINE LOGIC.JS
+            teams,    // <--- GEFILTERT FÜR DIE TABELLE
             klassen,
             schuljahre,
+            searchTerm: search || '',
             activeKlasse: klasse || 'alle',
             activeSchuljahr: schuljahr || 'alle',
-            searchTerm: search || '', // Suchbegriff zurück an EJS geben
             title: 'Team Übersicht',
             activePage: 'teams'
         });
+
     } catch (error) {
-        console.error('Teams Fehler:', error);
-        res.redirect('/teams');
+        console.error('Fehler:', error);
+        res.redirect('/dashboard');
     }
 });
-
-
 
 router.post('/', requireAuth, requireLehrer, async (req, res) => {
     const { name, members } = req.body;

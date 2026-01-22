@@ -89,27 +89,50 @@
 
 
 
-<%- include('../../partials/teamModal', {
-    schueler: schueler, 
-    schuljahre: schuljahre
-}) %>
-
 <div id="dataContainer" 
      data-schueler='<%- JSON.stringify(schueler) %>' 
      style="display:none;">
 </div>
 
 <script src="/js/app/teamModalLogic.js"></script>
-<script src="/js/app/utils/filterUtils.js"> </script>
+<script src="/js/app/utils/filterUtils.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('teamSearchInput');
+    // 1. TEAM MODAL LOGIK STARTEN (Das hat gefehlt!)
+    const dataContainer = document.getElementById('dataContainer');
+    if (dataContainer) {
+        const schuelerData = JSON.parse(dataContainer.dataset.schueler || '[]');
+        
+        // Hier "starten" wir die Klasse
+        window.teamModalInstance = new TeamModal({
+            modalId: 'teamModal',
+            schueler: schuelerData,
+            onSave: async (data) => {
+                try {
+                    const response = await fetch('/teams', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        location.reload(); // Seite neu laden nach Erfolg
+                    } else {
+                        alert("Fehler beim Speichern: " + result.error);
+                    }
+                } catch (err) {
+                    console.error("Speicherfehler:", err);
+                }
+            }
+        });
+        console.log("Team-Modal erfolgreich initialisiert.");
+    }
 
-    // FOKUS WIEDERHERSTELLEN
+    // 2. SERVER-SUCHE LOGIK (Deine bestehende Suche für die Tabelle)
+    const searchInput = document.getElementById('teamSearchInput');
     if (searchInput && searchInput.value.length > 0) {
         searchInput.focus();
-        // Cursor ans Ende des Textes setzen
         const val = searchInput.value;
         searchInput.value = '';
         searchInput.value = val;
@@ -120,11 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
             input: searchInput,
             onChange: (query) => {
                 const url = new URL(window.location.href);
-                if (query) {
-                    url.searchParams.set('search', query);
-                } else {
-                    url.searchParams.delete('search');
-                }
+                if (query) url.searchParams.set('search', query);
+                else url.searchParams.delete('search');
                 window.location.href = url.toString();
             }
         });
