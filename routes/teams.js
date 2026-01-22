@@ -103,5 +103,37 @@ router.post('/', requireAuth, requireLehrer, async (req, res) => {
 });
 
 
+router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
+    const teamId = req.params.id;
+    const { name, members } = req.body;
+
+    try {
+        await db.transaction(async tr => {
+            // 1. Team-Name aktualisieren
+            await tr('teams').where('id', teamId).update({ name });
+
+            // 2. Alle alten Mitglieder entfernen
+            await tr('team_mitglieder').where('team_id', teamId).del();
+
+            // 3. Neue Mitgliederliste einfügen
+            if (members && members.length > 0) {
+                const inserts = members.map(m => ({
+                    team_id: teamId,
+                    user_id: m.id,
+                    rolle: 'mitglied'
+                }));
+                await tr('team_mitglieder').insert(inserts);
+            }
+        });
+
+        res.json({ success: true, message: 'Team erfolgreich aktualisiert!' });
+    } catch (error) {
+        console.error('Update Fehler:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
+
 
 module.exports = router;
