@@ -26,7 +26,7 @@ class TeamModal {
       if (this.availableContainer) this.availableContainer.style.display = 'none';
 
       this.bindEvents();
-      console.log('🎉 TeamModal bereit - Filter first!');
+      console.log(' TeamModal bereit ');
     });
   }
 
@@ -43,10 +43,10 @@ class TeamModal {
       btn.dataset.klasse = schueler.klasse_name;
       btn.innerHTML = `${schueler.vorname} ${schueler.nachname} <small class="text-muted">(${schueler.klasse_name})</small>`;
 
-      // 1️⃣ CLICK-TO-ADD (Challenges!)
+      // 1️ CLICK-TO-ADD (Challenges!)
       btn.addEventListener('click', () => this.addMemberToDropZone(btn));
 
-      // 2️⃣ Drag & Drop
+      // 2️ Drag & Drop
       btn.addEventListener('dragstart', this.handleDragStart.bind(this));
 
       this.availableMembers.appendChild(btn);
