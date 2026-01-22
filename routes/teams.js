@@ -13,13 +13,18 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
         const klassen = await db('klassen').orderBy('name');
         const schuljahre = await db('schuljahre').orderBy('name');
 
-        // Schüler für das Modal (unverändert)
+        // In routes/teams.js
         const schueler = await db('users')
             .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
             .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
             .where('user_roles.rolle', 'Schüler')
-            .select('users.id', 'users.vorname', 'users.nachname', 'klassen.name as klasse_name', 'users.schuljahr_id');
-
+            .select(
+                'users.id',
+                'users.vorname',
+                'users.nachname',
+                'klassen.name as klasse_name', // Dieser Name muss fix sein!
+                'users.schuljahr_id'
+            );
         // TEAMS-QUERY MIT SUCHE
         let teamsQuery = db('teams')
             .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
@@ -29,8 +34,8 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
         if (search) {
             teamsQuery.where(builder => {
                 builder.where('teams.name', 'like', `%${search}%`)
-                       .orWhere('users.vorname', 'like', `%${search}%`)
-                       .orWhere('users.nachname', 'like', `%${search}%`);
+                    .orWhere('users.vorname', 'like', `%${search}%`)
+                    .orWhere('users.nachname', 'like', `%${search}%`);
             });
         }
 
