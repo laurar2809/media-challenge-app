@@ -112,4 +112,28 @@ class TeamModal {
         const count = this.teamDropZone.querySelectorAll('button[data-id]').length;
         if (this.memberCount) this.memberCount.textContent = `${count} Mitglieder ausgewählt`;
     }
+
+    // Füge diese Methode zu deiner TeamModal Klasse hinzu:
+editTeam(team) {
+    // 1. Namen setzen
+    this.newTeamName.value = team.name;
+    this.currentEditId = team.id;
+
+    // 2. DropZone leeren
+    this.teamDropZone.innerHTML = '';
+
+    // 3. Bestehende Mitglieder hinzufügen
+    // team.members sollte eine Liste von Schülern sein
+    team.members.forEach(m => this.addMemberToDropZone(m));
+
+    // 4. Buttons tauschen
+    this.createBtn.style.display = 'none';
+    document.getElementById('saveTeamBtn').style.display = 'block';
+    
+    // Modal öffnen
+    const modalToggle = new bootstrap.Modal(document.getElementById(this.modalId));
+    modalToggle.show();
+}
+
+
 }
