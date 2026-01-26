@@ -145,6 +145,22 @@ router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
 });
 
 
+router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
+    const teamId = req.params.id;
+    try {
+        await db.transaction(async tr => {
+            await tr('team_mitglieder').where('team_id', teamId).del();
+            await tr('teams').where('id', teamId).del();
+        });
+        res.redirect('/teams'); // Zurück zur Übersicht nach Erfolg
+    } catch (error) {
+        console.error('Lösch-Fehler:', error);
+        // Hier schicken wir eine Nachricht mit (falls du Flash-Messages nutzt)
+        // oder redirecten mit einem Query-Parameter
+        res.redirect('/teams?error=collision'); 
+    }
+});
+
 
 
 module.exports = router;

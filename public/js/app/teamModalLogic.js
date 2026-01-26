@@ -29,41 +29,41 @@ class TeamModal {
     }
 
     bindEvents() {
-        // Event-Listener für alle Filter
+        // 1. Event-Listener für alle Filter (Suche im Modal)
         this.nameFilter?.addEventListener('input', () => this.filterSchueler());
         this.classFilter?.addEventListener('change', () => this.filterSchueler());
         this.schuljahrFilter?.addEventListener('change', () => this.filterSchueler());
 
-        this.createBtn?.addEventListener('click', () => {
-            const name = this.newTeamName.value.trim();
-            const members = Array.from(this.teamDropZone.querySelectorAll('button[data-id]')).map(btn => ({
-                id: parseInt(btn.dataset.id)
-            }));
-
-            if (!name || members.length === 0) {
-                alert('Bitte Team-Namen vergeben und Mitglieder auswählen!');
-                return;
-            }
-            this.onSave({ name, members });
-        });
-    } bindEvents() {
-        // Event-Listener für alle Filter
-        this.nameFilter?.addEventListener('input', () => this.filterSchueler());
-        this.classFilter?.addEventListener('change', () => this.filterSchueler());
-        this.schuljahrFilter?.addEventListener('change', () => this.filterSchueler());
-
-        // Event für "Team erstellen"
+        // 2. Event für "Team erstellen" (POST)
         this.createBtn?.addEventListener('click', () => {
             this.submitData();
         });
 
-        // NEU: Event für "Änderungen speichern"
+        // 3. Event für "Änderungen speichern" (PUT)
         this.saveBtn?.addEventListener('click', () => {
             this.submitData();
         });
+
+        // 4. RESET-Logik beim Klick auf den "Neues Team erstellen" Button in der EJS
+        const openBtn = document.getElementById('openCreateTeamModal');
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                this.resetModal();
+            });
+        }
     }
 
-    // HILFSFUNKTION (um Code-Wiederholung zu vermeiden)
+    // Hilfsmethode zum Leeren des Modals
+    resetModal() {
+        this.currentEditId = null;
+        this.newTeamName.value = '';
+        this.teamDropZone.innerHTML = '<p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>';
+        document.querySelector('#teamModalLabel').textContent = 'Neues Team erstellen';
+        this.createBtn.style.display = 'block';
+        if (this.saveBtn) this.saveBtn.style.display = 'none';
+        this.updateCounts();
+    }
+
     submitData() {
         const name = this.newTeamName.value.trim();
         const members = Array.from(this.teamDropZone.querySelectorAll('button[data-id]')).map(btn => ({
@@ -75,7 +75,6 @@ class TeamModal {
             return;
         }
 
-        // Schickt die Daten an die onSave-Funktion in deiner teams.ejs
         this.onSave({ name, members });
     }
 

@@ -6,6 +6,15 @@
 
 
         <div class="mb-3">
+
+             <% if (typeof error !== 'undefined' && error === 'collision') { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Achtung:</strong> Dieses Team kann nicht gelöscht werden, da es bereits mit Challenges verknüpft ist.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+
           
             <button type="button" class="btn btn-custom-safe" data-bs-toggle="modal" data-bs-target="#teamModal"
               id="openCreateTeamModal">
@@ -76,6 +85,15 @@
                         <td class="text-end">
                             <button type="button" class="btn btn-custom-details btn-sm" data-bs-toggle="modal" data-bs-target="#teamDetailModal<%= team.id %>">Details</button>
                         </td>
+                        <td>
+                           <button type="button" class="btn btn-outline-warning btn-sm delete-team-btn" 
+                data-id="<%= team.id %>" 
+                data-name="<%= team.name %>">
+            Löschen
+        </button>
+                           
+                        </td>
+                       
                     </tr>
                 <% }) %>
             <% } else { %>
@@ -86,14 +104,21 @@
         </tbody>
     </table>
 </div>
-           <!-- RICHTIG -->
-<%- include('../../partials/teamModal', { 
-  modalId: 'teamModal', 
-  schueler: schueler,
-  klassen: klassen,
-  schuljahre: schuljahre
-}) %>
+                <!-- RICHTIG -->
+        <%- include('../../partials/teamModal', { 
+        modalId: 'teamModal', 
+        schueler: schueler,
+        klassen: klassen,
+        schuljahre: schuljahre
+        }) %>
 
+        <%- include('../../partials/deleteModal', { 
+            modalId: 'deleteTeamModal', 
+            formId: 'deleteTeamForm', 
+            submitButtonId: 'confirmDeleteTeamBtn',
+            title: 'Team löschen', 
+            bodyText: 'Möchtest du dieses Team wirklich löschen? Wenn es bereits an Challenges teilgenommen hat, wird das Löschen aus Sicherheitsgründen verhindert.' 
+        }) %>
 
 
 <div id="dataContainer" 
@@ -161,6 +186,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+// 3. DIE NEUE LÖSCH-LOGIK (Die jetzt funktioniert!)
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteTeamModal'));
+    const deleteForm = document.getElementById('deleteTeamForm');
+    const confirmBtn = document.getElementById('confirmDeleteTeamBtn');
+    let teamIdToDelete = null;
+
+    document.querySelectorAll('.delete-team-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            teamIdToDelete = btn.dataset.id;
+            const teamName = btn.dataset.name;
+            document.querySelector('#deleteTeamModal .modal-body').innerText = 
+                `Möchtest du das Team "${teamName}" wirklich löschen?`;
+            deleteModal.show();
+        });
+    });
+
+    confirmBtn.addEventListener('click', function() {
+        if (!teamIdToDelete) return;
+        deleteForm.action = `/teams/${teamIdToDelete}`;
+        deleteForm.submit();
+    });
+
+
 });
 
 function prepareEditTeam(id, name, memberIdsString) {

@@ -18,7 +18,7 @@
                     </div>
                     <div class="col-md-3">
                         <select id="classFilter" class="form-select form-select-sm">
-                            <option value="">Alle Klassen</option>
+                            <option value="">Klassen</option>
                             <% [...new Set(schueler.map(s=> s.klasse_name).filter(Boolean))].sort().forEach(klasse => {
                                 %>
                                 <option value="<%= klasse %>">
@@ -30,7 +30,7 @@
 
                     <div class="col-md-3">
                         <select id="teamSchuljahrFilter" class="form-select form-select-sm">
-                            <option value="">Alle Schuljahre</option>
+                            <option value="">Schuljahre</option>
                             <% schuljahre.forEach(sj=> { %>
                                 <option value="<%= sj.id %>">
                                     <%= sj.name %>
