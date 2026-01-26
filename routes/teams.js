@@ -7,14 +7,12 @@ const { db } = require('../db'); // Direkter DB-Import
 
 router.get('/', requireAuth, requireLehrer, async (req, res) => {
     try {
-        // Diese Filter gelten NUR für die Team-Tabelle unten
         const { search, klasse, schuljahr } = req.query;
 
         const klassen = await db('klassen').orderBy('name');
         const schuljahre = await db('schuljahre').orderBy('name');
 
         // --- SCHRITT 1: SCHÜLER FÜR DAS MODAL (IMMER ALLE) ---
-        // 1. SCHÜLER FÜR DAS MODAL LADEN (Wichtig: "as klasse_name")
         const schueler = await db('users')
             .leftJoin('klassen', 'users.klasse_id', 'klassen.id')
             .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
@@ -23,38 +21,51 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
                 'users.id as id',
                 'users.vorname',
                 'users.nachname',
-                'klassen.name as klasse_name', // Hier wird der Name festgelegt!
+                'klassen.name as klasse_name',
                 'users.schuljahr_id'
             );
 
         // --- SCHRITT 2: TEAMS FÜR DIE TABELLE (FILTERBAR) ---
         let teamsQuery = db('teams')
-            .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
-            .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
             .leftJoin('schuljahre', 'teams.schuljahr_id', 'schuljahre.id');
 
-        // Nur die Teams werden durch die URL-Suche eingeschränkt
+        // DER SCHLAUE FILTER:
         if (search) {
-            teamsQuery.where(builder => {
-                builder.where('teams.name', 'like', `%${search}%`)
-                    .orWhere('users.vorname', 'like', `%${search}%`)
-                    .orWhere('users.nachname', 'like', `%${search}%`);
+            teamsQuery.where(function() {
+                // Entweder der Teamname passt...
+                this.where('teams.name', 'like', `%${search}%`)
+                // ...ODER es gibt ein Mitglied im Team, dessen Name passt
+                .orWhereExists(function() {
+                    this.select('*')
+                        .from('team_mitglieder')
+                        .join('users', 'team_mitglieder.user_id', 'users.id')
+                        .whereRaw('team_mitglieder.team_id = teams.id')
+                        .andWhere(function() {
+                            this.where('users.vorname', 'like', `%${search}%`)
+                                .orWhere('users.nachname', 'like', `%${search}%`);
+                        });
+                });
             });
         }
 
+        // Jetzt erst joinen wir die Mitglieder für die ANZEIGE (COUNT/LISTE)
+        // Dadurch zählen wir immer ALLE Mitglieder der gefundenen Teams
         const teams = await teamsQuery
+            .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
+            .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
             .select(
                 'teams.id',
                 'teams.name',
                 'schuljahre.name as schuljahr_name',
                 db.raw('COUNT(DISTINCT team_mitglieder.user_id) as mitglieder_count'),
-                db.raw("GROUP_CONCAT(DISTINCT CONCAT(users.vorname, ' ', users.nachname) SEPARATOR ', ') as mitglieder_liste")
+                db.raw("GROUP_CONCAT(DISTINCT CONCAT(users.vorname, ' ', users.nachname) SEPARATOR ', ') as mitglieder_liste"),
+                db.raw("GROUP_CONCAT(DISTINCT team_mitglieder.user_id) as mitglieder_ids")
             )
             .groupBy('teams.id', 'teams.name', 'schuljahre.name');
 
         res.render('admin/personen/teams', {
-            schueler, // <--- IMMER VOLLSTÄNDIG FÜR DEINE LOGIC.JS
-            teams,    // <--- GEFILTERT FÜR DIE TABELLE
+            schueler, 
+            teams,    
             klassen,
             schuljahre,
             searchTerm: search || '',

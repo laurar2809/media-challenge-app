@@ -58,14 +58,21 @@
                         <!-- <td><%= team.schuljahr_name || 'Nicht zugewiesen' %></td> -->
                         <td><%= team.mitglieder_count %></td>
                        <td>
-    <% if (team.mitglieder_liste) { %>
-        <span class="small text-muted">
-            <i class="bi bi-person-fill"></i> <%= team.mitglieder_liste %>
-        </span>
-    <% } else { %>
-        <span class="text-muted small">Keine Mitglieder</span>
-    <% } %>
-</td>
+                        <% if (team.mitglieder_liste) { %>
+                            <span class="small text-muted">
+                                <i class="bi bi-person-fill"></i> <%= team.mitglieder_liste %>
+                            </span>
+                        <% } else { %>
+                            <span class="text-muted small">Keine Mitglieder</span>
+                        <% } %>
+                        </td>
+                        <td>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary btn-sm" 
+                                    onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
+                                             Bearbeiten
+                            </button>
+                        </td>
                         <td class="text-end">
                             <button type="button" class="btn btn-custom-details btn-sm" data-bs-toggle="modal" data-bs-target="#teamDetailModal<%= team.id %>">Details</button>
                         </td>
@@ -109,22 +116,27 @@ document.addEventListener('DOMContentLoaded', () => {
             modalId: 'teamModal',
             schueler: schuelerData,
             onSave: async (data) => {
-                try {
-                    const response = await fetch('/teams', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        location.reload(); // Seite neu laden nach Erfolg
-                    } else {
-                        alert("Fehler beim Speichern: " + result.error);
+                // Prüfen: Haben wir eine ID? (Wird von uns gesetzt, wenn wir auf 'Bearbeiten' klicken)
+                const isUpdate = !!window.teamModalInstance.currentEditId;
+                const url = isUpdate ? `/teams/${window.teamModalInstance.currentEditId}` : '/teams';
+                const method = isUpdate ? 'PUT' : 'POST';
+
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            location.reload(); 
+                        } else {
+                            alert("Fehler: " + result.error);
+                        }
+                    } catch (err) {
+                        console.error("Speicherfehler:", err);
                     }
-                } catch (err) {
-                    console.error("Speicherfehler:", err);
                 }
-            }
         });
         console.log("Team-Modal erfolgreich initialisiert.");
     }
@@ -150,4 +162,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function prepareEditTeam(id, name, memberIdsString) {
+    if (!window.teamModalInstance) return;
+
+    // IDs umwandeln: "1,2,5" -> [1, 2, 5]
+    const memberIds = memberIdsString ? memberIdsString.split(',').map(Number) : [];
+
+    // Die echten Schüler-Objekte aus dem Speicher suchen
+    const members = window.teamModalInstance.schuelerData.filter(s => 
+        memberIds.includes(Number(s.id))
+    );
+
+    // Jetzt das Modal mit den echten Objekten füllen
+    window.teamModalInstance.editTeam({ 
+        id: id, 
+        name: name, 
+        members: members 
+    });
+}
 </script>
