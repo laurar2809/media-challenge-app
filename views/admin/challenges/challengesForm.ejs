@@ -62,24 +62,46 @@
           </div>
         </div>
 
+
+
         <h5 class="mb-3">Teams</h5>
 
-        <input type="hidden" id="existingTeamsData" value='<%= JSON.stringify(existingTeam || []) %>'>
-
-        <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <label class="form-label mb-0">Aktuelle Teams</label>
-            <button type="button" class="btn btn-custom-safe" data-bs-toggle="modal" data-bs-target="#teamModal"
+        <div class="row g-2 mb-3 align-items-end">
+          <div class="col-md-7">
+            <label class="form-label small text-muted">Bereits vorhandene Teams hinzufügen</label>
+            <select id="existingTeamSelect" class="form-select">
+              <option value="">Team auswählen...</option>
+              <% /* 'teams' muss vom Backend an die View übergeben werden */ %>
+                <% if (typeof allTeams !=='undefined' ) { %>
+                  <% allTeams.forEach(t=> { %>
+                    <option value="<%= t.id %>" data-members="<%= t.mitglieder_liste %>">
+                      <%= t.name %> (<%= t.mitglieder_count %> Mitgl.)
+                    </option>
+                    <% }) %>
+                      <% } %>
+            </select>
+          </div>
+          <div class="col-md-5 d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary w-100" id="addExistingTeamBtn">
+              <i class="bi bi-plus-lg"></i> Hinzufügen
+            </button>
+            <button type="button" class="btn btn-custom-safe w-100" data-bs-toggle="modal" data-bs-target="#teamModal"
               id="openCreateTeamModal">
-              <i class="bi bi-plus-circle me-2"></i> Neues Team erstellen
+              <i class="bi bi-people-fill"></i> + Team
             </button>
           </div>
-          <div id="teamsContainer"></div>
-          <div id="noTeamsMessage" class="border rounded bg-light p-3 text-muted align-items-center w-100">
-            <i class="bi bi-people me-2"></i>
-            Noch keine Teams verfügbar
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label mb-2">Zugeordnete Teams für diese Challenge:</label>
+          <div id="teamsContainer" class="d-flex flex-wrap gap-2 mb-2"></div>
+          <div id="noTeamsMessage" class="border rounded bg-light p-3 text-muted text-center w-100">
+            <i class="bi bi-people me-2"></i> Noch keine Teams zugewiesen
           </div>
         </div>
+
+
+
 
         <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -182,3 +204,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/js/app/challengesFormLogic.js"></script>
+
+  

@@ -377,6 +377,48 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // === 5. EVENT LISTENER ===
 
+  // === NEU: Logik für vorhandene Teams ===
+  const addExistingBtn = document.getElementById('addExistingTeamBtn');
+  const existingTeamSelect = document.getElementById('existingTeamSelect');
+
+  if (addExistingBtn && existingTeamSelect) {
+    addExistingBtn.addEventListener('click', function() {
+      const teamId = existingTeamSelect.value;
+      const teamOption = existingTeamSelect.options[existingTeamSelect.selectedIndex];
+      
+      if (!teamId) {
+        alert("Bitte wählen Sie ein Team aus der Liste aus.");
+        return;
+      }
+
+      // Check, ob das Team bereits in deiner 'teams' Liste ist
+      const isAlreadyInChallenge = teams.some(t => t.id === `existing-${teamId}`);
+      if (isAlreadyInChallenge) {
+        alert("Dieses Team wurde dieser Challenge bereits hinzugefügt.");
+        return;
+      }
+
+      // Wir bauen ein Objekt, das deine renderTeams() Funktion versteht
+      const existingTeamObj = {
+        id: `existing-${teamId}`,
+        name: teamOption.text.split(' (')[0], // Schneidet "(X Mitgl.)" weg
+        mitglieder: [] // Bleibt leer, da das Backend die Mitglieder aus der DB zieht
+      };
+
+      console.log(`Vorhandenes Team verknüpft: ${existingTeamObj.name}`);
+      
+      // In dein zentrales Array 'teams' pushen
+      teams.push(existingTeamObj);
+      
+      // Deine bestehenden Funktionen aufrufen, um die UI zu aktualisieren
+      renderTeams();
+      updateTeamsData();
+      
+      // Dropdown zurücksetzen
+      existingTeamSelect.value = '';
+    });
+  }
+  
   // Drag & Drop für Team DropZone
   teamDropZone.addEventListener('dragover', function (e) {
     e.preventDefault();
@@ -649,4 +691,8 @@ document.addEventListener('DOMContentLoaded', function () {
   // Global verfügbar für Debugging
   window.teams = teams;
   window.schuelerListe = schuelerListe;
+
+
+
+  
 });
