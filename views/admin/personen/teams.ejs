@@ -101,14 +101,17 @@
         </tbody>
     </table>
 </div>
-
-                <!-- RICHTIG -->
-        <%- include('../../partials/teamModal', { 
+                
+        <%- include('../../partials/teamModal1', { 
         modalId: 'teamModal', 
         schueler: schueler,
         klassen: klassen,
         schuljahre: schuljahre
-        }) %>
+        }) %> 
+
+        <!-- <%- include('../../partials/teamModal', { modalId: 'teamManagementModal' }) %> -->
+
+        
 
         <%- include('../../partials/deleteModal', { 
             modalId: 'deleteTeamModal', 
@@ -124,7 +127,7 @@
      style="display:none;">
 </div>
 
-<script src="/js/app/teamModalLogic.js"></script>
+<script src="/js/app/teamModalLogic1.js"></script>
 <script src="/js/app/utils/filterUtils.js"></script>
 
 <script>
