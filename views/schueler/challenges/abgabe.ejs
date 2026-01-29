@@ -7,10 +7,35 @@
     <div>
       <h2 class="h4 mb-1"><%= challenge.title %></h2>
       <div class="d-flex align-items-center gap-2 text-muted">
-        <span class="badge bg-secondary"><%= challenge.kategorie %></span>
+        <span class="badge bg-secondary"><%= challenge.kategorie %></span>|
         <span class="small">
           <i class="bi bi-people"></i> Team: <%= team.name %>
         </span>
+        <!-- HIER: Status hinzugefügt -->
+        <% 
+          const currentStatus = abgabe ? abgabe.status : 'offen'; 
+          let statusColor = 'primary'; 
+          let statusText = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1); 
+          if (currentStatus === 'eingereicht') statusColor = 'warning'; 
+          else if (currentStatus === 'bewertet') statusColor = 'success'; 
+          else if (currentStatus === 'abgelehnt') statusColor = 'danger'; 
+          else if (currentStatus === 'offen') statusText = 'Noch nicht gestartet'; 
+        %>
+        <span class="small">
+         | Status: 
+            <%= statusText %>
+        </span>
+        <% if (abgabe && abgabe.updated_at) { %>
+          <span class="small">
+            | <i class="bi bi-clock-history"></i> 
+            Zuletzt bearbeitet: <%= new Date(abgabe.updated_at).toLocaleDateString('de-DE') %>
+          </span>
+        <% } else if (abgabe && abgabe.created_at) { %>
+          <span class="small">
+            <i class="bi bi-clock-history"></i> 
+            Erstellt: <%= new Date(abgabe.created_at).toLocaleDateString('de-DE') %>
+          </span>
+        <% } %>
       </div>
     </div>
 
@@ -18,222 +43,199 @@
       <i class="bi bi-arrow-left"></i> Zurück
     </a>
   </div>
-
-  <!-- Status-Bereich -->
-  <div class="alert alert-info mb-4">
-    <% 
-      const currentStatus = abgabe ? abgabe.status : 'offen'; 
-      let statusColor = 'primary'; 
-      let statusText = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1); 
-      if (currentStatus === 'eingereicht') statusColor = 'warning'; 
-      else if (currentStatus === 'bewertet') statusColor = 'success'; 
-      else if (currentStatus === 'abgelehnt') statusColor = 'danger'; 
-      else if (currentStatus === 'offen') statusText = 'Noch nicht gestartet'; 
-    %>
-
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <strong>Status:</strong>
-        <span class="badge bg-<%= statusColor %> ms-2">
-          <%= statusText %>
-        </span>
-      </div>
-      <% if (abgabe && abgabe.updated_at) { %>
-        <small class="text-muted">
-          <i class="bi bi-clock"></i>
-          Zuletzt bearbeitet: <%= new Date(abgabe.updated_at).toLocaleDateString('de-DE') %>
-        </small>
-      <% } %>
-    </div>
-  </div>
-
+    
   <% 
     const hasFinalStatus = abgabe && (abgabe.status === 'bewertet' || abgabe.status === 'abgelehnt'); 
     const isBewertet = abgabe && abgabe.status === 'bewertet'; 
     const isAbgelehnt = abgabe && abgabe.status === 'abgelehnt'; 
   %>
 
+
   <!-- Bewertungs-/Feedback-Block -->
   <% if (hasFinalStatus) { %>
-    <% 
-      const bewertung = abgabe.bewertung; 
-      const cardClass = isBewertet ? 'border-success' : 'border-danger';
-      const bgClass = isBewertet ? 'bg-success-subtle' : 'bg-danger-subtle'; 
-    %>
+  <% 
+    const bewertung = abgabe.bewertung; 
+    const borderClass = isBewertet ? 'border-success' : 'border-danger';
+    const textClass = isBewertet ? 'text-success' : 'text-danger';
+  %>
 
-    <div class="card <%= cardClass %> mb-4 shadow-sm">
-      <div class="card-body <%= bgClass %>">
-        <h5 class="card-title <%= isBewertet ? 'text-success' : 'text-danger' %>">
-          <i class="bi <%= isBewertet ? 'bi-check-circle-fill' : 'bi-x-octagon-fill' %>"></i>
-          <%= isBewertet ? 'Abgabe bewertet!' : 'Abgabe zur Überarbeitung zurückgesandt!' %>
-        </h5>
-
-        <% if (isAbgelehnt) { %>
-          <p class="text-danger">
-            Bitte prüfen Sie das Feedback des Lehrers unten und bearbeiten Sie Ihre Abgabe erneut.
-          </p>
-          <hr>
-        <% } %>
-
-        <% if (bewertung && bewertung.feedback) { %>
-          <% if (isBewertet) { %>
-            <div class="row">
-              <div class="col-md-6 mb-2">
-                <strong>Erreichte Punkte:</strong>
-                <span class="fs-4 ms-2 text-primary"><%= bewertung.punkte %></span>
-              </div>
-              <div class="col-md-6 mb-2">
-                <strong>Bewertet am:</strong>
-                <span class="ms-2">
-                  <%= new Date(bewertung.bewertet_am).toLocaleDateString('de-DE') %>
-                </span>
-              </div>
-            </div>
-          <% } %>
-
-          <h6 class="mt-3">Feedback des Lehrers:</h6>
-          <div class="alert alert-light border <%= isAbgelehnt ? 'border-danger' : '' %>">
-            <%= bewertung.feedback %>
-          </div>
-        <% } else { %>
-          <div class="alert alert-warning">
-            Es wurde kein detaillierter Feedback-Eintrag gefunden.
-          </div>
-        <% } %>
-      </div>
-    </div>
-  <% } %>
-
-  <!-- Hauptbereich: Upload + Beschreibung + Team + Aktionen -->
   <div class="row">
-    <div class="col-lg-8">
-      <!-- Upload-Karte -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-cloud-upload"></i> Dateien hochladen
-          </h5>
-        </div>
+    <div class="col-md-10 col-lg-8 col-xl-7">
+      <div class="card <%= borderClass %> mb-4 shadow-sm">
         <div class="card-body">
-          <div class="drop-zone border rounded p-5 text-center mb-3" id="dropZone">
-            <i class="bi bi-cloud-arrow-up display-4 text-muted"></i>
-            <h5 class="mt-3">Dateien hierher ziehen</h5>
-            <p class="text-muted mb-3">oder klicken um Dateien auszuwählen</p>
-            <input type="file" id="fileInput" multiple class="d-none"
-                   accept="image/*,video/*,audio/*,.pdf">
-            <button class="btn btn-outline-primary"
-                    onclick="document.getElementById('fileInput').click(); event.stopPropagation()">
-              <i class="bi bi-folder2-open"></i> Dateien auswählen
-            </button>
-            <div class="mt-2 small text-muted">
-              Unterstützt: Bilder (JPG, PNG), Videos (MP4), Audio (MP3), PDF
-            </div>
-          </div>
-
-          <div class="upload-progress d-none mb-3">
-            <div class="progress mb-2">
-              <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
-            </div>
-            <div class="text-center small">
-              <span class="upload-status">Upload läuft...</span>
-            </div>
-          </div>
-
-          <div class="mt-4">
-            <h6 class="mb-3">
-              <i class="bi bi-images"></i> Hochgeladene Dateien
-              <span class="badge bg-secondary" id="fileCount">0</span>
-            </h6>
-            <div id="filesGrid" class="row g-2"></div>
-            <div id="noFilesMessage" class="text-center py-4 text-muted border rounded">
-              <i class="bi bi-inbox display-6"></i>
-              <p class="mt-2">Noch keine Dateien hochgeladen</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Beschreibung-Karte -->
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-chat-text"></i> Beschreibung
+          <h5 class="card-title <%= textClass %>">
+            <i class="bi <%= isBewertet ? 'bi-check-circle-fill' : 'bi-x-octagon-fill' %>"></i>
+            <%= isBewertet ? 'Abgabe bewertet!' : 'Abgabe zur Überarbeitung zurückgesandt!' %>
           </h5>
-        </div>
-        <div class="card-body">
-          <!-- <div class="mb-3">
-            <label class="form-label">Titel deiner Abgabe</label>
-            <input type="text" class="form-control" id="abgabeTitel"
-                   placeholder="z.B. 'Meine Naturfotos'"
-                   value="<%= abgabe && abgabe.titel ? abgabe.titel : '' %>">
-          </div> -->
-          <div class="mb-3">
-            <label class="form-label">Informationen zur Abgabe (Einstellungen, etc.)</label>
-            <textarea class="form-control" id="abgabeBeschreibung" rows="3"
-                      placeholder="Beschreibe deine Arbeit..."><%= abgabe && abgabe.beschreibung ? abgabe.beschreibung : '' %></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- rechte Spalte: Team + Buttons -->
-    <div class="col-lg-4">
-      <!-- Team-Karte -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-people"></i> Team
-          </h5>
-        </div>
-        <div class="card-body">
-          <strong><%= team.name %></strong>
-          <div class="mt-2">
-            <% team.mitglieder.forEach(mitglied => { %>
-              <div class="d-flex align-items-center mb-2">
-                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
-                     style="width: 28px; height: 28px; font-size: 0.8rem;">
-                  <%= mitglied.vorname.charAt(0) %>
+          <% if (bewertung && bewertung.feedback) { %>
+            <% if (isBewertet) { %>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <strong>Erreichte Punkte:</strong>
+                  <span class="fs-4 ms-2 text-primary"><%= bewertung.punkte %></span>
                 </div>
-                <div class="ms-2">
-                  <div class="small">
-                    <%= mitglied.vorname %> <%= mitglied.nachname %>
-                  </div>
-                  <% if (mitglied.klasse_name) { %>
-                    <div class="text-muted" style="font-size: 0.7rem;">
-                      <%= mitglied.klasse_name %>
-                    </div>
-                  <% } %>
+                <div class="col-md-6 mb-2">
+                  <strong>Bewertet am:</strong>
+                  <span class="ms-2">
+                    <%= new Date(bewertung.bewertet_am).toLocaleDateString('de-DE') %>
+                  </span>
                 </div>
               </div>
-            <% }) %>
-          </div>
-        </div>
-      </div>
+            <% } %>
 
-      <!-- Aktionen -->
-      <div class="card">
-        <div class="card-body">
-          <div class="d-grid gap-2">
-            <button class="btn btn-outline-primary" id="saveDraftBtn">
-              <i class="bi bi-save"></i> Entwurf speichern
-            </button>
-            <button class="btn btn-primary" id="submitBtn"
-                    <%= abgabe && abgabe.status === 'eingereicht' ? 'disabled' : '' %>>
-              <i class="bi bi-send-check"></i>
-              <%= abgabe && abgabe.status === 'eingereicht' ? 'Bereits eingereicht' : 'Abgabe einreichen' %>
-            </button>
-          </div>
-          <% if (abgabe && abgabe.status === 'eingereicht') { %>
-            <div class="alert alert-warning small mt-3 mb-0">
-              <i class="bi bi-exclamation-triangle"></i>
-              Die Abgabe wurde bereits eingereicht und kann nicht mehr bearbeitet werden.
+            <h6 class="mt-3">Feedback des Lehrers:</h6>
+            <div class="alert alert-light border">
+              <%= bewertung.feedback %>
             </div>
           <% } else { %>
-            <div class="alert alert-info small mt-3 mb-0">
+            <div class="alert alert-warning">
               <i class="bi bi-info-circle"></i>
-              Nach dem Einreichen können keine Änderungen mehr vorgenommen werden.
+              Es wurde kein detaillierter Feedback-Eintrag gefunden.
             </div>
           <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+  <!-- Hauptbereich - Alle Karten nebeneinander -->
+  <div class="row g-3">
+    <!-- Linke Spalte: Upload + Beschreibung -->
+    <div class="col-lg-8">
+      <div class="row g-3">
+        <!-- Upload-Karte ultra kompakt -->
+        <div class="col-12">
+          <div class="card shadow-sm border-0">
+            <div class="card-header text-bg-light">
+                <i class="bi bi-cloud-upload me-2"></i>Dateien hochladen
+            </div>
+            <div class="card-body p-3">
+              <!-- Kompakte Drop-Zone -->
+              <div class="border border-dashed rounded p-1 text-center mb-1" id="dropZone">
+                <div class="py-1">
+                  <i class="bi bi-cloud-arrow-up text-muted fs-4 mb-2"></i>
+                  <p class="mb-2 small">
+                    <span class="fw-medium d-block">Dateien hierher ziehen</span>
+                    <span class="text-muted">oder klicken um auszuwählen</span>
+                  </p>
+                  <input type="file" id="fileInput" multiple class="d-none"
+                         accept="image/*,video/*,audio/*,.pdf">
+                  <button class="btn btn-custom-details btn-sm"
+                          onclick="document.getElementById('fileInput').click(); event.stopPropagation()">
+                    <i class="bi bi-folder2-open me-1"></i> Dateien auswählen
+                  </button>
+                </div>
+                <div class="small text-muted mt-2">
+                  Unterstützt: JPG, PNG, MP4, MP3, PDF
+                </div>
+              </div>
+
+              <!-- Upload Progress -->
+              <div class="upload-progress d-none mb-2">
+                <div class="progress mb-1" style="height: 4px;">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated"></div>
+                </div>
+                <div class="text-center">
+                  <small class="upload-status text-muted">Upload läuft...</small>
+                </div>
+              </div>
+
+              <!-- Hochgeladene Dateien -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="mb-2 small">
+                    <i class="bi bi-images me-1"></i> Hochgeladene Dateien
+                  </h6>
+                  <span class="badge bg-secondary" id="fileCount">0</span>
+                </div>
+                <div id="filesGrid" class="row g-5"></div>
+                <div id="noFilesMessage" class="text-center py-3 text-muted">
+                  <i class="bi bi-inbox fs-5 d-block mb-2 opacity-50"></i>
+                  <p class="small mb-0">Noch keine Dateien hochgeladen</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Beschreibung Karte ultra kompakt -->
+        <div class="col-12">
+          <div class="card shadow-sm border-0">
+            <div class="card-header text-bg-light">
+                <i class="bi bi-chat-text me-2"></i>Beschreibung
+            </div>
+            <div class="card-body p-3">
+              <div class="mb-0">
+                <label class="form-label small">Informationen zur Abgabe</label>
+                <textarea class="form-control form-control-sm" id="abgabeBeschreibung" rows="2"
+                          placeholder="Beschreibe deine Arbeit..."><%= abgabe && abgabe.beschreibung ? abgabe.beschreibung : '' %></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rechte Spalte: Team + Aktionen -->
+    <div class="col-lg-4">
+      <div class="row g-3">
+        <!-- Team Karte kompakt -->
+        <div class="col-12">
+          <div class="card shadow-sm border-0">
+            <div class="card-header text-bg-light">
+                <i class="bi bi-people me-2"></i>Team
+            </div>
+            <div class="card-body p-3">
+              <strong class="d-block mb-2"><%= team.name %></strong>
+              <div class="team-members">
+                <% team.mitglieder.forEach(mitglied => { %>
+                  <div class="d-flex align-items-center mb-2">
+                    <div class="avatar-circle bg-secondary bg-opacity-10 text-dark rounded-circle d-flex align-items-center justify-content-center me-2">
+                      <span class="small fw-medium"><%= mitglied.vorname.charAt(0) %></span>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="small"><%= mitglied.vorname %> <%= mitglied.nachname %></div>
+                      <% if (mitglied.klasse_name) { %>
+                        <div class="extra-small text-muted"><%= mitglied.klasse_name %></div>
+                      <% } %>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aktionen Karte kompakt -->
+        <div class="col-12">
+          <div class="card shadow-sm border-0">
+            <div class="card-body p-3">
+              <div class="d-grid gap-2">
+                <button class="btn btn-custom-details btn-sm" id="saveDraftBtn">
+                  <i class="bi bi-save me-1"></i> Entwurf speichern
+                </button>
+                <button class="btn btn-custom-newCategorieChallenge btn-sm" id="submitBtn"
+                        <%= abgabe && abgabe.status === 'eingereicht' ? 'disabled' : '' %>>
+                  <i class="bi bi-send-check me-1"></i>
+                  <%= abgabe && abgabe.status === 'eingereicht' ? 'Bereits eingereicht' : 'Abgabe einreichen' %>
+                </button>
+              </div>
+              
+              <% if (abgabe && abgabe.status === 'eingereicht') { %>
+                <div class="alert alert-warning p-2 mt-3 mb-0 small">
+                  <i class="bi bi-exclamation-triangle me-1"></i>
+                  Bereits eingereicht, keine Bearbeitung mehr möglich.
+                </div>
+              <% } else { %>
+                <div class="alert alert-info p-2 mt-3 mb-0 small">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Nach Einreichung keine Änderungen möglich.
+                </div>
+              <% } %>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -244,7 +246,7 @@
      data-challenge-id="<%= challenge.id %>"
      data-is-submitted="<%= abgabe && abgabe.status === 'eingereicht' %>"
      data-initial-files="<%= JSON.stringify(abgabe && abgabe.medien ? abgabe.medien : []) %>"
-     style="display: none;">
+     class="d-none">
 </div>
 
 <script src="/js/app/abgabeLogic.js"></script>
