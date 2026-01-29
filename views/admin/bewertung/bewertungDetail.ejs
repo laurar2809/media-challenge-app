@@ -8,10 +8,9 @@
         <div class="d-flex align-items-center gap-2 text-muted">
           <span class="badge bg-secondary">Team: <%= abgabe.team_name %></span>
           <span class="small">
-            Abgabe-ID: <%= abgabe.id %> | Status:
-              <span class="badge bg-warning text-dark">
+             Status:
                 <%= abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1) %>
-              </span>
+
           </span>
         </div>
       </div>
@@ -19,27 +18,35 @@
         <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
       </a>
     </div>
+    
 
     <div class="row">
       <div class="col-lg-8">
-        <div class="card mb-4">
-          <div class="card-header bg-light">
+
+        <div class="card mb-3">
+        <div class="card">
+          <div class="card-header text-bg-light">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-people"></i> Teammitglieder
+            </h5>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item text-muted">
+              *Teammitgliederliste würde hier über eine weitere Abfrage eingefügt*
+            </li>
+          </ul>
+        </div>
+        </div>
+
+        
+        <div class="card ">
+          <div class="card-header text-bg-light mb-3">
             <h5 class="card-title mb-0">
               <i class="bi bi-images"></i> Hochgeladene Medien
             </h5>
           </div>
           <div class="card-body">
 
-            <% if (abgabe.beschreibung) { %>
-              <p class="text-muted small">
-                <%= abgabe.beschreibung %>
-              </p>
-              <% } else { %>
-                <p class="text-muted small">Keine Beschreibung angegeben.</p>
-                <% } %>
-
-
-                  <hr>
 
                   <div id="mediaGallery" class="row g-3">
                     <% if (medien && medien.length===0) { %>
@@ -50,7 +57,7 @@
                       <% } %>
 
                         <% medien.forEach(medium=> { %>
-                          <div class="col-sm-6 col-md-4 col-lg-3">
+                          <div class="col-sm-6 col-md-3 col-lg-3">
                             <div class="media-preview card h-100 shadow-sm">
                               <div
                                 class="media-container text-center bg-dark text-white rounded-top media-container-fixed">
@@ -82,26 +89,25 @@
                           </div>
                           <% }); %>
                   </div>
+
+                  <hr>
+                  <% if (abgabe.beschreibung) { %>
+              <p class="text-muted small">
+                <%= abgabe.beschreibung %>
+              </p>
+              <% } else { %>
+                <p class="text-muted small">Keine Beschreibung angegeben.</p>
+                <% } %>
+
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header bg-light">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-people"></i> Teammitglieder
-            </h5>
-          </div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item text-muted">
-              *Teammitgliederliste würde hier über eine weitere Abfrage eingefügt*
-            </li>
-          </ul>
-        </div>
+        
       </div>
 
       <div class="col-lg-4">
         <div class="card">
-          <div class="card-header bg-primary text-white">
+          <div class="card-header text-bg-light ">
             <h5 class="card-title mb-0">
               <i class="bi bi-check2-square"></i> Bewertung eintragen
             </h5>
@@ -125,10 +131,10 @@
               <input type="hidden" name="status" id="status-field" value="bewertet">
 
               <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-success" id="btn-bewerten">
+                <button type="submit" class="btn btn-success btn-sm" id="btn-bewerten">
                   <i class="fas fa-check"></i> Als bewertet speichern
                 </button>
-                <button type="button" class="btn btn-danger" id="btn-ablehnen">
+                <button type="button" class="btn btn-danger btn-sm" id="btn-ablehnen">
                   <i class="fas fa-times"></i> Abgabe ablehnen
                 </button>
               </div>
