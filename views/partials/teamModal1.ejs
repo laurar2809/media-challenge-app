@@ -1,0 +1,80 @@
+<div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="teamModalLabel">Neues Team erstellen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label">Team Name *</label>
+                    <input type="text" class="form-control" id="newTeamName" placeholder="Team Name eingeben...">
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control form-control-sm" id="nameFilter"
+                            placeholder="Namen suchen...">
+                    </div>
+                    <div class="col-md-3">
+                        <select id="classFilter" class="form-select form-select-sm">
+                            <option value="">Klassen</option>
+                            <% [...new Set(schueler.map(s=> s.klasse_name).filter(Boolean))].sort().forEach(klasse => {
+                                %>
+                                <option value="<%= klasse %>">
+                                    <%= klasse %>
+                                </option>
+                                <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select id="teamSchuljahrFilter" class="form-select form-select-sm">
+                            <option value="">Schuljahre</option>
+                            <% schuljahre.forEach(sj=> { %>
+                                <option value="<%= sj.id %>">
+                                    <%= sj.name %>
+                                </option>
+                                <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Verfügbare Teammitglieder</label>
+                        <div class="card">
+                            <div class="card-body p-3">
+                                <p class="small text-muted mb-3 text-center" id="filterHint">
+                                    Verwenden Sie die Suchfilter oben, um Schüler anzuzeigen
+                                </p>
+                                <div class="available-members-container border rounded p-2 bg-light scrollable-members"
+                                    id="availableMembersContainer">
+                                    <div class="d-flex flex-wrap gap-1" id="availableMembers">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Teammitglieder auswählen</label>
+                        <div class="drag-area border rounded p-3 team-drop-zone" id="teamDropZone">
+                            <p class="text-muted text-center mb-0 w-100">Schüler hierher ziehen oder klicken</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted me-auto" id="memberCount">0 Mitglieder ausgewählt</small>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+
+                <button type="button" class="btn btn-custom-safe save-team-btn" id="saveTeamBtn">
+                    <i class="bi bi-save"></i> Änderungen speichern
+                </button>
+                <button type="button" class="btn btn-custom-safe create-team-btn" id="createTeamBtn">
+                    <i class="bi bi-plus"></i> Team erstellen
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
