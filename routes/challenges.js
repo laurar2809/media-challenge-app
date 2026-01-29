@@ -205,10 +205,15 @@ router.get('/new', requireAuth, requireLehrer, async (req, res) => {
 
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
-    // --- NEU: Alle vorhandenen Teams für das Dropdown laden ---
+    // In routes/challenges.js bei router.get('/new') und router.get('/:id/edit')
     const allTeams = await db('teams')
-      .select('*')
-      .orderBy('name', 'asc');
+      .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
+      .select('teams.id', 'teams.name')
+      // Zieht alle IDs der Mitglieder in einen kommaseparierten String zusammen
+      .select(db.raw('GROUP_CONCAT(team_mitglieder.user_id) as mitglieder_ids'))
+      .groupBy('teams.id')
+      .orderBy('teams.name', 'asc');
+
 
     res.render('admin/challenges/challengesForm', {
       item: {},
@@ -231,30 +236,28 @@ router.get('/new', requireAuth, requireLehrer, async (req, res) => {
 });
 
 
-// Challenge speichern - OHNE beschreibung
+// Challenge speichern - KORRIGIERTE VERSION
 router.post('/', requireAuth, requireLehrer, async (req, res) => {
   try {
     const { aufgabenpaket_id, teams_data, zusatzinfos, abgabedatum, schuljahr_id } = req.body;
 
-    // Validierung
+    // 1. Validierung
     if (!aufgabenpaket_id || !teams_data || !schuljahr_id) {
       req.flash('error', 'Aufgabenpaket, Teams und Schuljahr sind erforderlich.');
       return res.redirect('/challenges/new');
     }
 
+    // 2. JSON-Daten parsen
     let teams;
     try {
       teams = JSON.parse(teams_data);
     } catch (e) {
+      console.error('JSON Parse Fehler:', e);
       req.flash('error', 'Ungültige Team-Daten.');
       return res.redirect('/challenges/new');
     }
 
-    if (!Array.isArray(teams) || teams.length === 0) {
-      req.flash('error', 'Mindestens ein Team ist erforderlich.');
-      return res.redirect('/challenges/new');
-    }
-
+    // 3. Aufgabenpaket als Vorlage laden
     const aufgabenpaket = await db('aufgabenpakete').where({ id: aufgabenpaket_id }).first();
     if (!aufgabenpaket) {
       req.flash('error', 'Ausgewähltes Aufgabenpaket nicht gefunden.');
@@ -266,47 +269,73 @@ router.post('/', requireAuth, requireLehrer, async (req, res) => {
       for (const teamData of teams) {
         let teamId;
 
-        // PRÜFUNG: Ist es ein bestehendes Team?
-        if (teamData.id && !isNaN(teamData.id)) {
-          // Es ist ein bestehendes Team, wir nutzen einfach die ID
-          teamId = teamData.id;
-        } else {
-          // Es ist ein NEUES Team -> In DB anlegen
-          const [newId] = await trx('teams').insert({ name: teamData.name });
+        // DEBUG: Was kommt hier an?
+        console.log("--- Verarbeite Team-Daten ---");
+        console.log("ID vom Frontend:", teamData.id);
+        console.log("Typ von ID:", typeof teamData.id);
+        console.log("Name:", teamData.name);
+
+        // Der ultimative Check:
+        const isExisting = teamData.id && String(teamData.id).includes('existing-');
+        console.log("Wird als 'existing' erkannt?", isExisting);
+
+        if (isExisting) {
+          teamId = String(teamData.id).replace('existing-', '');
+          console.log("Extrahierte Team-ID für DB:", teamId);
+          // HIER DARF KEIN INSERT STEHEN
+        }
+        else {
+          console.log("WIRD NEU ANGELEGT!");
+          const [newId] = await trx('teams').insert({
+            name: teamData.name,
+            created_at: db.fn.now(),
+            updated_at: db.fn.now()
+          });
           teamId = newId;
 
-          const teamMitglieder = teamData.mitglieder.map((m, i) => ({
+          const teamMitglieder = (teamData.members || []).map((m, i) => ({
             team_id: teamId,
             user_id: m.id,
             rolle: i === 0 ? 'teamleiter' : 'mitglied'
           }));
-          await trx('team_mitglieder').insert(teamMitglieder);
+
+          if (teamMitglieder.length > 0) {
+            await trx('team_mitglieder').insert(teamMitglieder);
+          }
         }
 
-        // Challenge erstellen (verknüpft mit teamId)
+
+        // Challenge erstellen (für JEDES Team eine, aber mit der richtigen teamId)
         await trx('challenges').insert({
-          // ... restliche Felder ...
+          aufgabenpaket_id,
           team_id: teamId,
-          aufgabenpaket_id: aufgabenpaket_id,
-          schuljahr_id: schuljahr_id
+          schuljahr_id,
+          zusatzinfos,
+          abgabedatum,
+          title: aufgabenpaket.title,
+          beschreibung: aufgabenpaket.description,
+          kategorie: aufgabenpaket.kategorie,
+          icon: aufgabenpaket.icon,
+          created_at: db.fn.now(),
+          updated_at: db.fn.now()
         });
       }
+
       await trx.commit();
+      req.flash('success', `${teams.length} Challenge(s) erfolgreich erstellt.`);
       res.redirect('/challenges');
     } catch (error) {
-      // Bei Fehler - Rollbackö
       await trx.rollback();
-      console.error(' Datenbank-Fehler:', error);
-      req.flash('error', 'Datenbank-Fehler: ' + error.message);
-      res.redirect('/challenges/new');
+      throw error; // Springt in den äußeren catch-Block
     }
 
   } catch (error) {
-    console.error(' Allgemeiner Fehler:', error);
+    console.error('Datenbank-Fehler beim Erstellen der Challenge:', error);
     req.flash('error', 'Fehler beim Erstellen: ' + error.message);
     res.redirect('/challenges/new');
   }
 });
+
 
 // Challenge Detailansicht
 router.get('/detail/:id', async (req, res) => {

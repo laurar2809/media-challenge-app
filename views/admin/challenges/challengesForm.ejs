@@ -1,18 +1,18 @@
 <% pageTitle=title %>
 
 
-<style>
+  <style>
     /* Verhindert, dass Bootstrap die Seite jemals komplett einfriert */
     body.modal-open {
-        overflow-y: auto !important;
-        padding-right: 0 !important;
+      overflow-y: auto !important;
+      padding-right: 0 !important;
     }
 
     body {
-        /* Stellt sicher, dass die Scrollbar immer Platz hat und nicht springt */
-        overflow-y: scroll !important;
+      /* Stellt sicher, dass die Scrollbar immer Platz hat und nicht springt */
+      overflow-y: scroll !important;
     }
-</style>
+  </style>
 
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -86,14 +86,11 @@
             <label class="form-label small text-muted">Bereits vorhandene Teams hinzufügen</label>
             <select id="existingTeamSelect" class="form-select">
               <option value="">Team auswählen...</option>
-              <% /* 'teams' muss vom Backend an die View übergeben werden */ %>
-                <% if (typeof allTeams !=='undefined' ) { %>
-                  <% allTeams.forEach(t=> { %>
-                    <option value="<%= t.id %>" data-members="<%= t.mitglieder_liste %>">
-                      <%= t.name %> (<%= t.mitglieder_count %> Mitgl.)
-                    </option>
-                    <% }) %>
-                      <% } %>
+              <% allTeams.forEach(t=> { %>
+                <option value="<%= t.id %>" data-name="<%= t.name %>" data-members="<%= t.mitglieder_ids %>">
+                  <%= t.name %>
+                </option>
+                <% }) %>
             </select>
           </div>
           <div class="col-md-5 d-flex gap-2">
