@@ -1,229 +1,110 @@
 <% pageTitle="Team Übersicht" %>
 
-    <div id="schuelerDataContainer" class="d-none" data-schueler='<%= JSON.stringify(schueler) %>'></div>
+<style>
+    /* Die Lebensversicherung: Scrollen immer erlauben und Starre verhindern */
+    body.modal-open {
+        overflow-y: auto !important;
+        padding-right: 0 !important;
+    }
+    body {
+        overflow-y: scroll !important;
+    }
+    .cursor-pointer { cursor: pointer; }
+</style>
 
+<div id="schuelerDataContainer" class="d-none" data-schueler='<%= JSON.stringify(schueler) %>'></div>
 
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h4 mb-0">Alle Teams</h1>
-       <button type="button" 
-        id="openCreateTeamModal" 
-        data-bs-toggle="modal" 
-        data-bs-target="#teamModal" 
-        class="btn btn-custom-safe w-100"
-        onclick="window.teamModalInstance.prepareCreate()">
-    <i class="bi bi-people-fill"></i> + Team
-</button>
-    </div>
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 mb-0">Alle Teams</h1>
+    <button type="button" 
+            id="openCreateTeamModal" 
+            class="btn btn-custom-safe w-100"
+            onclick="window.teamModalInstance.prepareCreate()">
+        <i class="bi bi-people-fill"></i> + Team
+    </button>
+</div>
 
-    <div class="mb-3">
-
-        <% if (typeof error !=='undefined' && error==='collision' ) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Achtung:</strong> Dieses Team kann nicht gelöscht werden, da es bereits mit Challenges verknüpft
-                ist.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <% } %>
-
-    </div>
-
-
-    <!-- FILTER EINBINDEN -->
-    <%- include('../../partials/filter_search', { showKlasse: false, showSchuljahr: false, showSearch: true, //
-        klasseSelectId: 'teamKlasseFilter' , // schuljahrSelectId: 'teamSchuljahrFilter' ,
-        searchInputId: 'teamSearchInput' , searchContainerId: 'teamSearchContainer' , // activeKlasse: activeKlasse
-        || 'alle' , // activeSchuljahr: activeSchuljahr || 'alle' , searchTerm: searchTerm || '' , // klassen: klassen
-        || [], // schuljahre: schuljahre || [] }) %>
-
-
-        <div class="table-responsive">
-            <table class="table table-hover table align-middle m-0 table-light">
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col">Team Name</th>
-                        <th scope="col">Team ID</th>
-                        <th scope="col">Mitglieder (Anzahl)</th>
-                        <th scope="col">Mitglieder Details</th>
-                        <th scope="col" class="text-end">Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (teams && teams.length> 0) { %>
-                        <% teams.forEach(team=> { %>
-                            <tr>
-                                <td class="fw-medium">
-                                    <i class="bi bi-people me-1"></i>
-                                    <%= team.name %>
-                                </td>
-                                <td class="text-muted small">
-                                    <%= team.id %>
-                                </td>
-                                <td>
-                                    <%= team.mitglieder_count %>
-                                </td>
-                                <td>
-                                    <% if (team.mitglieder_liste) { %>
-                                        <span class="small text-muted">
-                                            <i class="bi bi-person-fill"></i>
-                                            <%= team.mitglieder_liste %>
-                                        </span>
-                                        <% } else { %>
-                                            <span class="text-muted small">Keine Mitglieder</span>
-                                            <% } %>
-                                </td>
-                                <!-- EINE SPALTE für ALLE Buttons -->
-                                <td class="text-end">
-                                    <div class="d-flex gap-1 justify-content-end">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm "
-                                            onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
-                                            Bearbeiten
-                                        </button>
-                                        <button type="button" class="btn btn-custom-details btn-sm "
-                                            data-bs-toggle="modal" data-bs-target="#teamDetailModal<%= team.id %>">
-                                            Details
-                                        </button>
-                                        <button type="button" class="btn btn-custom-delete btn-sm  delete-team-btn"
-                                            data-id="<%= team.id %>" data-name="<%= team.name %>">
-                                            Löschen
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <% }) %>
-                                <% } else { %>
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted">Keine Teams gefunden.</td>
-                                    </tr>
-                                    <% } %>
-                </tbody>
-            </table>
+<div class="mb-3">
+    <% if (typeof error !=='undefined' && error==='collision' ) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Achtung:</strong> Dieses Team kann nicht gelöscht werden, da es bereits mit Challenges verknüpft ist.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    <% } %>
+</div>
 
-        <%- include('../../partials/teamModal', { modalId: 'teamModal' , schueler: schueler, klassen: klassen,
-            schuljahre: schuljahre }) %>
+<%- include('../../partials/filter_search', { 
+    showKlasse: false, 
+    showSchuljahr: false, 
+    showSearch: true,
+    klasseSelectId: 'teamKlasseFilter',
+    searchInputId: 'teamSearchInput', 
+    searchContainerId: 'teamSearchContainer'
+}) %>
 
-            <!-- <%- include('../../partials/teamModal', { modalId: 'teamManagementModal' }) %> -->
+<div class="table-responsive">
+    <table class="table table-hover table align-middle m-0 table-light">
+        <thead class="table-light">
+            <tr>
+                <th scope="col">Team Name</th>
+                <th scope="col">Team ID</th>
+                <th scope="col">Mitglieder (Anzahl)</th>
+                <th scope="col">Mitglieder Details</th>
+                <th scope="col" class="text-end">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (teams && teams.length > 0) { %>
+                <% teams.forEach(team => { %>
+                    <tr>
+                        <td class="fw-medium">
+                            <i class="bi bi-people me-1"></i> <%= team.name %>
+                        </td>
+                        <td class="text-muted small"><%= team.id %></td>
+                        <td><%= team.mitglieder_count %></td>
+                        <td>
+                            <% if (team.mitglieder_liste) { %>
+                                <span class="small text-muted">
+                                    <i class="bi bi-person-fill"></i> <%= team.mitglieder_liste %>
+                                </span>
+                            <% } else { %>
+                                <span class="text-muted small">Keine Mitglieder</span>
+                            <% } %>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
+                                    Bearbeiten
+                                </button>
+                                <button type="button" class="btn btn-custom-delete btn-sm delete-team-btn"
+                                    data-id="<%= team.id %>" data-name="<%= team.name %>">
+                                    Löschen
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">Keine Teams gefunden.</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
 
+<%- include('../../partials/teamModal', { modalId: 'teamModal', schueler: schueler, klassen: klassen, schuljahre: schuljahre }) %>
 
+<%- include('../../partials/deleteModal', { 
+    modalId: 'deleteTeamModal', 
+    formId: 'deleteTeamForm',
+    submitButtonId: 'confirmDeleteTeamBtn', 
+    title: 'Team löschen',
+    bodyText: 'Möchtest du dieses Team wirklich löschen?'
+}) %>
 
-            <%- include('../../partials/deleteModal', { modalId: 'deleteTeamModal' , formId: 'deleteTeamForm' ,
-                submitButtonId: 'confirmDeleteTeamBtn' , title: 'Team löschen' ,
-                bodyText: 'Möchtest du dieses Team wirklich löschen? Wenn es bereits an Challenges teilgenommen hat, wird das Löschen aus Sicherheitsgründen verhindert.'
-                }) %>
+<script src="/js/app/teamModalLogic.js"></script>
+<script src="/js/app/teamsLogic.js"></script>
+<script src="/js/app/utils/filterUtils.js"></script>
 
-
-                <div id="dataContainer" data-schueler='<%- JSON.stringify(schueler) %>' style="display:none;">
-                </div>
-
-
-                <div id="team-app-config" data-schueler='<%- JSON.stringify(schueler) %>'
-                    data-modal-id="teamManagementModal">
-                </div>
-
-
-                <script src="/js/app/teamModalLogic.js"></script>
-                <script src="/js/app/teamsModal.js"></script>
-                <script src="/js/app/utils/filterUtils.js"></script>
-
-                <!-- <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. TEAM MODAL LOGIK STARTEN (Das hat gefehlt!)
-    const dataContainer = document.getElementById('dataContainer');
-    if (dataContainer) {
-        const schuelerData = JSON.parse(dataContainer.dataset.schueler || '[]');
-        
-        // Hier "starten" wir die Klasse
-        window.teamModalInstance = new TeamModal({
-            modalId: 'teamModal',
-            schueler: schuelerData,
-            onSave: async (data) => {
-                // Prüfen: Haben wir eine ID? (Wird von uns gesetzt, wenn wir auf 'Bearbeiten' klicken)
-                const isUpdate = !!window.teamModalInstance.currentEditId;
-                const url = isUpdate ? `/teams/${window.teamModalInstance.currentEditId}` : '/teams';
-                const method = isUpdate ? 'PUT' : 'POST';
-
-                    try {
-                        const response = await fetch(url, {
-                            method: method,
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(data)
-                        });
-                        const result = await response.json();
-                        if (result.success) {
-                            location.reload(); 
-                        } else {
-                            alert("Fehler: " + result.error);
-                        }
-                    } catch (err) {
-                        console.error("Speicherfehler:", err);
-                    }
-                }
-        });
-        console.log("Team-Modal erfolgreich initialisiert.");
-    }
-
-    // 2. SERVER-SUCHE LOGIK (Deine bestehende Suche für die Tabelle)
-    const searchInput = document.getElementById('teamSearchInput');
-    if (searchInput && searchInput.value.length > 0) {
-        searchInput.focus();
-        const val = searchInput.value;
-        searchInput.value = '';
-        searchInput.value = val;
-    }
-
-    if (searchInput && window.FilterUtils) {
-        window.FilterUtils.initSearchWithBadge({
-            input: searchInput,
-            onChange: (query) => {
-                const url = new URL(window.location.href);
-                if (query) url.searchParams.set('search', query);
-                else url.searchParams.delete('search');
-                window.location.href = url.toString();
-            }
-        });
-    }
-
-// 3. DIE NEUE LÖSCH-LOGIK (Die jetzt funktioniert!)
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteTeamModal'));
-    const deleteForm = document.getElementById('deleteTeamForm');
-    const confirmBtn = document.getElementById('confirmDeleteTeamBtn');
-    let teamIdToDelete = null;
-
-    document.querySelectorAll('.delete-team-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            teamIdToDelete = btn.dataset.id;
-            const teamName = btn.dataset.name;
-            document.querySelector('#deleteTeamModal .modal-body').innerText = 
-                `Möchtest du das Team "${teamName}" wirklich löschen?`;
-            deleteModal.show();
-        });
-    });
-
-    confirmBtn.addEventListener('click', function() {
-        if (!teamIdToDelete) return;
-        deleteForm.action = `/teams/${teamIdToDelete}`;
-        deleteForm.submit();
-    });
-
-
-});
-
-function prepareEditTeam(id, name, memberIdsString) {
-    if (!window.teamModalInstance) return;
-
-    // IDs umwandeln: "1,2,5" -> [1, 2, 5]
-    const memberIds = memberIdsString ? memberIdsString.split(',').map(Number) : [];
-
-    // Die echten Schüler-Objekte aus dem Speicher suchen
-    const members = window.teamModalInstance.schuelerData.filter(s => 
-        memberIds.includes(Number(s.id))
-    );
-
-    // Jetzt das Modal mit den echten Objekten füllen
-    window.teamModalInstance.editTeam({ 
-        id: id, 
-        name: name, 
-        members: members 
-    });
-}
-</script> -->

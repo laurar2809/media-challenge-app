@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const schuelerData = JSON.parse(container.dataset.schueler || '[]');
 
-    // Modal initialisieren
+    // 1. Modal initialisieren (WICHTIG: ID prüfen, meistens 'teamModal')
     window.teamModalInstance = new TeamModal({
-        modalId: 'teamManagementModal',
+        modalId: 'teamModal', 
         schueler: schuelerData,
         onSave: async (data) => {
             const isUpdate = !!window.teamModalInstance.currentEditId;
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Dropdown für Klassenfilter im Modal befüllen
+    // 2. Klassenfilter im Modal befüllen
     const classSelect = document.getElementById('classFilter');
     if (classSelect) {
         const klassen = [...new Set(schuelerData.map(s => s.klasse_name))].sort();
@@ -42,9 +42,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 3. Lösch-Logik für die Tabelle
+    const deleteModalEl = document.getElementById('deleteTeamModal');
+    if (deleteModalEl) {
+        const deleteModal = new bootstrap.Modal(deleteModalEl);
+        let teamIdToDelete = null;
+
+        document.querySelectorAll('.delete-team-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                teamIdToDelete = btn.dataset.id;
+                const teamName = btn.dataset.name;
+                const body = deleteModalEl.querySelector('.modal-body');
+                if (body) body.innerText = `Möchtest du das Team "${teamName}" wirklich löschen?`;
+                deleteModal.show();
+            });
+        });
+
+        document.getElementById('confirmDeleteTeamBtn')?.addEventListener('click', () => {
+            if (!teamIdToDelete) return;
+            const form = document.getElementById('deleteTeamForm');
+            form.action = `/teams/${teamIdToDelete}?_method=DELETE`;
+            form.submit();
+        });
+    }
 });
 
 // Global für den "Bearbeiten" Button in der EJS Tabelle
 window.prepareEditTeam = (id, name, memberIdsString) => {
-    window.teamModalInstance.prepareEdit({ id, name, mitglieder_ids: memberIdsString });
+    if (window.teamModalInstance) {
+        window.teamModalInstance.prepareEdit({ id, name, mitglieder_ids: memberIdsString });
+    }
 };
