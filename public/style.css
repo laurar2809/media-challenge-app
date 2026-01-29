@@ -183,23 +183,6 @@ table td, table th {
 ==================================================================================*/
 
 /*--------------------------------------
-  Basis-Button
---------------------------------------*/
-.btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  text-align: center;
-}
-
-/*--------------------------------------
   Detail-, Edit-, Delete-Buttons
 --------------------------------------*/
 .btn-custom-details {
@@ -253,13 +236,6 @@ table td, table th {
   border: none;
   text-decoration: none;
   transition: background-color 0.2s ease;
-}
-
-.btn-custom-newCategorieChallenge:hover,
-.btn-custom-safe {
-  background-color: #0082ba;
-  border-color: #0082ba;
-  color: #f5f5f5; /* leicht gräulich statt reinweiß */
 }
 
 .btn-custom-newCategorieChallenge:hover,
@@ -669,3 +645,73 @@ input.form-control:focus {
   height: 100%;
   object-fit: cover;
 }
+
+
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.60rem;
+  font-size: 0.80rem;
+  font-weight: 500;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Status-Farben */
+.status-eingereicht {
+  background: linear-gradient(135deg, #ffb24db4, #ffb24d7c);
+  color: #fff;
+  animation: pulse 1.8s infinite;
+}
+
+.status-bewertet {
+  background: linear-gradient(135deg, #1987547e, #2fb38052);
+  color: #fff;
+}
+
+.status-abgelehnt {
+  background: linear-gradient(135deg, #fb040885, #fc040430);
+  color: #fff;
+}
+
+.status-entwurf {
+  background: linear-gradient(135deg, #585858a2, #7d7d7d5d);
+  color: #ffffff;
+}
+
+.status-offen {
+  background: linear-gradient(135deg, #585858a2, #7d7d7d5d);
+  color: #ffffff;
+}
+
+/* Hover */
+.status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+#btn-bewerten{
+  background-color: #198754b0;
+  border: none;
+  color: white;
+}
+
+#btn-ablehnen{
+  background-color: #fb040885;
+  border: none;
+}
+
+#btn-bewerten:hover {
+  background-color: #198754cd;
+  color: #f5f5f5; 
+}
+
+#btn-ablehnen:hover {
+  background-color: #fb040899;
+  color: #f5f5f5; 
+}
+
+

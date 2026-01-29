@@ -2,46 +2,42 @@
 
 <div class="d-flex align-items-center justify-content-between mb-4">
   <h2 class="h4 m-0">Abgaben und Challenge-Status</h2>
-  <span class="badge bg-info text-dark">
-    Challenges: <%= abgaben.length %>
-  </span>
 </div>
 
-<!-- Filter und Suchfunktion - Partial -->
+<!-- Filter & Suche -->
 <%- include('../../partials/filter_search', {
   showSchuljahr: false,
   showKategorie: false,
   showSearch: true,
   showStatus: true,
 
-  // Status
   statusOptions,
   activeStatus,
   statusFilterId: 'statusFilter',
 
-  // Suche
   searchContainerId: 'searchContainer',
   searchInputId: 'bewertungSearch',
   searchTerm
 }) %>
 
 <div class="table-responsive">
-  <table class="table table-hover table align-middle m-0 table-light">
+  <table class="table table-hover align-middle table-light">
     <thead class="table-light">
       <tr>
-        <th scope="col"># Challenge ID</th>
-        <th scope="col">Challenge</th>
-        <th scope="col">Team</th>
-        <th scope="col">Status</th>
-        <th scope="col">Eingereicht am</th>
-        <th scope="col" class="text-end min-width-actions">Aktionen</th>
+        <th># Challenge ID</th>
+        <th>Challenges (<%= abgaben.length %>)</th>
+        <th>Team</th>
+        <th>Status</th>
+        <th>Eingereicht am</th>
+        <th class="text-end min-width-actions">Aktionen</th>
       </tr>
     </thead>
     <tbody>
+
       <% if (abgaben.length === 0) { %>
         <tr>
           <td colspan="6" class="text-center py-4 text-muted">
-            Keine Challenges gefunden (Filter leert).
+            Keine Challenges gefunden.
           </td>
         </tr>
       <% } %>
@@ -49,33 +45,37 @@
       <% abgaben.forEach(abgabe => { %>
         <tr>
           <td class="text-muted small"><%= abgabe.challenge_id %></td>
-          <td class="fw-medium">
-            <%= abgabe.challenge_title %>
-          </td>
-          <td>
-            <%= abgabe.team_name %>
-          </td>
+
+          <td class="fw-medium"><%= abgabe.challenge_title %></td>
+
+          <td><%= abgabe.team_name %></td>
+
+          <!-- STATUS -->
           <td>
             <%
-              let statusClass = 'secondary';
-              let statusText = abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1);
-
-              if (abgabe.status === 'eingereicht') {
-                statusClass = 'danger'; // Rot für "Zur Bewertung"
-                statusText = 'Zur Bewertung';
-              }
-              if (abgabe.status === 'bewertet') statusClass = 'success';
-              if (abgabe.status === 'abgelehnt') statusClass = 'dark';
-              if (abgabe.status === 'entwurf') statusClass = 'warning text-dark';
-              if (abgabe.status === 'offen') { // NEU: Wenn noch keine Abgabe erstellt
-                statusClass = 'info text-dark';
-                statusText = 'Nicht abgegeben';
-              }
+              let statusText = abgabe.status;
+              if (abgabe.status === 'eingereicht') statusText = 'Zur Bewertung';
+              if (abgabe.status === 'offen') statusText = 'Nicht abgegeben';
             %>
-            <span class="badge bg-<%= statusClass %>">
+
+            <span class="status-badge status-<%= abgabe.status %>">
+              <% if (abgabe.status === 'eingereicht') { %>
+                <i class="bi bi-star me-1"></i>
+              <% } else if (abgabe.status === 'bewertet') { %>
+                <i class="bi bi-check-circle me-1"></i>
+              <% } else if (abgabe.status === 'abgelehnt') { %>
+                <i class="bi bi-x-circle me-1"></i>
+              <% } else if (abgabe.status === 'entwurf') { %>
+                <i class="bi bi-pencil me-1"></i>
+              <% } else if (abgabe.status === 'offen') { %>
+                <i class="bi bi-hourglass-split me-1"></i>
+              <% } %>
+
               <%= statusText %>
             </span>
           </td>
+
+          <!-- DATUM -->
           <td>
             <% if (abgabe.created_at) { %>
               <%= new Date(abgabe.created_at).toLocaleDateString('de-DE') %>
@@ -83,9 +83,11 @@
               -
             <% } %>
           </td>
+
+          <!-- AKTIONEN -->
           <td class="text-end">
             <% if (abgabe.id) { %>
-              <a href="/bewertung/<%= abgabe.id %>" class="btn btn-sm btn-custom-edit">
+              <a href="/bewertung/<%= abgabe.id %>" class="btn btn-outline-secondary btn-sm">
                 <% if (abgabe.status === 'bewertet') { %>
                   Bewertung ansehen
                 <% } else { %>
@@ -97,7 +99,8 @@
             <% } %>
           </td>
         </tr>
-      <% }); %>
+      <% }) %>
+
     </tbody>
   </table>
 </div>
