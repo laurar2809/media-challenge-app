@@ -26,7 +26,7 @@
 
   <!-- Beispieldateien -->
   <div class="card mb-3">
-    <div class="card-header">
+    <div class="card-header text-bg-light">
       <h5 class="mb-0"><i class="bi bi-images"></i> Beispieldateien</h5>
     </div>
     <div class="card-body">
@@ -47,8 +47,10 @@
 
   <!-- Aufgabenbeschreibung + Zusatzinfos -->
   <div class="card mb-3">
-    <div class="card-body">
+    <div class="card-header text-bg-light">
       <h5>Aufgabenbeschreibung</h5>
+    </div>
+    <div class="card-body">
       <p><%= challenge.aufgabenpaket_description || challenge.beschreibung %></p>
 
       <% if (challenge.zusatzinfos) { %>
@@ -71,7 +73,7 @@
 
   <!-- Team-Informationen -->
   <div class="card mb-3">
-    <div class="card-header">
+    <div class="card-header text-bg-light">
       <h5 class="mb-0"><i class="bi bi-people"></i> Team</h5>
     </div>
     <div class="card-body">
@@ -99,7 +101,7 @@
   <!-- Button Abgabe einreichen -->
   <div class="d-flex justify-content-end">
     <a href="/challenges/<%= challenge.id %>/abgabe?returnTo=<%= encodeURIComponent(returnTo) %>"
-       class="btn btn-primary">
+       class="btn btn-custom-newCategorieChallenge">
       Abgabe einreichen
     </a>
   </div>

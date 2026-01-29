@@ -259,6 +259,48 @@ table td, table th {
   color: #fff;
 }
 
+/*--------------------------------------
+  Bewerten/Ablehnen Button
+--------------------------------------*/
+
+#btn-bewerten{
+  background-color: #198754b0;
+  border: none;
+  color: white;
+}
+
+#btn-ablehnen{
+  background-color: #fb040885;
+  border: none;
+}
+
+#btn-bewerten:hover {
+  background-color: #198754cd;
+  color: #f5f5f5; 
+}
+
+#btn-ablehnen:hover {
+  background-color: #fb040899;
+  color: #f5f5f5; 
+}
+
+/*--------------------------------------
+  Burger Menü Button
+--------------------------------------*/
+.navbar-toggler {
+  border-color: white;
+}
+
+.navbar-toggler:focus,
+.navbar-toggler:active {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.bi-list{
+  color: white;
+}
+
 /*==================================================================================
   DROPDOWNS UND FILTER
 ==================================================================================*/
@@ -646,8 +688,9 @@ input.form-control:focus {
   object-fit: cover;
 }
 
-
-
+/*--------------------------------------
+  Status Badges
+--------------------------------------*/
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -691,27 +734,3 @@ input.form-control:focus {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-
-
-#btn-bewerten{
-  background-color: #198754b0;
-  border: none;
-  color: white;
-}
-
-#btn-ablehnen{
-  background-color: #fb040885;
-  border: none;
-}
-
-#btn-bewerten:hover {
-  background-color: #198754cd;
-  color: #f5f5f5; 
-}
-
-#btn-ablehnen:hover {
-  background-color: #fb040899;
-  color: #f5f5f5; 
-}
-
-

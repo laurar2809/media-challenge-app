@@ -1,72 +1,76 @@
-<nav class="navbar main-navbar">
-  <div class="container d-flex align-items-center">
-
+<nav class="navbar navbar-expand-lg main-navbar">
+  <div class="container">
     <!-- LINKS: Brand -->
     <a class="navbar-brand d-flex align-items-center me-4" href="/">
       <span class="brand-text">Multimedia Challenge</span>
     </a>
 
-    <!-- LINKS daneben: Navigation -->
-    <ul class="navbar-nav d-flex flex-row gap-3">
+    <!-- HAMBURGER BUTTON HINZUFÜGEN -->
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
+            aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="bi bi-list"></i>
+    </button>
 
-  <% if (currentUser && currentUser.user_role_id !== 1) { %>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>" href="/">Kategorien</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>" href="/aufgabenpakete">
-        Aufgabenpakete
-      </a>
-    </li>
-  <% } %>
+    <!-- NAVIGATION (jetzt als Collapse) -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <!-- LINKS daneben: Navigation -->
+      <ul class="navbar-nav me-auto d-flex flex-row gap-3">
+        <% if (currentUser && currentUser.user_role_id !== 1) { %>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>" href="/">Kategorien</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'aufgabenpakete' ? 'active' : '' %>" href="/aufgabenpakete">
+              Aufgabenpakete
+            </a>
+          </li>
+        <% } %>
 
-  <li class="nav-item">
-    <a class="nav-link <%= activePage === 'challenges' ? 'active' : '' %>" href="/challenges">
-      Challenges
-    </a>
-  </li>
+        <li class="nav-item">
+          <a class="nav-link <%= activePage === 'challenges' ? 'active' : '' %>" href="/challenges">
+            Challenges
+          </a>
+        </li>
 
-  <% if (currentUser && currentUser.user_role_id == 1) { %>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'schueler-abgaben' ? 'active' : '' %>"
-         href="/schueler/abgaben">
-        Abgaben
-      </a>
-    </li>
-  <% } %>
+        <% if (currentUser && currentUser.user_role_id == 1) { %>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'schueler-abgaben' ? 'active' : '' %>"
+               href="/schueler/abgaben">
+              Abgaben
+            </a>
+          </li>
+        <% } %>
 
-  <% if (currentUser && currentUser.user_role_id !== 1) { %>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'schueler' ? 'active' : '' %>" href="/schueler">Schüler</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'lehrer' ? 'active' : '' %>" href="/lehrer">Lehrer</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'teams' ? 'active' : '' %>" href="/teams">Teams</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link <%= activePage === 'bewertung' ? 'active' : '' %>" href="/bewertung">
-        Abgaben
-      </a>
-    </li>
-  <% } %>
+        <% if (currentUser && currentUser.user_role_id !== 1) { %>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'schueler' ? 'active' : '' %>" href="/schueler">Schüler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'lehrer' ? 'active' : '' %>" href="/lehrer">Lehrer</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'teams' ? 'active' : '' %>" href="/teams">Teams</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <%= activePage === 'bewertung' ? 'active' : '' %>" href="/bewertung">
+              Abgaben
+            </a>
+          </li>
+        <% } %>
+      </ul>
 
-</ul>
-
-
-    <!-- RECHTS: User-Bereich -->
-    <div class="navbar-user-area ms-auto d-flex align-items-center gap-3">
-      <% if (currentUser) { %>
-        <span class="navbar-text">
-          <i class="bi bi-person px-1"></i>
-          <%= currentUser.vorname %> <%= currentUser.nachname %>
-        </span>
-        <form action="/auth/logout" method="POST">
-          <button class="btn btn-link btn-sm">Logout<i class="bi bi-box-arrow-right px-2"></i></button>
-        </form>
-      <% } %>
+      <!-- RECHTS: User-Bereich -->
+      <div class="navbar-user-area ms-auto d-flex align-items-center gap-3">
+        <% if (currentUser) { %>
+          <span class="navbar-text">
+            <i class="bi bi-person px-1"></i>
+            <%= currentUser.vorname %> <%= currentUser.nachname %>
+          </span>
+          <form action="/auth/logout" method="POST">
+            <button class="btn btn-link btn-sm">Logout<i class="bi bi-box-arrow-right px-2"></i></button>
+          </form>
+        <% } %>
+      </div>
     </div>
-
   </div>
 </nav>
