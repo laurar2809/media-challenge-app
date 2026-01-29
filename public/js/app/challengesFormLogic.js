@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Zeichnet die Team-Badges/Karten in der Challenge-Ansicht
   function renderTeams() {
     if (!teamsContainer) return;
     teamsContainer.innerHTML = '';
@@ -60,37 +59,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     teams.forEach((team, index) => {
       const teamCard = document.createElement('div');
-      teamCard.className = 'card mb-2 w-100 border-start border-primary border-4';
+      teamCard.className = 'card mb-2 w-100 border-start border-primary border-4 shadow-sm';
 
-      // Anzeige unterscheiden: Hat das Team Mitglieder-Objekte oder ist es ein DB-Team?
-      const memberCount = team.members ? team.members.length : 0;
-      const memberList = team.members && team.members.length > 0
+      // Mappe die Namen der Mitglieder für die Anzeige
+      const memberList = (team.members && team.members.length > 0)
         ? team.members.map(m => `<span class="badge bg-light text-dark border me-1">${m.vorname} ${m.nachname}</span>`).join('')
-        : '<span class="text-muted small"><i>Vorhandenes Team (Mitglieder in DB)</i></span>';
+        : '<span class="text-muted small"><i>Keine Mitglieder gefunden</i></span>';
 
       teamCard.innerHTML = `
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>${team.name}</h6>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editChallengeTeam(${index})">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeChallengeTeam(${index})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>${team.name}</h6>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editChallengeTeam(${index})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeChallengeTeam(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
-                    <div class="mt-2">${memberList}</div>
-                </div>`;
+                </div>
+                <div class="mt-2">${memberList}</div>
+            </div>`;
       teamsContainer.appendChild(teamCard);
     });
   }
 
-  // === 4. EVENT LISTENER & WINDOW BRIDGES ===
-
   // Bestehende Teams aus dem Dropdown hinzufügen
   const addExistingBtn = document.getElementById('addExistingTeamBtn');
+  // === In challengesFormLogic.js unter Punkt 4 ===
   if (addExistingBtn) {
     addExistingBtn.addEventListener('click', function () {
       const select = document.getElementById('existingTeamSelect');
@@ -98,17 +95,23 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!teamId) return;
 
       const teamOption = select.options[select.selectedIndex];
+      // 1. Die IDs aus dem data-members Attribut holen ("102,39...")
+      const memberIdsString = teamOption.dataset.members || "";
+      const memberIds = memberIdsString.split(',').map(id => id.trim());
 
-      // Prüfen ob bereits hinzugefügt
+      // 2. Die echten Schüler-Objekte aus deiner schuelerListe suchen
+      const membersObjects = schuelerListe.filter(s => memberIds.includes(String(s.id)));
+
       if (teams.some(t => t.id === `existing-${teamId}`)) {
         alert("Dieses Team ist bereits zugewiesen.");
         return;
       }
 
+      // 3. Das Team mit den ECHTEN Objekten ins Array pushen
       teams.push({
         id: `existing-${teamId}`,
         name: teamOption.text.split(' (')[0],
-        members: [] // Backend verknüpft die Mitglieder anhand der ID
+        members: membersObjects // Hier liegen jetzt die Namen drin!
       });
 
       renderTeams();
@@ -148,22 +151,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Brücke: Team in der Liste bearbeiten
-  window.editChallengeTeam = (index) => {
-    currentEditIndex = index;
-    const team = teams[index];
+  // === In challengesFormLogic.js ===
+  window.teamModalInstance = new TeamModal({
+    modalId: 'teamModal',
+    schueler: schuelerListe,
+    onSave: (data) => {
+      // data enthält: { name: "Teamname", members: [ {id, vorname, nachname, klasse}, ... ] }
 
-    // Modal mit Daten füllen
-    // Falls es ein neues Team ist, haben wir member-Objekte. 
-    // Falls es ein bestehendes ist, nutzen wir IDs (falls vorhanden)
-    const memberIds = team.members ? team.members.map(m => m.id).join(',') : '';
+      if (currentEditIndex > -1) {
+        // Bearbeiten: Wir aktualisieren das Team an der Stelle
+        teams[currentEditIndex].name = data.name;
+        teams[currentEditIndex].members = data.members;
+        // Falls es ein bestehendes Team war, löschen wir den alten ID-String, 
+        // damit die neuen members-Objekte Vorrang haben
+        delete teams[currentEditIndex].mitglieder_ids;
+      } else {
+        // Neu erstellen
+        teams.push({
+          id: `new-${Date.now()}`,
+          name: data.name,
+          members: data.members
+        });
+      }
 
-    window.teamModalInstance.prepareEdit({
-      id: team.id,
-      name: team.name,
-      mitglieder_ids: memberIds
-    });
-  };
+      renderTeams(); // Zeichnet die Karten in der Challenge-Übersicht neu
+      updateTeamsData(); // Schreibt alles in das Hidden-Input für die DB
+
+      // Modal sauber schließen
+      const modalEl = document.getElementById('teamModal');
+      bootstrap.Modal.getInstance(modalEl).hide();
+    }
+  });
 
   // Formular Validierung beim Absenden
   if (challengeForm) {
