@@ -50,6 +50,8 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
 
         // Jetzt erst joinen wir die Mitglieder für die ANZEIGE (COUNT/LISTE)
         // Dadurch zählen wir immer ALLE Mitglieder der gefundenen Teams
+        const isSqlite = db.client.config.client === 'sqlite3';
+
         const teams = await teamsQuery
             .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
             .leftJoin('users', 'team_mitglieder.user_id', 'users.id')
@@ -58,12 +60,15 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
                 'teams.name',
                 'schuljahre.name as schuljahr_name',
                 db.raw('COUNT(DISTINCT team_mitglieder.user_id) as mitglieder_count'),
-                db.raw("GROUP_CONCAT(DISTINCT CONCAT(users.vorname, ' ', users.nachname) SEPARATOR ', ') as mitglieder_liste"),
+                // Hier wird automatisch entschieden:
+                isSqlite 
+                    ? db.raw("GROUP_CONCAT(DISTINCT users.vorname || ' ' || users.nachname) as mitglieder_liste")
+                    : db.raw("GROUP_CONCAT(DISTINCT CONCAT(users.vorname, ' ', users.nachname) SEPARATOR ', ') as mitglieder_liste"),
                 db.raw("GROUP_CONCAT(DISTINCT team_mitglieder.user_id) as mitglieder_ids")
             )
             .groupBy('teams.id', 'teams.name', 'schuljahre.name');
-
-        res.render('admin/personen/teams', {
+       
+            res.render('admin/personen/teams', {
             schueler, 
             teams,    
             klassen,
