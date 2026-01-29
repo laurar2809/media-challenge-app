@@ -11,7 +11,7 @@
           <%= challenge.kategorie %>
         </span>
         <% if (challenge.abgabedatum) { %>
-          <span class="badge bg-warning text-dark">
+          <span class="badge bg-secondary">
             <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
           </span>
           <% } %>
