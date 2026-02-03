@@ -87,31 +87,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Bestehende Teams aus dem Dropdown hinzufügen
   const addExistingBtn = document.getElementById('addExistingTeamBtn');
-  // === In challengesFormLogic.js unter Punkt 4 ===
+
   if (addExistingBtn) {
+    // In challengesFormLogic.js beim addExistingTeamBtn Click-Event
+
     addExistingBtn.addEventListener('click', function () {
       const select = document.getElementById('existingTeamSelect');
       const teamId = select.value;
       if (!teamId) return;
 
       const teamOption = select.options[select.selectedIndex];
-      // 1. Die IDs aus dem data-members Attribut holen ("102,39...")
+
+      // 1. IDs holen und extrem sauber trimmen
       const memberIdsString = teamOption.dataset.members || "";
-      const memberIds = memberIdsString.split(',').map(id => id.trim());
+      const memberIds = memberIdsString.split(',')
+        .map(id => id.trim())
+        .filter(id => id !== "");
 
-      // 2. Die echten Schüler-Objekte aus deiner schuelerListe suchen
-      const membersObjects = schuelerListe.filter(s => memberIds.includes(String(s.id)));
+      // 2. Abgleich mit der schuelerListe (Sicherstellen, dass beides als String verglichen wird)
+      const membersObjects = schuelerListe.filter(s => {
+        return memberIds.includes(String(s.id));
+      });
 
-      if (teams.some(t => t.id === `existing-${teamId}`)) {
+      // 3. Dubletten-Check
+      if (teams.some(t => String(t.id) === `existing-${teamId}`)) {
         alert("Dieses Team ist bereits zugewiesen.");
         return;
       }
 
-      // 3. Das Team mit den ECHTEN Objekten ins Array pushen
+      // 4. Team hinzufügen
       teams.push({
         id: `existing-${teamId}`,
-        name: teamOption.text.split(' (')[0],
-        members: membersObjects // Hier liegen jetzt die Namen drin!
+        name: teamOption.getAttribute('data-name') || teamOption.text.split(' (')[0],
+        members: membersObjects // Das sorgt für die Anzeige der Namen
       });
 
       renderTeams();
@@ -123,21 +131,17 @@ document.addEventListener('DOMContentLoaded', function () {
   // In challengesFormLogic.js beim Button-Click:
   const openModalBtn = document.getElementById('openCreateTeamModal');
   if (openModalBtn) {
-    openModalBtn.addEventListener('click', (e) => {
-      e.preventDefault();
+    openModalBtn.addEventListener('click', () => {
       currentEditIndex = -1;
 
-      // RADIKAL: Wenn noch ein Schatten da ist, weg damit
+      // Sicherstellen, dass keine alten Reste den neuen Start blockieren
       document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
       document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
 
-      // Modal-Daten leeren
       window.teamModalInstance.prepareCreate();
 
-      // Modal neu initialisieren und zeigen
-      const modalEl = document.getElementById('teamModal');
-      const modal = new bootstrap.Modal(modalEl);
+      // Falls du das Modal manuell öffnest:
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('teamModal'));
       modal.show();
     });
   }
@@ -198,14 +202,29 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // === 5. INITIALISIERUNG (BEI BEARBEITUNG) ===
+  // Am Ende von challengesFormLogic.js
   const initData = () => {
-    const existingDataInput = document.getElementById('existingTeamsData');
-    if (existingDataInput && existingDataInput.value) {
+    const teamsDataInput = document.getElementById('teamsData');
+    if (teamsDataInput && teamsDataInput.value && teamsDataInput.value !== '[]') {
       try {
-        teams = JSON.parse(existingDataInput.value);
-        renderTeams();
-      } catch (e) { console.error("Fehler beim Laden bestehender Teams", e); }
+        const parsed = JSON.parse(teamsDataInput.value);
+        // WICHTIG: Wir überschreiben das globale 'teams' Array
+        teams = parsed.map(t => ({
+          id: t.id,
+          name: t.name,
+          members: t.members || [] // Sicherstellen, dass members da ist
+        }));
+
+        console.log("Edit-Modus: Teams geladen", teams);
+        renderTeams(); // Zeichnet die Karten
+      } catch (e) {
+        console.error("Fehler beim Initialisieren der Edit-Teams:", e);
+      }
+    } else {
+      renderTeams(); // Zeigt die "Keine Teams"-Meldung
     }
   };
+
+  // WICHTIG: Aufruf am Ende der DOMContentLoaded Funktion
   initData();
 });

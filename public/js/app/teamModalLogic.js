@@ -30,9 +30,19 @@ class TeamModal {
             this.handleSave();
         });
 
-        // Cleanup-Logik wenn das Modal geschlossen wird
+        // Dieser Listener feuert JEDES MAL, wenn das Modal geschlossen wird
+        // (egal ob Abbrechen, Speichern oder Klick daneben)
         this.modalElement.addEventListener('hidden.bs.modal', () => {
-            this.cleanup();
+            // Wir entfernen alles, was hängen bleiben könnte
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            // Alle Backdrops (graue Overlays) manuell löschen
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+
+            console.log("Cleanup nach Abbrechen/Schließen erfolgreich.");
         });
     }
 
@@ -160,25 +170,46 @@ class TeamModal {
             return;
         }
 
-        // 1. Modal-Instanz holen und schließen
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(this.modalElement);
-        modalInstance.hide();
+        // 1. Daten übergeben
+        this.onSave({ name, members });
 
-        // 2. DER STARRE-BRECHER (Timeout)
-        // Wir warten, bis die Animation fast fertig ist
+        // 2. Modal sauber über Bootstrap schließen
+        const modalInstance = bootstrap.Modal.getInstance(this.modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+
+            // WICHTIG: Wir warten einen Moment, bis Bootstrap fertig ist,
+            // bevor wir die Seite wieder "freigeben".
+            this.modalElement.addEventListener('hidden.bs.modal', () => {
+                this.forceCleanup();
+            }, { once: true }); // 'once: true' ist wichtig, damit es nur einmal feuert!
+        } else {
+            // Falls keine Instanz da ist (Notfall), direkt reinigen
+            this.forceCleanup();
+        }
+    }
+
+    // Neue Hilfsfunktion für absolute Sauberkeit
+    forceCleanup() {
+        // Kurze Verzögerung, damit die Animation beendet werden kann
         setTimeout(() => {
-            // Daten erst JETZT speichern, um DOM-Konflikte zu vermeiden
-            this.onSave({ name, members });
+            // Entferne alle Backdrop-Elemente manuell
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
 
-            // RADIKAL-REINIGUNG: Wir löschen alles, was das Scrollen blockiert
+            // Entferne Bootstrap-Klassen vom Body
             document.body.classList.remove('modal-open');
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
 
-            // CSS-Eigenschaften manuell zurücksetzen
-            document.body.style.overflow = 'auto';
-            document.body.style.paddingRight = '0px';
+            // Fix für hängende Styles
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
 
-            console.log("Scroll-Sperre manuell aufgehoben.");
-        }, 350);
+            // Falls das Modal selbst noch hakt
+            this.modalElement.classList.remove('show');
+            this.modalElement.style.display = 'none';
+            this.modalElement.removeAttribute('aria-modal');
+            this.modalElement.removeAttribute('role');
+            this.modalElement.setAttribute('aria-hidden', 'true');
+        }, 300);
     }
 }
