@@ -15,6 +15,7 @@
     "express-flash": "^0.0.2",
     "express-session": "^1.18.0",
     "knex": "^3.1.0",
+    "ldapjs": "^3.0.7",
     "method-override": "^3.0.0",
     "mime-types": "^3.0.1",
     "morgan": "^1.10.0",
