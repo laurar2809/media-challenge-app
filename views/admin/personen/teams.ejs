@@ -32,13 +32,14 @@
     <% } %>
 </div>
 
-<%- include('../../partials/filter_search', { 
-    showKlasse: false, 
-    showSchuljahr: false, 
+<%- include('../../partials/filter_search', {
     showSearch: true,
-    klasseSelectId: 'teamKlasseFilter',
-    searchInputId: 'teamSearchInput', 
-    searchContainerId: 'teamSearchContainer'
+    searchInputId: 'teamsLiveSearch',
+    searchContainerId: 'teamsSearchContainer',
+    searchTerm: '',
+    showKlasse: false,
+    showSchuljahr: false,
+    showKategorie: false
 }) %>
 
 <div class="table-responsive">
@@ -55,34 +56,37 @@
         <tbody>
             <% if (teams && teams.length > 0) { %>
                 <% teams.forEach(team => { %>
-                    <tr>
-                        <td class="fw-medium">
-                            <i class="bi bi-people me-1"></i> <%= team.name %>
-                        </td>
-                        <td class="text-muted small"><%= team.id %></td>
-                        <td><%= team.mitglieder_count %></td>
-                        <td>
-                            <% if (team.mitglieder_liste) { %>
-                                <span class="small text-muted">
-                                    <i class="bi bi-person-fill"></i> <%= team.mitglieder_liste %>
-                                </span>
-                            <% } else { %>
-                                <span class="text-muted small">Keine Mitglieder</span>
-                            <% } %>
-                        </td>
-                        <td class="text-end">
-                            <div class="d-flex gap-1 justify-content-end">
-                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                    onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
-                                    Bearbeiten
-                                </button>
-                                <button type="button" class="btn btn-custom-delete btn-sm delete-team-btn"
-                                    data-id="<%= team.id %>" data-name="<%= team.name %>">
-                                    Löschen
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                <tr class="team-card" 
+                    data-name="<%= team.name.toLowerCase() %>" 
+                    data-members="<%= (team.mitglieder_liste || '').toLowerCase() %>">
+                    
+                    <td class="fw-medium">
+                        <i class="bi bi-people me-1"></i> <%= team.name %>
+                    </td>
+                    <td class="text-muted small"><%= team.id %></td>
+                    <td><%= team.mitglieder_count %></td>
+                    <td>
+                        <% if (team.mitglieder_liste) { %>
+                            <span class="small text-muted">
+                                <i class="bi bi-person-fill"></i> <%= team.mitglieder_liste %>
+                            </span>
+                        <% } else { %>
+                            <span class="text-muted small">Keine Mitglieder</span>
+                        <% } %>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
+                                Bearbeiten
+                            </button>
+                            <button type="button" class="btn btn-custom-delete btn-sm delete-team-btn"
+                                data-id="<%= team.id %>" data-name="<%= team.name %>">
+                                Löschen
+                            </button>
+                        </div>
+                    </td>
+                </tr>
                 <% }) %>
             <% } else { %>
                 <tr>

@@ -15,54 +15,57 @@ class TeamModal {
         this.memberCountText = this.modalElement.querySelector('#memberCount');
         this.nameFilter = this.modalElement.querySelector('#nameFilter');
         this.classFilter = this.modalElement.querySelector('#classFilter');
+        // NEU: Schuljahr Filter hinzufügen
+       this.yearFilter = this.modalElement.querySelector('#teamSchuljahrFilter');
 
         this.init();
     }
 
     init() {
-        // Event Listener für Filter (Suchen & Klasse)
+        // Event Listener für Filter (Suchen, Klasse & NEU: Schuljahr)
         this.nameFilter?.addEventListener('input', () => this.renderAvailable());
         this.classFilter?.addEventListener('change', () => this.renderAvailable());
-
-        // Speichern-Button
+        this.yearFilter?.addEventListener('change', () => {
+            console.log("Schuljahr Filter geändert auf:", this.yearFilter.value);
+            this.renderAvailable();
+        });
+        
+        // Speichern-Button & Cleanup (bleibt gleich wie in deinem Code...)
         this.submitBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleSave();
         });
 
-        // Dieser Listener feuert JEDES MAL, wenn das Modal geschlossen wird
-        // (egal ob Abbrechen, Speichern oder Klick daneben)
         this.modalElement.addEventListener('hidden.bs.modal', () => {
-            // Wir entfernen alles, was hängen bleiben könnte
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-
-            // Alle Backdrops (graue Overlays) manuell löschen
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(b => b.remove());
-
-            console.log("Cleanup nach Abbrechen/Schließen erfolgreich.");
+            this.forceCleanup();
         });
     }
 
+
     // Zeigt die verfügbaren Schüler an (links im Modal)
+    // In der renderAvailable() Methode
     renderAvailable() {
         if (!this.availableContainer) return;
 
         const query = this.nameFilter?.value.toLowerCase() || "";
-        const klasse = this.classFilter?.value || "";
+        const klasse = this.classFilter?.value || "alle";
+        const schuljahr = this.yearFilter?.value || "alle"; // NEU hinzugefügt
 
         this.availableContainer.innerHTML = '';
 
         const filtered = this.schueler.filter(s => {
             const matchesName = `${s.vorname} ${s.nachname}`.toLowerCase().includes(query);
-            const matchesKlasse = !klasse || s.klasse_name === klasse;
-            // Nur anzeigen, wenn noch nicht ausgewählt
+            const matchesKlasse = klasse === "alle" || s.klasse_name === klasse;
+
+            // NEU: Schuljahr Abgleich (ID als String vergleichen)
+            const matchesSchuljahr = schuljahr === "alle" || String(s.schuljahr_id) === schuljahr;
+
             const isSelected = !!this.dropZone.querySelector(`[data-id="${s.id}"]`);
-            return matchesName && matchesKlasse && !isSelected;
+
+            return matchesName && matchesKlasse && matchesSchuljahr && !isSelected;
         });
 
+        // ... restliche renderAvailable Logik (Buttons erstellen) bleibt gleich
         if (filtered.length === 0) {
             this.availableContainer.innerHTML = '<div class="text-muted small p-2">Keine Schüler gefunden</div>';
             return;
@@ -77,6 +80,7 @@ class TeamModal {
             this.availableContainer.appendChild(btn);
         });
     }
+
 
     // Fügt einen Schüler zur Auswahl hinzu (rechts im Modal)
     addMember(s) {
@@ -117,12 +121,14 @@ class TeamModal {
         }
     }
 
-    // Modal öffnen & Reset
+    // Modal vorbereiten (Reset)
     prepareCreate() {
+        this.currentEditId = null;
         this.nameInput.value = '';
         this.dropZone.innerHTML = '<p class="text-muted text-center w-100 mt-3 small">Noch keine Mitglieder hinzugefügt</p>';
         if (this.nameFilter) this.nameFilter.value = '';
-        if (this.classFilter) this.classFilter.value = '';
+        if (this.classFilter) this.classFilter.value = 'alle';
+        if (this.yearFilter) this.yearFilter.value = 'alle'; // NEU
 
         this.updateUI();
         this.show();

@@ -5,9 +5,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const schuelerData = JSON.parse(container.dataset.schueler || '[]');
 
-    // 1. Modal initialisieren (WICHTIG: ID prüfen, meistens 'teamModal')
+    // --- 1. LIVE-SUCHE INTEGRATION ---
+    const searchInput = document.getElementById('teamsLiveSearch');
+    const teamCards = document.querySelectorAll('.team-card');
+
+    if (searchInput && window.FilterUtils) {
+        window.FilterUtils.initSearchWithBadge({
+            input: searchInput,
+            onChange: (query) => {
+                const searchTerm = query.toLowerCase().trim();
+
+                teamCards.forEach(card => {
+                    // Wir lesen die Daten aus den data-Attributen der Karte
+                    const teamName = (card.dataset.name || '').toLowerCase();
+                    const members = (card.dataset.members || '').toLowerCase();
+
+                    // Anzeige umschalten: Wenn Treffer in Name ODER Mitgliederliste
+                    if (teamName.includes(searchTerm) || members.includes(searchTerm)) {
+                        card.style.display = ''; // Sichtbar (Standard)
+                    } else {
+                        card.style.display = 'none'; // Verstecken
+                    }
+                });
+            }
+        });
+    }
+
+    // --- 2. MODAL INITIALISIEREN ---
     window.teamModalInstance = new TeamModal({
-        modalId: 'teamModal', 
+        modalId: 'teamModal',
         schueler: schuelerData,
         onSave: async (data) => {
             const isUpdate = !!window.teamModalInstance.currentEditId;
@@ -29,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. Klassenfilter im Modal befüllen
+    // --- 3. KLASSENFILTER IM MODAL ---
     const classSelect = document.getElementById('classFilter');
     if (classSelect) {
         const klassen = [...new Set(schuelerData.map(s => s.klasse_name))].sort();
@@ -43,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. Lösch-Logik für die Tabelle
+    // --- 4. LÖSCH-LOGIK ---
     const deleteModalEl = document.getElementById('deleteTeamModal');
     if (deleteModalEl) {
         const deleteModal = new bootstrap.Modal(deleteModalEl);
@@ -68,9 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Global für den "Bearbeiten" Button in der EJS Tabelle
+// Global für den "Bearbeiten" Button
 window.prepareEditTeam = (id, name, memberIdsString) => {
     if (window.teamModalInstance) {
-        window.teamModalInstance.prepareEdit({ id, name, mitglieder_ids: memberIdsString });
+        window.teamModalInstance.currentEditId = id;
+        window.teamModalInstance.prepareEdit({
+            id: id,
+            name: name,
+            mitglieder_ids: memberIdsString
+        });
     }
 };
