@@ -68,6 +68,7 @@ async function getLdapData() {
 
 async function authenticateUser(username, password) {
   return new Promise((resolve) => {
+    // Tipp: Nutze auch hier Port und Host aus der .env
     const client = ldap.createClient({ url: `ldap://${process.env.LDAP_HOST}` });
     const userPrincipalName = `${username}@ad.htl-braunau.at`;
 
@@ -79,4 +80,9 @@ async function authenticateUser(username, password) {
   });
 }
 
-module.exports = { getLdapData, authenticateUser };
+module.exports = { 
+    getLdapData, 
+    authenticateLDAP: authenticateUser 
+};
+
+

@@ -79,18 +79,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// DEBUG Middleware - TEMPORÄR HINZUFÜGEN!
-app.use((req, res, next) => {
-  console.log('=== REQUEST ===');
-  console.log('Method:', req.method);
-  console.log('Original URL:', req.originalUrl);
-  console.log('Path:', req.path);
-  console.log('Body:', req.body);
-  console.log('Query:', req.query);
-  console.log('Override Method:', req.body._method || 'none');
-  console.log('================');
-  next();
-});
+// // DEBUG Middleware - TEMPORÄR HINZUFÜGEN!
+// app.use((req, res, next) => {
+//   console.log('=== REQUEST ===');
+//   console.log('Method:', req.method);
+//   console.log('Original URL:', req.originalUrl);
+//   console.log('Path:', req.path);
+//   console.log('Body:', req.body);
+//   console.log('Query:', req.query);
+//   console.log('Override Method:', req.body._method || 'none');
+//   console.log('================');
+//   next();
+// });
 
 // Routen einbinden
 app.use('/', require('./routes/ansichten'));

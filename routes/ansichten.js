@@ -1,38 +1,48 @@
-
 const express = require('express');
 const router = express.Router();
-const { loadUser, requireAuth } = require('../middleware/auth'); //  requireAuth HINZUFÜGEN
+const { loadUser, requireAuth } = require('../middleware/auth'); 
 const { db } = require('../db'); 
 
 // Homepage
-// Der LoadUser MUSS zuerst laufen, dann wird requireAuth angewendet.
 router.get('/', loadUser, requireAuth, async (req, res) => {
     
-    //  1. UMLEITUNG NACH ROLLE (Wird nur für eingeloggte Benutzer ausgeführt)
-    // Wenn Schüler (ID 1), leite direkt zu Challenges weiter.
+    // 1. UMLEITUNG NACH ROLLE
     if (req.currentUser.user_role_id === 1) {
-        console.log("Schüler eingeloggt, leite direkt zu Challenges weiter.");
         return res.redirect('/challenges');
     }
     
-    //  2. FÜR ADMIN/LEHRER: Normale Startseite rendern (mit Kategorien)
+    // 2. FÜR ADMIN/LEHRER: Daten laden
     try {
-        const categories = await db('categories').select('*').orderBy('title', 'asc');
+        // Parallel laden für bessere Performance
+        const [categories, stats] = await Promise.all([
+            db('categories').select('*').orderBy('title', 'asc'),
+            
+            // NEU: Statistik-Abfrage
+            db('users')
+                .join('klassen', 'users.klasse_id', 'klassen.id')
+                .where('users.user_role_id', 1) // Nur Schüler zählen
+                .select('klassen.name as klasse')
+                .count('users.id as anzahl')
+                .groupBy('klassen.name')
+                .orderBy('klassen.name', 'asc')
+        ]);
         
+        // Wir rendern jetzt die Kategorien-Seite, übergeben aber die Stats mit
         res.render('admin/kategorien/kategorien', {
             categories,
-            activePage: 'kategorien'
+            stats, // <--- Hier sind deine neuen LDAP-Statistiken
+            activePage: 'kategorien',
+            title: 'Lehrer-Dashboard'
         });
         
     } catch (error) {
-        console.error('Fehler beim Laden der Kategorien für Admin/Lehrer:', error);
-        req.flash('error', 'Fehler beim Laden der Kategorien');
-        // Sicherer Fallback bei DB-Fehler
+        console.error('Fehler beim Laden der Dashboard-Daten:', error);
+        req.flash('error', 'Fehler beim Laden der Statistiken');
         return res.status(500).send("DB-Fehler: Startseite konnte nicht geladen werden.");
     }
 });
 
-// Test-Route für Environment Variables
+// Test-Route bleibt gleich...
 router.get('/test-env', (req, res) => {
   res.json({
     dbHost: process.env.DB_HOST,

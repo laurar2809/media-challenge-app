@@ -1,5 +1,9 @@
 <% pageTitle="Kategorien" %>
 
+
+  
+
+
   <div class="d-flex align-categories-center justify-content-between mb-3">
     <div class="d-flex align-categories-center">
       <table>
@@ -71,6 +75,29 @@
       bodyText: 'Bist du sicher, dass du diese Kategorie löschen möchtest?' }) %>
 
   </div>
+
+  <br><br>
+
+  <div style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 30px;">
+    <h5
+      style="margin-top: 0; color: #333; border-bottom: 2px solid #0056b3; display: inline-block; padding-bottom: 5px;">
+      Importierte Klassen
+    </h5>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+      <% stats.forEach(s=> { %>
+        <div
+          style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 8px 15px; border-radius: 5px; font-size: 0.9rem;">
+          <strong>
+            <%= s.klasse %>:
+          </strong>
+          <%= s.anzahl %> Schüler
+        </div>
+        <% }) %>
+    </div>
+  </div>
+
+
 
   <script src="/js/app/utils/deleteModalUtils.js"></script>
   <script src="/js/app/kategorienLogic.js"></script>
