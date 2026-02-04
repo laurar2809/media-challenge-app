@@ -156,7 +156,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Logik zum Speichern der Abgabe
         const data = {
             challenge_id: challengeId,
-            titel: document.getElementById('abgabeTitel').value,
             beschreibung: document.getElementById('abgabeBeschreibung').value,
             status: status
         };
