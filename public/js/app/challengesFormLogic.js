@@ -10,19 +10,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const noTeamsMessage = document.getElementById('noTeamsMessage');
   const challengeForm = document.getElementById('challengeForm');
 
-  let teams = [];
+  let teams = []; // Das zentrale Array für alle zugewiesenen Teams
   let currentEditIndex = -1;
 
-  
+  // === 2. HILFSFUNKTIONEN FÜR FILTER & DATEN ===
 
   const populateModalFilters = () => {
     const classSelect = document.getElementById('classFilter');
     if (!classSelect) return;
 
-    // 1. Bestehende Klassen holen
     const klassen = [...new Set(schuelerListe.map(s => s.klasse_name))].sort();
-
-    // 2. WICHTIG: Erst das Dropdown leeren, DANN die Standard-Option und die Klassen rein
     classSelect.innerHTML = '<option value="alle" selected>Alle Klassen</option>';
 
     klassen.forEach(k => {
@@ -35,48 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
-  // Dieser Aufruf MUSS hier stehen, damit es beim Laden passiert!
-  populateModalFilters();
-
-
-  // === 2. TEAM-MODAL INITIALISIEREN ===
-  window.teamModalInstance = new TeamModal({
-    modalId: 'teamModal',
-    schueler: schuelerListe,
-    onSave: (data) => {
-      if (currentEditIndex > -1) {
-        teams[currentEditIndex] = {
-          ...teams[currentEditIndex],
-          name: data.name,
-          members: data.members
-        };
-      } else {
-        teams.push({
-          id: `new-${Date.now()}`,
-          name: data.name,
-          members: data.members
-        });
-      }
-      renderTeams();
-      updateTeamsData();
-      bootstrap.Modal.getInstance(document.getElementById('teamModal')).hide();
-    }
-  });
-
-  // (Die Funktionen window.editChallengeTeam, updateTeamsData, renderTeams bleiben gleich...)
-
-  window.editChallengeTeam = (index) => {
-    currentEditIndex = index;
-    const teamToEdit = teams[index];
-    if (window.teamModalInstance) {
-      window.teamModalInstance.prepareEdit({
-        id: teamToEdit.id,
-        name: teamToEdit.name,
-        mitglieder_ids: teamToEdit.members.map(m => m.id).join(',')
-      });
-    }
-  };
-
   function updateTeamsData() {
     if (teamsDataInput) {
       teamsDataInput.value = JSON.stringify(teams);
@@ -86,12 +41,15 @@ document.addEventListener('DOMContentLoaded', function () {
   function renderTeams() {
     if (!teamsContainer) return;
     teamsContainer.innerHTML = '';
+
     if (noTeamsMessage) {
       noTeamsMessage.style.display = teams.length > 0 ? 'none' : 'block';
     }
+
     teams.forEach((team, index) => {
       const teamCard = document.createElement('div');
       teamCard.className = 'card mb-2 w-100 border-start border-primary border-4 shadow-sm';
+
       const memberList = (team.members && team.members.length > 0)
         ? team.members.map(m => `<span class="badge bg-light text-dark border me-1">${m.vorname} ${m.nachname}</span>`).join('')
         : '<span class="text-muted small"><i>Keine Mitglieder gefunden</i></span>';
@@ -115,35 +73,105 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // (AddExistingBtn Logik bleibt gleich...)
+  // === 3. TEAM-MODAL INITIALISIEREN ===
 
-  // --- ANPASSUNG BEIM ÖFFNEN DES MODALS ---
-  // --- ANPASSUNG BEIM ÖFFNEN DES MODALS ---
+  window.teamModalInstance = new TeamModal({
+    modalId: 'teamModal',
+    schueler: schuelerListe,
+    onSave: (data) => {
+      if (currentEditIndex > -1) {
+        // Bearbeiten
+        teams[currentEditIndex] = {
+          ...teams[currentEditIndex],
+          name: data.name,
+          members: data.members
+        };
+      } else {
+        // Neu erstellen
+        teams.push({
+          id: `new-${Date.now()}`,
+          name: data.name,
+          members: data.members
+        });
+      }
+      renderTeams();
+      updateTeamsData();
+      bootstrap.Modal.getInstance(document.getElementById('teamModal')).hide();
+    }
+  });
+
+  // Global machen für die onclick-Attribute in den Team-Karten
+  window.editChallengeTeam = (index) => {
+    currentEditIndex = index;
+    const teamToEdit = teams[index];
+    if (window.teamModalInstance) {
+      window.teamModalInstance.prepareEdit({
+        id: teamToEdit.id,
+        name: teamToEdit.name,
+        mitglieder_ids: teamToEdit.members.map(m => String(m.id)).join(',')
+      });
+    }
+  };
+
+  // === 4. BESTEHENDES TEAM HINZUFÜGEN ===
+
+  const addExistingBtn = document.getElementById('addExistingTeamBtn');
+  if (addExistingBtn) {
+    addExistingBtn.addEventListener('click', function () {
+      const select = document.getElementById('existingTeamSelect');
+      const teamId = select.value;
+      if (!teamId) return;
+
+      const teamOption = select.options[select.selectedIndex];
+      const memberIdsString = teamOption.dataset.members || "";
+      const memberIds = memberIdsString.split(',')
+        .map(id => id.trim())
+        .filter(id => id !== "");
+
+      // Wichtig: String-Vergleich für IDs sicherstellen
+      const membersObjects = schuelerListe.filter(s => {
+        return memberIds.includes(String(s.id));
+      });
+
+      if (teams.some(t => String(t.id) === `existing-${teamId}`)) {
+        alert("Dieses Team ist bereits zugewiesen.");
+        return;
+      }
+
+      teams.push({
+        id: `existing-${teamId}`,
+        name: teamOption.getAttribute('data-name') || teamOption.text.split(' (')[0],
+        members: membersObjects
+      });
+
+      renderTeams();
+      updateTeamsData();
+      select.value = '';
+    });
+  }
+
+  // === 5. MODAL-ÖFFNEN LOGIK (NEUES TEAM) ===
+
   const openModalBtn = document.getElementById('openCreateTeamModal');
   if (openModalBtn) {
     openModalBtn.addEventListener('click', () => {
       window.currentEditIndex = -1;
+
+      // Cleanup Backdrops
       document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
       document.body.classList.remove('modal-open');
 
-      // 1. Zuerst die Filter auf Standard setzen
+      // Filter zurücksetzen
       if (document.getElementById('classFilter')) document.getElementById('classFilter').value = 'alle';
 
-      // 2. HIER KOMMT DER CODE HIN:
-      // Wir holen das aktuell gewählte Schuljahr aus dem Hauptformular
-      const currentChallengeYear = document.querySelector('select[name="schuljahr_id"]').value;
+      // Schuljahr-Synchronisation
+      const currentYear = document.querySelector('select[name="schuljahr_id"]')?.value;
       const modalYearFilter = document.getElementById('teamSchuljahrFilter');
-
-      if (currentChallengeYear && modalYearFilter) {
-        modalYearFilter.value = currentChallengeYear;
-      } else if (modalYearFilter) {
-        modalYearFilter.value = 'alle';
+      if (currentYear && modalYearFilter) {
+        modalYearFilter.value = currentYear;
       }
 
-      // 3. Modal vorbereiten und anzeigen
       window.teamModalInstance.prepareCreate();
-
-      // WICHTIG: Nach dem Setzen des Filters die Liste einmalig aktualisieren
       window.teamModalInstance.renderAvailable();
 
       const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('teamModal'));
@@ -151,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // (Lösch-Logik window.removeChallengeTeam und initData bleiben gleich...)
+  // === 6. TEAM ENTFERNEN (LOKAL) ===
 
   let indexToDelete = -1;
   window.removeChallengeTeam = (index) => {
@@ -174,13 +202,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // === 7. INITIALISIERUNG & FORM-SUBMIT ===
+
   if (challengeForm) {
     challengeForm.addEventListener('submit', function (e) {
       updateTeamsData();
       if (teams.length === 0) {
         e.preventDefault();
         alert('Bitte weisen Sie mindestens ein Team zu!');
-        return false;
       }
     });
   }
@@ -197,12 +226,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }));
         renderTeams();
       } catch (e) {
-        console.error("Fehler beim Initialisieren der Edit-Teams:", e);
+        console.error("Fehler beim Initialisieren:", e);
       }
     } else {
       renderTeams();
     }
   };
 
+  // Alles starten
+  populateModalFilters();
   initData();
 });

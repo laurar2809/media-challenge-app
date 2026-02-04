@@ -184,15 +184,14 @@ router.get('/new', requireAuth, requireLehrer, async (req, res) => {
 
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
-    // In routes/challenges.js bei router.get('/new') und router.get('/:id/edit')
+    // In routes/challenges.js bei router.get('/new')
     const allTeams = await db('teams')
       .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
       .select('teams.id', 'teams.name')
-      // Zieht alle IDs der Mitglieder in einen kommaseparierten String zusammen
-      .select(db.raw('GROUP_CONCAT(team_mitglieder.user_id) as mitglieder_ids'))
-      .groupBy('teams.id')
+      // DISTINCT sorgt dafür, dass jede Schüler-ID pro Team nur einmal im String landet
+      .select(db.raw('GROUP_CONCAT(DISTINCT team_mitglieder.user_id) as mitglieder_ids'))
+      .groupBy('teams.id', 'teams.name') // Das verhindert die doppelten Team-Namen!
       .orderBy('teams.name', 'asc');
-
 
     res.render('admin/challenges/challengesForm', {
       item: {},
@@ -215,7 +214,6 @@ router.get('/new', requireAuth, requireLehrer, async (req, res) => {
 });
 
 
-// Challenge speichern - KORRIGIERTE VERSION
 router.post('/', requireAuth, requireLehrer, async (req, res) => {
   try {
     const { aufgabenpaket_id, teams_data, zusatzinfos, abgabedatum, schuljahr_id } = req.body;
@@ -226,45 +224,24 @@ router.post('/', requireAuth, requireLehrer, async (req, res) => {
       return res.redirect('/challenges/new');
     }
 
-    // 2. JSON-Daten parsen
-    let teams;
-    try {
-      teams = JSON.parse(teams_data);
-    } catch (e) {
-      console.error('JSON Parse Fehler:', e);
-      req.flash('error', 'Ungültige Team-Daten.');
-      return res.redirect('/challenges/new');
-    }
-
-    // 3. Aufgabenpaket als Vorlage laden
+    const teams = JSON.parse(teams_data);
     const aufgabenpaket = await db('aufgabenpakete').where({ id: aufgabenpaket_id }).first();
-    if (!aufgabenpaket) {
-      req.flash('error', 'Ausgewähltes Aufgabenpaket nicht gefunden.');
-      return res.redirect('/challenges/new');
-    }
 
     const trx = await db.transaction();
     try {
       for (const teamData of teams) {
         let teamId;
 
-        // DEBUG: Was kommt hier an?
-        console.log("--- Verarbeite Team-Daten ---");
-        console.log("ID vom Frontend:", teamData.id);
-        console.log("Typ von ID:", typeof teamData.id);
-        console.log("Name:", teamData.name);
-
-        // Der ultimative Check:
-        const isExisting = teamData.id && String(teamData.id).includes('existing-');
-        console.log("Wird als 'existing' erkannt?", isExisting);
-
-        if (isExisting) {
+        // CHECK: Ist es ein bestehendes Team? (ID beginnt mit 'existing-')
+        if (teamData.id && String(teamData.id).startsWith('existing-')) {
+          // Extrahiere die echte Datenbank-ID
           teamId = String(teamData.id).replace('existing-', '');
-          console.log("Extrahierte Team-ID für DB:", teamId);
-          // HIER DARF KEIN INSERT STEHEN
+
+          // OPTIONAL: Hier werden KEINE neuen Mitglieder eingefügt, 
+          // da das Team bereits in der DB existiert.
         }
         else {
-          console.log("WIRD NEU ANGELEGT!");
+          // NEUANLAGE: Nur wenn das Team im Modal komplett neu erstellt wurde
           const [newId] = await trx('teams').insert({
             name: teamData.name,
             created_at: db.fn.now(),
@@ -283,11 +260,10 @@ router.post('/', requireAuth, requireLehrer, async (req, res) => {
           }
         }
 
-
-        // Challenge erstellen (für JEDES Team eine, aber mit der richtigen teamId)
+        // CHALLENGE ERSTELLEN: Für jedes Team eine eigene Zeile (deine Logik)
         await trx('challenges').insert({
           aufgabenpaket_id,
-          team_id: teamId,
+          team_id: teamId, // Verknüpft entweder die bestehende oder die neue ID
           schuljahr_id,
           zusatzinfos,
           abgabedatum,
@@ -305,11 +281,10 @@ router.post('/', requireAuth, requireLehrer, async (req, res) => {
       res.redirect('/challenges');
     } catch (error) {
       await trx.rollback();
-      throw error; // Springt in den äußeren catch-Block
+      throw error;
     }
-
   } catch (error) {
-    console.error('Datenbank-Fehler beim Erstellen der Challenge:', error);
+    console.error('Fehler beim Erstellen:', error);
     req.flash('error', 'Fehler beim Erstellen: ' + error.message);
     res.redirect('/challenges/new');
   }
@@ -395,12 +370,12 @@ router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
       .orderBy('users.nachname', 'asc');
     const schuljahre = await db('schuljahre').orderBy('startjahr', 'desc');
 
+    // In routes/challenges.js bei router.get('/:id/edit')
     const allTeams = await db('teams')
       .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
       .select('teams.id', 'teams.name')
-      // GROUP_CONCAT packt alle User-IDs in einen String, z.B. "101,102,105"
-      .select(db.raw("GROUP_CONCAT(team_mitglieder.user_id) as mitglieder_ids"))
-      .groupBy('teams.id', 'teams.name')
+      .select(db.raw("GROUP_CONCAT(DISTINCT team_mitglieder.user_id) as mitglieder_ids"))
+      .groupBy('teams.id', 'teams.name') // Zwingt MySQL, jedes Team nur 1x auszugeben
       .orderBy('teams.name', 'asc');
 
     // In challenges.js -> GET /:id/edit

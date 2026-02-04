@@ -1,50 +1,61 @@
 <% pageTitle="Login" %>
 
-<div class="login-container">
-    <div class="login-row">
-        <div class="login-card-wrapper">
-            <div class="login-card">
-                <div class="login-card-header">
-                    <h4>Login</h4>
-                </div>
-                <div class="login-card-body">
-                    <!-- Schnell-Login Info -->
-                    <div class="login-info-box">
-                        <strong>Einfache Passwörter:</strong><br>
-                        <code>1</code> = Schüler<br>
-                        <code>2</code> = Lehrer<br>
-                        <code>3</code> = Admin
+    <div class="login-container">
+        <div class="login-row">
+            <div class="login-card-wrapper">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <h4>Login</h4>
                     </div>
-
-                    <form action="/auth/login" method="POST">
-                        <!-- Schnell-Login Input -->
-                        <div class="input-group login-quick-input">
-                            <label class="input-group-text login-quick-label">Schnell-Login</label>
-                            <input type="password" class="form-control login-quick-field" 
-                                   name="password" placeholder="1, 2 oder 3">
+                    <div class="login-card-body">
+                        <div class="login-info-box">
+                            <strong>Test-Logins:</strong><br>
+                            <code>1</code> (Schüler), <code>2</code> (Lehrer), <code>3</code> (Admin)
                         </div>
 
-                        <hr class="login-divider">
+                        <form action="/auth/login" method="POST">
+                            <div class="input-group login-quick-input mb-4">
+                                <label class="input-group-text login-quick-label">Schnell-ID</label>
+                                <input type="password" class="form-control login-quick-field" name="quickId"
+                                    placeholder="1, 2 oder 3">
+                            </div>
 
-                        <!-- Namens-Login -->
-                        <h6 class="login-name-title">Oder mit Namen einloggen</h6>
+                            <hr class="login-divider">
 
-                        <div class="input-group login-input-group">
-                            <label class="input-group-text login-label">Vorname</label>
-                            <input type="text" class="form-control login-field" 
-                                   name="vorname" placeholder="Vorname">
-                        </div>
+                            <h6 class="login-name-title">Schul-Login (Username)</h6>
 
-                        <div class="input-group login-input-group">
-                            <label class="input-group-text login-label">Nachname</label>
-                            <input type="text" class="form-control login-field" 
-                                   name="nachname" placeholder="Nachname">
-                        </div>
+                            <div class="input-group login-input-group mb-2">
+                                <span class="input-group-text login-label"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control login-field" name="username"
+                                    placeholder="Username (z.B. ab1234)">
+                            </div>
 
-                        <button type="submit" class="btn login-submit-btn">Anmelden</button>
-                    </form>
+                            <div class="input-group login-input-group mb-4">
+                                <span class="input-group-text login-label"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control login-field" name="password"
+                                    placeholder="Passwort">
+                            </div>
+
+                            <hr class="login-divider">
+
+                            <h6 class="login-name-title">Oder mit Namen suchen</h6>
+
+                            <div class="input-group login-input-group mb-2">
+                                <label class="input-group-text login-label">Vorname</label>
+                                <input type="text" class="form-control login-field" name="vorname"
+                                    placeholder="Vorname">
+                            </div>
+
+                            <div class="input-group login-input-group mb-4">
+                                <label class="input-group-text login-label">Nachname</label>
+                                <input type="text" class="form-control login-field" name="nachname"
+                                    placeholder="Nachname">
+                            </div>
+
+                            <button type="submit" class="btn login-submit-btn w-100">Anmelden</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>

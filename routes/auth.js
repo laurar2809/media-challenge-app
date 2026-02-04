@@ -1,119 +1,76 @@
-// routes/auth.js - MIT VOLLSTÄNDIGEN FEHLERMELDUNGEN
+// routes/auth.js
 const express = require('express');
 const router = express.Router();
+// HIER: Deinen ldapService importieren (Pfad eventuell anpassen)
+const { authenticateLDAP } = require('../utils/ldapService'); 
 
-// Login-Seite
-router.get('/login', (req, res) => {
-  res.render('login', {
-    title: 'Anmelden',
-    activePage: 'login'
-  });
-});
-
-// Login-Prozess mit BEIDEN Optionen - MIT FEHLERMELDUNGEN
 router.post('/login', async (req, res) => {
-  const { password, vorname, nachname } = req.body;
-  console.log(' Login versucht:', { password, vorname, nachname });
-
-  // OPTION 1: Schnell-Login mit 1,2,3
-  if (password && ['1', '2', '3'].includes(password)) {
-    const roleMap = {
-      '1': 1, // Schüler
-      '2': 2, // Lehrer  
-      '3': 3  // Admin
-    };
+    const { quickId, username, password, vorname, nachname } = req.body;
 
     try {
-      // Ersten User mit dieser Rolle finden
-      const user = await req.db('users')
-        .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
-        .where('users.user_role_id', roleMap[password])
-        .select('users.*', 'user_roles.rolle')
-        .first();
+        let user = null;
 
-      if (user) {
-        req.session.userId = user.id;
-        console.log(' Schnell-Login erfolgreich:', user.vorname, user.nachname, user.rolle);
-        req.flash('success', `Eingeloggt als ${user.rolle} (${user.vorname} ${user.nachname})!`);
-        return res.redirect('/');
-      } else {
-        console.log(' Kein User gefunden für Rolle:', password);
-        req.flash('error', `Kein Benutzer mit Rolle ${password} gefunden!`);
-        return res.redirect('/auth/login');
-      }
+        // --- OPTION 1: Schnell-Login (ID 1, 2 oder 3) ---
+        if (quickId && ['1', '2', '3'].includes(quickId)) {
+            const roleMap = { '1': 1, '2': 2, '3': 3 };
+            user = await req.db('users')
+                .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
+                .where('users.user_role_id', roleMap[quickId])
+                .select('users.*', 'user_roles.rolle')
+                .first();
+        }
+
+        // --- OPTION 2: SCHUL-LOGIN MIT LDAP ---
+        else if (username && password) {
+            // 1. In der eigenen Datenbank nach dem Kürzel suchen
+            user = await req.db('users')
+                .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
+                .where('users.username', username)
+                .select('users.*', 'user_roles.rolle')
+                .first();
+
+            if (user) {
+                // 2. LIVE-CHECK beim Schul-Server (LDAP)
+                console.log(`Prüfe LDAP-Passwort für: ${username}`);
+                const isAuthenticated = await authenticateLDAP(username, password);
+
+                if (!isAuthenticated) {
+                    console.log("LDAP: Passwort falsch.");
+                    req.flash('error', 'Schul-Passwort ist nicht korrekt.');
+                    return res.redirect('/auth/login');
+                }
+                console.log("LDAP: Login erfolgreich!");
+            } else {
+                req.flash('error', 'Username in der lokalen Datenbank nicht gefunden.');
+                return res.redirect('/auth/login');
+            }
+        }
+
+        // --- OPTION 3: Login mit Namen (Legacy) ---
+        else if (vorname && nachname) {
+            user = await req.db('users')
+                .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
+                .where('users.vorname', 'like', `%${vorname}%`)
+                .andWhere('users.nachname', 'like', `%${nachname}%`)
+                .select('users.*', 'user_roles.rolle')
+                .first();
+        }
+
+        // --- Session setzen und Redirect ---
+        if (user) {
+            req.session.userId = user.id;
+            req.flash('success', `Willkommen, ${user.vorname}!`);
+            return res.redirect('/');
+        } else {
+            req.flash('error', 'Bitte fülle die Login-Felder aus.');
+            return res.redirect('/auth/login');
+        }
+
     } catch (error) {
-      console.error('Schnell-Login DB Error:', error);
-      req.flash('error', 'Datenbank-Fehler bei der Anmeldung');
-      return res.redirect('/auth/login');
+        console.error('Login Error:', error);
+        req.flash('error', 'Technischer Fehler beim Login.');
+        res.redirect('/auth/login');
     }
-  }
-
-  // OPTION 2: Login mit Vor- und Nachname
-  if (vorname && nachname) {
-    try {
-      // Exakten User mit Vor- UND Nachname finden
-      const user = await req.db('users')
-        .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
-        .where('users.vorname', 'like', `%${vorname}%`)
-        .andWhere('users.nachname', 'like', `%${nachname}%`)
-        .select('users.*', 'user_roles.rolle')
-        .first();
-
-      if (user) {
-        req.session.userId = user.id;
-        console.log(' Namens-Login erfolgreich:', user.vorname, user.nachname, user.rolle);
-        req.flash('success', `Eingeloggt als ${user.rolle} (${user.vorname} ${user.nachname})!`);
-        return res.redirect('/');
-      } else {
-        console.log(' Kein User gefunden mit:', vorname, nachname);
-        req.flash('error', ` Kein Benutzer gefunden mit: "${vorname} ${nachname}"`);
-        return res.redirect('/auth/login');
-      }
-    } catch (error) {
-      console.error('Namens-Login DB Error:', error);
-      req.flash('error', ' Datenbank-Fehler bei der Anmeldung');
-      return res.redirect('/auth/login');
-    }
-  }
-
-  // OPTION 3: Nur Vorname eingegeben
-  if (vorname && !nachname) {
-    console.log(' Nur Vorname eingegeben:', vorname);
-    req.flash('error', ' Bitte gib sowohl Vorname als auch Nachname ein!');
-    return res.redirect('/auth/login');
-  }
-
-  // OPTION 4: Nur Nachname eingegeben
-  if (!vorname && nachname) {
-    console.log(' Nur Nachname eingegeben:', nachname);
-    req.flash('error', ' Bitte gib sowohl Vorname als auch Nachname ein!');
-    return res.redirect('/auth/login');
-  }
-
-  // OPTION 5: Ungültiges Passwort (nicht 1,2,3)
-  if (password && !['1', '2', '3'].includes(password)) {
-    console.log(' Ungültiges Passwort:', password);
-    req.flash('error', ' Ungültiges Passwort! Nur 1, 2 oder 3 sind erlaubt.');
-    return res.redirect('/auth/login');
-  }
-
-  // OPTION 6: Keine Daten eingegeben
-  console.log(' Keine Login-Daten eingegeben');
-  req.flash('error', ' Bitte gib entweder 1, 2, 3 ODER Vor- und Nachname ein!');
-  res.redirect('/auth/login');
-});
-
-// Logout
-router.post('/logout', (req, res) => {
-  console.log(' Logout aufgerufen - Session vorher:', req.session.userId);
-  req.session.destroy((err) => {
-    if (err) {
-      console.error(' Logout error:', err);
-      return res.redirect('/');
-    }
-    console.log(' Session erfolgreich zerstört');
-    res.redirect('/auth/login');
-  });
 });
 
 module.exports = router;
