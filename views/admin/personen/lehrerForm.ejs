@@ -18,6 +18,15 @@
       <input type="text" name="nachname" class="form-control" value="<%= item.nachname || '' %>" required>
     </div>
 
+    <!-- username -->
+    <div class="mb-3">
+      <label for="username" class="form-label">Schulkürzel (LDAP-Username)</label>
+      <input type="text" name="username" id="username" class="form-control" value="<%= item.username || '' %>" required>
+      <small class="text-muted">Wird für den Login benötigt (z.B. "mustermann").</small>
+    </div>
+
+
+
     <button type="submit" class="btn btn-custom-safe">Lehrer speichern</button>
     <a href="/lehrer" class="btn btn-secondary">Abbrechen</a>
   </form>

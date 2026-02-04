@@ -30,22 +30,38 @@ async function getLdapData() {
           const memberOf = entry.attributes.find(a => a.type === "memberOf")?.values || [];
 
           if (fullName && username) {
-            // DEBUG: Wir schauen uns an, was in memberOf steht
-            // Du kannst das löschen, sobald es funktioniert!
-            console.log(`User: ${fullName} (${username}) -> Gruppen: ${memberOf.length}`);
+            // 1. Logik für LEHRER: Wir prüfen, ob im Distinguished Name "OU=Lehrer" vorkommt
+            // Alternativ kannst du auch nach einer Gruppe "CN=G_Lehrer" suchen
+            const dnString = entry.dn.toString().toLowerCase();
+           const isLehrer = dnString.includes("ou=lehrer");
+           
+            if (isLehrer) {
+              if (!allGroupsData["_LehrerImport"]) allGroupsData["_LehrerImport"] = [];
 
+              // Wir trennen den vollen Namen grob in Vor- und Nachname
+              const nameParts = fullName.split(' ');
+              allGroupsData["_LehrerImport"].push({
+                fullName,
+                username: username.toLowerCase(),
+                vorname: nameParts[1] || "",
+                nachname: nameParts[0] || fullName,
+                roleId: 2 // WICHTIG: Lehrer-ID
+              });
+            }
+
+            // 2. Deine bestehende Logik für SCHÜLER (Klassen)
             memberOf.forEach(groupDn => {
-              // Wir extrahieren den Namen nach CN=
               const match = groupDn.match(/^CN=([^,]+)/i);
               if (match) {
                 const groupName = match[1];
-
-                // HTL Braunau spezifisch: Klassen fangen oft mit Ziffern an
-                // Falls die Klassen anders heißen (z.B. "Klasse_4BHELS"), 
-                // müssen wir das Regex /^\d/ anpassen.
+                // Wenn Gruppe mit einer Zahl beginnt (z.B. 4BHELS), ist es eine Klasse
                 if (/^\d/.test(groupName)) {
                   if (!allGroupsData[groupName]) allGroupsData[groupName] = [];
-                  allGroupsData[groupName].push({ fullName, username });
+                  allGroupsData[groupName].push({
+                    fullName,
+                    username: username.toLowerCase(),
+                    roleId: 1 // WICHTIG: Schüler-ID
+                  });
                 }
               }
             });
@@ -80,9 +96,9 @@ async function authenticateUser(username, password) {
   });
 }
 
-module.exports = { 
-    getLdapData, 
-    authenticateLDAP: authenticateUser 
+module.exports = {
+  getLdapData,
+  authenticateLDAP: authenticateUser
 };
 
 

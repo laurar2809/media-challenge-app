@@ -8,7 +8,7 @@
 <!-- Filter und Suchfunktion -->
 <%- include('../../partials/filter_search', {
   showKlasse: true,
-  showSchuljahr: true,
+  // showSchuljahr: true,
   showKategorie: false,
   showSearch: true,
   
@@ -18,9 +18,9 @@
   klasseSelectId: 'klassenFilter',
 
   // Schuljahr
-  schuljahre,
-  activeSchuljahr,
-  schuljahrSelectId: 'schuljahrFilter',
+  // schuljahre,
+  // activeSchuljahr,
+  // schuljahrSelectId: 'schuljahrFilter',
 
   // Suche
   searchContainerId: 'schuelerSearchContainer',
@@ -37,7 +37,7 @@
         <th scope="col">Vorname</th>
         <th scope="col">Nachname</th>
         <th scope="col">Klasse</th>
-        <th scope="col">Schuljahr</th>
+        <!-- <th scope="col">Schuljahr</th> -->
         <th scope="col" class="text-end actions-column">Aktionen</th>
       </tr>
     </thead>
@@ -66,9 +66,9 @@
             <td class="text-body-secondary">
               <%= schueler.klasse_name || 'Keine Klasse' %>
             </td>
-            <td class="text-body-secondary">
+            <!-- <td class="text-body-secondary">
               <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
-            </td>
+            </td> -->
             <td class="text-end nowrap-column">
               <a href="/schueler/<%= schueler.id %>/edit"
                  class="btn btn-outline-secondary btn-custom-edit btn-sm">Bearbeiten</a>

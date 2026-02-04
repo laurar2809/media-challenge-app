@@ -4,7 +4,7 @@ const { db } = require('../db');
 const { requireAuth, requireLehrer } = require('../middleware/auth');
 
 // Lehrer Übersicht - NUR Vorname und Nachname
-router.get('/', requireAuth, requireLehrer , async (req, res) => {
+router.get('/', requireAuth, requireLehrer, async (req, res) => {
   try {
     const { search } = req.query;
 
@@ -44,7 +44,7 @@ router.get('/', requireAuth, requireLehrer , async (req, res) => {
 });
 
 // Neuer Lehrer Formular
-router.get('/new',requireAuth, requireLehrer , async (req, res) => {
+router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   res.render('admin/personen/lehrerForm', {
     item: {},
     action: '/lehrer',
@@ -53,27 +53,34 @@ router.get('/new',requireAuth, requireLehrer , async (req, res) => {
   });
 });
 
-// Lehrer speichern
-router.post('/',requireAuth, requireLehrer , async (req, res) => {
-  const { vorname, nachname } = req.body;
+// Lehrer speichern (POST)
+router.post('/', requireAuth, requireLehrer, async (req, res) => {
+  const { vorname, nachname, username } = req.body; // username hinzufügen
 
-  if (!vorname || !nachname) {
-    req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
+  if (!vorname || !nachname || !username) {
+    req.flash('error', 'Vorname, Nachname und Kürzel (Username) sind Pflichtfelder.');
     return res.redirect('/lehrer/new');
   }
 
-  await db('users').insert({
-    vorname: vorname.trim(),
-    nachname: nachname.trim(),
-    user_role_id: 2 // Lehrer-Rolle
-  });
+  try {
+    await db('users').insert({
+      vorname: vorname.trim(),
+      nachname: nachname.trim(),
+      username: username.trim().toLowerCase(), // Wichtig für LDAP!
+      user_role_id: 2 // Lehrer-Rolle
+    });
 
-  req.flash('success', 'Lehrer erfolgreich angelegt.');
-  res.redirect('/lehrer');
+    req.flash('success', 'Lehrer erfolgreich angelegt.');
+    res.redirect('/lehrer');
+  } catch (error) {
+    console.error("Fehler beim Anlegen:", error);
+    req.flash('error', 'Kürzel existiert bereits oder Datenbankfehler.');
+    res.redirect('/lehrer/new');
+  }
 });
 
 // Lehrer bearbeiten Formular
-router.get('/:id/edit',requireAuth, requireLehrer , async (req, res) => {
+router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
   try {
     const lehrer = await db('users')
       .where({
@@ -101,8 +108,8 @@ router.get('/:id/edit',requireAuth, requireLehrer , async (req, res) => {
 });
 
 // Lehrer aktualisieren
-router.put('/:id', requireAuth, requireLehrer ,async (req, res) => {
-  const { vorname, nachname } = req.body;
+router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
+  const { vorname, nachname, username } = req.body;
 
   if (!vorname || !nachname) {
     req.flash('error', 'Vorname und Nachname sind Pflichtfelder.');
@@ -117,7 +124,9 @@ router.put('/:id', requireAuth, requireLehrer ,async (req, res) => {
       })
       .update({
         vorname: vorname.trim(),
-        nachname: nachname.trim()
+        nachname: nachname.trim(),
+        username: username.trim().toLowerCase()
+        
       });
 
     req.flash('success', 'Änderungen gespeichert.');
@@ -130,7 +139,7 @@ router.put('/:id', requireAuth, requireLehrer ,async (req, res) => {
 });
 
 // Lehrer löschen
-router.delete('/:id',requireAuth, requireLehrer , async (req, res) => {
+router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
   await db('users')
     .where({
       id: req.params.id,
