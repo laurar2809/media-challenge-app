@@ -34,8 +34,8 @@
   <table class="table table-hover table align-middle m-0 table-light">
     <thead class="table-light">
       <tr>
-        <th scope="col">Nachname</th>
         <th scope="col">Vorname</th>
+        <th scope="col">Nachname</th>
         <th scope="col">Klasse</th>
         <!-- <th scope="col">Schuljahr</th> -->
         <th scope="col" class="text-end actions-column">Aktionen</th>
@@ -53,8 +53,8 @@
         <% schueler.forEach(schueler => { %>
           <tr class="schueler-row" 
               data-id="<%= schueler.id %>"
-              data-vorname="<%= schueler.vorname.toLowerCase() %>"
-              data-nachname="<%= schueler.nachname.toLowerCase() %>"
+              data-vorname="<%= schueler.nachname.toLowerCase() %>"
+              data-nachname="<%= schueler.vorname.toLowerCase() %>"
               data-klasse="<%= (schueler.klasse_name || '').toLowerCase() %>"
               data-schuljahr="<%= (schueler.schuljahr_name || '').toLowerCase() %>">
             <td class="fw-medium">

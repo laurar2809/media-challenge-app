@@ -1,0 +1,132 @@
+<% pageTitle = 'Team Details: ' + team.name %>
+
+<% 
+  // Fortschrittsberechnung
+  const gesamt = challenges.length;
+  const erledigt = challenges.filter(c => c.status === 'bewertet' || c.status === 'eingereicht').length;
+  const prozent = gesamt > 0 ? Math.round((erledigt / gesamt) * 100) : 0;
+%>
+
+<div class="container mb-5">
+    <div class="py-3">
+        <a href="/teams" class="btn btn-outline-secondary btn-sm shadow-sm">
+            <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
+        </a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 m-0">Team: <%= team.name %></h1>
+        <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill">
+            <i class="bi bi-people-fill me-1"></i> <%= mitglieder.length %> Mitglieder
+        </span>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0 bg-light">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-uppercase small text-muted">Gesamtfortschritt des Teams</span>
+                <span class="badge bg-dark"><%= erledigt %> / <%= gesamt %> Challenges</span>
+            </div>
+            <div class="progress" style="height: 12px; border-radius: 10px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated <%= prozent === 100 ? 'bg-success' : 'bg-primary' %>" 
+                     role="progressbar" 
+                     style="width: <%= prozent %>%" 
+                     aria-valuenow="<%= prozent %>" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                </div>
+            </div>
+            <div class="text-end mt-1">
+                <small class="fw-bold"><%= prozent %>% abgeschlossen</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-bold py-3">Teammitglieder</div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        <% mitglieder.forEach(m => { %>
+                            <li class="list-group-item d-flex align-items-center py-3">
+                                <div class="avatar-circle me-3">
+                                    <%= m.vorname[0] %><%= m.nachname[0] %>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">
+                                        <%= m.vorname %> <%= m.nachname %>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-mortarboard small"></i>
+                                        <%= m.klasse_name || 'Keine Klasse' %> | <%= m.username %>
+                                    </small>
+                                </div>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-bold py-3">Challenge-Fortschritt</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Challenge</th>
+                                    <th>Deadline</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (challenges && challenges.length > 0) { %>
+                                    <% challenges.forEach(c => { %>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold"><%= c.title %></div>
+                                                <small class="badge bg-light text-dark border"><%= c.kategorie %></small>
+                                            </td>
+                                            <td>
+                                                <%= new Date(c.deadline).toLocaleDateString('de-DE') %>
+                                            </td>
+                                            <td>
+                                                <% 
+                                                    let s = c.status || 'offen';
+                                                    let badgeClass = 'bg-secondary';
+                                                    if(s === 'eingereicht') badgeClass = 'bg-info text-dark';
+                                                    if(s === 'bewertet') badgeClass = 'bg-success';
+                                                    if(s === 'abgelehnt') badgeClass = 'bg-danger';
+                                                %>
+                                                <span class="badge <%= badgeClass %>">
+                                                    <%= s.toUpperCase() %>
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <% if(c.status) { %>
+                                                    <a href="/bewertung/challenge/<%= c.challenge_id %>/team/<%= team.id %>" 
+                                                       class="btn btn-sm btn-outline-primary">Ansehen</a>
+                                                <% } else { %>
+                                                    <span class="text-muted small">Noch keine Abgabe</span>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">Diesem Team sind aktuell keine Challenges zugeordnet.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

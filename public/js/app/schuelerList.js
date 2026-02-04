@@ -1,82 +1,71 @@
-// LOGIK: für Schüler-Seite (Filter & Suche, Auflistung der zu suchenden Personen, löschen)
-
-
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('schuelerSearch');
     const klassenFilter = document.getElementById('klassenFilter');
-    const schuljahrFilter = document.getElementById('schuljahrFilter');
-    const schuelerRows = document.querySelectorAll('.schueler-row');
+    const schuljahrFilter = document.getElementById('schuljahrFilter'); // Falls wieder aktiv
 
     const deleteModal = document.getElementById('confirmDeleteModal');
     const deleteForm = document.getElementById('deleteConfirmForm');
     const confirmDeleteSubmit = document.getElementById('confirmDeleteSubmit');
 
-    let searchTimeout;
-    let currentItemIdToDelete = null;
+    // --- 1. Delete Modal Initialisierung (Bleibt gleich) ---
+    if (typeof initDeleteModal === 'function') {
+        initDeleteModal({
+            modal: deleteModal,
+            form: deleteForm,
+            submitBtn: confirmDeleteSubmit,
+            buildAction: (id) => `/schueler/${id}?_method=DELETE`
+        });
+    }
 
-
-    // Delete Modal -> PARTIAL
-    initDeleteModal({
-        modal: deleteModal,
-        form: deleteForm,
-        submitBtn: confirmDeleteSubmit,
-        buildAction: (id) => `/schueler/${id}?_method=DELETE`
-    });
-
-
-
-    // --- 3. Filter-/Such-Logik ---
+    // --- 2. Filter-Logik (Server-Side) ---
     function applyFilters() {
-        if (!klassenFilter || !schuljahrFilter || !searchInput || schuelerRows.length === 0) return;
+        const params = new URLSearchParams();
 
-        const klasseValue = klassenFilter.value.toLowerCase();
-        const schuljahrValue = schuljahrFilter.value.toLowerCase();
-        const searchValue = searchInput.value.trim().toLowerCase();
+        const klasseValue = klassenFilter ? klassenFilter.value : 'alle';
+        const searchValue = searchInput ? searchInput.value.trim() : '';
+        // const schuljahrValue = schuljahrFilter ? schuljahrFilter.value : 'alle';
 
-        let visibleCount = 0;
+        if (klasseValue !== 'alle') params.set('klasse', klasseValue);
+        if (searchValue) params.set('search', searchValue);
+        // if (schuljahrValue !== 'alle') params.set('schuljahr', schuljahrValue);
 
-        schuelerRows.forEach(row => {
-            const vorname = row.getAttribute('data-vorname') || '';
-            const nachname = row.getAttribute('data-nachname') || '';
-            const klasse = row.getAttribute('data-klasse') || '';
-            const schuljahr = row.getAttribute('data-schuljahr') || '';
+        // Seite mit neuen Parametern neu laden
+        window.location.href = window.location.pathname + '?' + params.toString();
+    }
 
-            const matchesKlasse = klasseValue === 'alle' || klasse === klasseValue;
-            const matchesSchuljahr = schuljahrValue === 'alle' || schuljahr === schuljahrValue;
-            const matchesSearch = !searchValue ||
-                vorname.includes(searchValue) ||
-                nachname.includes(searchValue) ||
-                klasse.includes(searchValue) ||
-                schuljahr.includes(searchValue);
+    // --- 3. Event Listener ---
+    if (klassenFilter) {
+        klassenFilter.addEventListener('change', applyFilters);
+    }
 
-            if (matchesKlasse && matchesSchuljahr && matchesSearch) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
+    if (schuljahrFilter) {
+        schuljahrFilter.addEventListener('change', applyFilters);
+    }
+
+    // Suche mit Badge-Logik aus deiner FilterUtils
+    if (searchInput && window.FilterUtils) {
+        const searchBadge = document.getElementById('searchBadge'); // ID prüfen!
+        const searchTermText = document.getElementById('searchTermText'); // ID prüfen!
+
+        window.FilterUtils.initSearchWithBadge({
+            input: searchInput,
+            badge: searchBadge,
+            textSpan: searchTermText,
+            onChange: (query) => {
+                // Nur Filtern, wenn sich wirklich was geändert hat, um Endlosschleifen zu vermeiden
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('search') !== query) {
+                    applyFilters();
+                }
             }
         });
-
     }
 
-    if (klassenFilter) klassenFilter.addEventListener('change', () => applyFilters());
-    if (schuljahrFilter) schuljahrFilter.addEventListener('change', () => applyFilters());
-    if (searchInput) {
-        searchInput.addEventListener('input', function () {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(applyFilters, 300);
-        });
-    }
-
-    // NEU: Suche über FilterUtils
-    FilterUtils.initSearchWithBadge({
-        input: searchInput,
-        badge: searchBadge,
-        textSpan: searchTermText,
-        onChange: () => applyFilters()
-    });
-
+    // Fokus-Trick: Wenn nach dem Reload ein Suchbegriff da ist, Cursor ans Ende setzen
     if (searchInput && searchInput.value) {
-        applyFilters();
+        searchInput.focus();
+        const val = searchInput.value;
+        searchInput.value = '';
+        searchInput.value = val;
     }
 });

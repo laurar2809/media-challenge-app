@@ -86,6 +86,57 @@ router.get('/', requireAuth, requireLehrer, async (req, res) => {
     }
 });
 
+router.get('/:id/teamDetail', requireAuth, requireLehrer, async (req, res) => {
+  try {
+    const teamId = req.params.id;
+
+    // 1. Team-Basis-Infos (einfach ohne Klasse laden)
+    const team = await db('teams').where('id', teamId).first();
+    if (!team) return res.status(404).send('Team nicht gefunden');
+
+    // 2. Mitglieder mit ihrer jeweiligen Klasse laden
+    const mitglieder = await db('team_mitglieder')
+      .join('users', 'team_mitglieder.user_id', 'users.id')
+      .leftJoin('klassen', 'users.klasse_id', 'klassen.id') // Hier holen wir die Klasse des Schülers
+      .where('team_mitglieder.team_id', teamId)
+      .select(
+        'users.vorname', 
+        'users.nachname', 
+        'users.username', 
+        'klassen.name as klasse_name' // Die Klasse des einzelnen Schülers
+      );
+
+    // 3. Challenges (Dein bestehender Code)
+    const challenges = await db('challenges')
+      .join('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
+      .leftJoin('challenge_abgaben', function() {
+          this.on('challenge_abgaben.challenge_id', '=', 'challenges.id')
+          .andOn('challenge_abgaben.team_id', '=', db.raw('?', [teamId]))
+      })
+      .where('challenges.team_id', teamId)
+      .select(
+        'challenges.id as challenge_id',
+        'challenges.abgabedatum as deadline',
+        'aufgabenpakete.title',
+        'aufgabenpakete.kategorie',
+        'challenge_abgaben.status',
+        'challenge_abgaben.updated_at as abgegeben_am'
+      )
+      .orderBy('challenges.abgabedatum', 'asc');
+
+    res.render('admin/personen/teamDetail', {
+      team,
+      mitglieder,
+      challenges,
+      activePage: 'teams'
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/teams');
+  }
+});
+
+
 router.post('/', requireAuth, requireLehrer, async (req, res) => {
     const { name, members } = req.body;
 
@@ -165,6 +216,8 @@ router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
         res.redirect('/teams?error=collision'); 
     }
 });
+
+
 
 
 

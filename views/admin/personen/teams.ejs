@@ -1,113 +1,115 @@
 <% pageTitle="Team Übersicht" %>
 
-<style>
-    /* Die Lebensversicherung: Scrollen immer erlauben und Starre verhindern */
-    body.modal-open {
-        overflow-y: auto !important;
-        padding-right: 0 !important;
-    }
-    body {
-        overflow-y: scroll !important;
-    }
-    .cursor-pointer { cursor: pointer; }
-</style>
+    <style>
+        /* Die Lebensversicherung: Scrollen immer erlauben und Starre verhindern */
+        body.modal-open {
+            overflow-y: auto !important;
+            padding-right: 0 !important;
+        }
 
-<div id="schuelerDataContainer" class="d-none" data-schueler='<%= JSON.stringify(schueler) %>'></div>
+        body {
+            overflow-y: scroll !important;
+        }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h1 class="h4 mb-0">Alle Teams</h1>
-    <button type="button" 
-            id="openCreateTeamModal" 
-            class="btn btn-custom-newCategorieChallenge btn-sm"
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+
+    <div id="schuelerDataContainer" class="d-none" data-schueler='<%= JSON.stringify(schueler) %>'></div>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h4 mb-0">Alle Teams</h1>
+        <button type="button" id="openCreateTeamModal" class="btn btn-custom-newCategorieChallenge btn-sm"
             onclick="window.teamModalInstance.prepareCreate()"> + Neues Team erstellen
-    </button>
-</div>
+        </button>
+    </div>
 
-<div class="mb-3">
-    <% if (typeof error !=='undefined' && error==='collision' ) { %>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Achtung:</strong> Dieses Team kann nicht gelöscht werden, da es bereits mit Challenges verknüpft ist.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <% } %>
-</div>
-
-<%- include('../../partials/filter_search', {
-    showSearch: true,
-    searchInputId: 'teamsLiveSearch',
-    searchContainerId: 'teamsSearchContainer',
-    searchTerm: '',
-    showKlasse: false,
-    showSchuljahr: false,
-    showKategorie: false
-}) %>
-
-<div class="table-responsive">
-    <table class="table table-hover table align-middle m-0 table-light">
-        <thead class="table-light">
-            <tr>
-                <th scope="col">Team Name</th>
-                <th scope="col">Team ID</th>
-                <th scope="col">Mitglieder (Anzahl)</th>
-                <th scope="col">Mitglieder Details</th>
-                <th scope="col" class="text-end">Aktionen</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (teams && teams.length > 0) { %>
-                <% teams.forEach(team => { %>
-                <tr class="team-card" 
-                    data-name="<%= team.name.toLowerCase() %>" 
-                    data-members="<%= (team.mitglieder_liste || '').toLowerCase() %>">
-                    
-                    <td class="fw-medium">
-                        <i class="bi bi-people me-1"></i> <%= team.name %>
-                    </td>
-                    <td class="text-muted small"><%= team.id %></td>
-                    <td><%= team.mitglieder_count %></td>
-                    <td>
-                        <% if (team.mitglieder_liste) { %>
-                            <span class="small text-muted">
-                                <i class="bi bi-person-fill"></i> <%= team.mitglieder_liste %>
-                            </span>
-                        <% } else { %>
-                            <span class="text-muted small">Keine Mitglieder</span>
-                        <% } %>
-                    </td>
-                    <td class="text-end">
-                        <div class="d-flex gap-1 justify-content-end">
-                            <button type="button" class="btn btn-outline-secondary btn-sm"
-                                onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
-                                Bearbeiten
-                            </button>
-                            <button type="button" class="btn btn-custom-delete btn-sm delete-team-btn"
-                                data-id="<%= team.id %>" data-name="<%= team.name %>">
-                                Löschen
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <% }) %>
-            <% } else { %>
-                <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">Keine Teams gefunden.</td>
-                </tr>
+    <div class="mb-3">
+        <% if (typeof error !=='undefined' && error==='collision' ) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Achtung:</strong> Dieses Team kann nicht gelöscht werden, da es bereits mit Challenges verknüpft
+                ist.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             <% } %>
-        </tbody>
-    </table>
-</div>
+    </div>
 
-<%- include('../../partials/teamModal', { modalId: 'teamModal', schueler: schueler, klassen: klassen, schuljahre: schuljahre }) %>
+    <%- include('../../partials/filter_search', { showSearch: true, searchInputId: 'teamsLiveSearch' ,
+        searchContainerId: 'teamsSearchContainer' , searchTerm: '' , showKlasse: false, showSchuljahr: false,
+        showKategorie: false }) %>
 
-<%- include('../../partials/deleteModal', { 
-    modalId: 'deleteTeamModal', 
-    formId: 'deleteTeamForm',
-    submitButtonId: 'confirmDeleteTeamBtn', 
-    title: 'Team löschen',
-    bodyText: 'Möchtest du dieses Team wirklich löschen?'
-}) %>
+        <div class="table-responsive">
+            <table class="table table-hover table align-middle m-0 table-light">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Team Name</th>
+                        <th scope="col">Team ID</th>
+                        <th scope="col">Mitglieder (Anzahl)</th>
+                        <th scope="col">Mitglieder Details</th>
+                        <th scope="col" class="text-end">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (teams && teams.length> 0) { %>
+                        <% teams.forEach(team=> { %>
+                            <tr class="team-card" data-name="<%= team.name.toLowerCase() %>"
+                                data-members="<%= (team.mitglieder_liste || '').toLowerCase() %>">
 
-<script src="/js/app/teamModalLogic.js"></script>
-<script src="/js/app/teamsLogic.js"></script>
-<script src="/js/app/utils/filterUtils.js"></script>
+                                <td class="fw-medium">
+                                    <i class="bi bi-people me-1"></i>
+                                    <%= team.name %>
+                                </td>
+                                <td class="text-muted small">
+                                    <%= team.id %>
+                                </td>
+                                <td>
+                                    <%= team.mitglieder_count %>
+                                </td>
+                                <td>
+                                    <% if (team.mitglieder_liste) { %>
+                                        <span class="small text-muted">
+                                            <i class="bi bi-person-fill"></i>
+                                            <%= team.mitglieder_liste %>
+                                        </span>
+                                        <% } else { %>
+                                            <span class="text-muted small">Keine Mitglieder</span>
+                                            <% } %>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-flex gap-1 justify-content-end">
+                                        <a href="/teams/<%= team.id %>/teamDetail"
+                                            class="btn btn-outline-primary btn-sm">
+                                            Details
+                                        </a>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="prepareEditTeam('<%= team.id %>', '<%= team.name %>', '<%= team.mitglieder_ids %>')">
+                                            Bearbeiten
+                                        </button>
+                                        <button type="button" class="btn btn-custom-delete btn-sm delete-team-btn"
+                                            data-id="<%= team.id %>" data-name="<%= team.name %>">
+                                            Löschen
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">Keine Teams gefunden.</td>
+                                    </tr>
+                                    <% } %>
+                </tbody>
+            </table>
+        </div>
 
+        <%- include('../../partials/teamModal', { modalId: 'teamModal' , schueler: schueler, klassen: klassen,
+            schuljahre: schuljahre }) %>
+
+            <%- include('../../partials/deleteModal', { modalId: 'deleteTeamModal' , formId: 'deleteTeamForm' ,
+                submitButtonId: 'confirmDeleteTeamBtn' , title: 'Team löschen' ,
+                bodyText: 'Möchtest du dieses Team wirklich löschen?' }) %>
+
+                <script src="/js/app/teamModalLogic.js"></script>
+                <script src="/js/app/teamsLogic.js"></script>
+                <script src="/js/app/utils/filterUtils.js"></script>
