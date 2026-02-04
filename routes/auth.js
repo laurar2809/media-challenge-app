@@ -19,20 +19,32 @@ router.get('/login', (req, res) => {
 
 router.post('/login', async (req, res) => {
   console.log("LOGIN TEST:", req.body);
-  
+
   const { quickId, username, password, vorname, nachname } = req.body;
 
   try {
     let user = null;
 
-    // --- OPTION 1: Schnell-Login (ID 1, 2 oder 3) ---
+    // --- OPTION 1: Schnell-Login (Gezielte Test-User statt "irgendwer") ---
     if (quickId && ['1', '2', '3'].includes(quickId)) {
       const roleMap = { '1': 1, '2': 2, '3': 3 };
-      user = await req.db('users')
+
+      let query = req.db('users')
         .leftJoin('user_roles', 'users.user_role_id', 'user_roles.id')
-        .where('users.user_role_id', roleMap[quickId])
-        .select('users.*', 'user_roles.rolle')
-        .first();
+        .where('users.user_role_id', roleMap[quickId]);
+
+      // Spezielle Logik, damit nicht "Martin" eingeloggt wird:
+      if (quickId === '1') {
+        query = query.andWhere('users.vorname', 'Test'); // Sucht den User "Test Schüler"
+      } else if (quickId === '3') {
+        query = query.andWhere('users.nachname', 'Nobis'); // Sucht gezielt Daniela Nobis
+      }
+
+      user = await query.select('users.*', 'user_roles.rolle').first();
+
+      if (!user) {
+        console.log(`Schnell-Login fehlgeschlagen für ID ${quickId} - User nicht gefunden.`);
+      }
     }
 
     // --- OPTION 2: SCHUL-LOGIN MIT LDAP ---
@@ -90,8 +102,8 @@ router.post('/login', async (req, res) => {
 
 // === LOGOUT ROUTE HINZUFÜGEN ===
 router.post('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/auth/login');
+  req.session.destroy();
+  res.redirect('/auth/login');
 });
 
 
