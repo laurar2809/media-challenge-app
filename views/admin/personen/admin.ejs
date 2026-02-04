@@ -1,0 +1,94 @@
+<% pageTitle = "Administratoren" %>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 m-0">Administratoren</h2>
+  <a href="/admin/new" class="btn btn-custom-newCategorieChallenge btn-sm">+ Neuer Admin</a>
+</div>
+
+<div class="col-md-6">
+  <div class="position-relative" id="searchContainer">
+    <div class="input-group mb-3">
+      <span class="input-group-text">
+        <i class="bi bi-search"></i>
+      </span>
+      <input type="text" id="adminSearch" class="form-control p-1 border-start-0"
+             placeholder="Suche nach Name oder Kürzel..." value="<%= searchTerm || '' %>" autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover table align-middle m-0 table-light">
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Vorname</th>
+        <th scope="col">Nachname</th>
+        <th scope="col">Username (Kürzel)</th>
+        <th scope="col" class="text-end actions-column">Aktionen</th>
+      </tr>
+    </thead>
+
+    <tbody id="adminTableBody">
+      <% if (admins && admins.length === 0) { %>
+        <tr>
+          <td colspan="4" class="text-center py-4 text-muted">
+            <% if (searchTerm) { %>
+              Keine Administratoren gefunden für die Suche
+            <% } else { %>
+              Noch keine Administratoren eingetragen
+            <% } %>
+          </td>
+        </tr>
+      <% } %>
+
+      <% if (admins && admins.length > 0) { %>
+        <% admins.forEach(admin => { %>
+          <tr class="admin-row" 
+              data-vorname="<%= (admin.vorname || '').toLowerCase() %>"
+              data-nachname="<%= (admin.nachname || '').toLowerCase() %>"
+              data-username="<%= (admin.username || '').toLowerCase() %>">
+            <td class="fw-medium">
+              <%= admin.vorname %>
+            </td>
+            <td class="fw-medium">
+              <%= admin.nachname %>
+            </td>
+            <td class="text-muted">
+              <% if (admin.username) { %>
+                <code><%= admin.username %></code>
+              <% } else { %>
+                <span class="ext-dark">NULL</span>
+              <% } %>
+            </td>
+            <td class="text-end nowrap-column">
+              <a href="/admin/<%= admin.id %>/edit"
+                 class="btn btn-outline-secondary btn-custom-edit btn-sm">Bearbeiten</a>
+              
+              <% if (typeof user !== 'undefined' && user && admin.id !== user.id) { %>
+                <button type="button" class="btn btn-outline-danger btn-custom-delete btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#confirmDeleteAdminModal"
+                        data-id="<%= admin.id %>">Löschen</button>
+              <% } else { %>
+                <button class="btn btn-sm btn-outline-light text-muted" disabled title="Eigener Account">
+                  <i class="bi bi-person-check"></i> Ich
+                </button>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+
+  <%- include('../../partials/deleteModal', {
+    modalId: 'confirmDeleteAdminModal',
+    formId: 'deleteAdminForm',
+    submitButtonId: 'confirmDeleteAdminSubmit',
+    title: 'Administrator entfernen',
+    bodyText: 'Möchtest du diesem Benutzer wirklich die Administrator-Rechte entziehen?'
+  }) %>
+</div>
+
+<script src="/js/app/utils/filterUtils.js"></script>
+<script src="/js/app/utils/deleteModalUtils.js"></script>
+<script src="/js/app/adminList.js"></script>

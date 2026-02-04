@@ -100,6 +100,7 @@ app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
 app.use('/kategorien', require('./routes/kategorien'));
 app.use('/api', require('./routes/api'));
 app.use('/lehrer', require('./routes/lehrer'));
+app.use('/admin', require('./routes/admin'));
 app.use('/auth', require('./routes/auth'));
 app.use('/teams', require('./routes/teams'));
 app.use('/', require('./routes/upload'));
