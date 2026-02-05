@@ -15,8 +15,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(morgan('dev'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '100mb'}));
+app.use(express.json({ limit: '100mb' }));
 //  ERSETZEN SIE DIES MIT:
 app.use(methodOverride(function (req, res) {
     let method = null;

@@ -80,7 +80,7 @@ const abgabeFileFilter = (req, file, cb) => {
 const uploadAbgabe = multer({
   storage: uploadAbgabeStorage,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max pro Datei
+    fileSize: 100 * 1024 * 1024, // 100MB max pro Datei
     files: 10 // Max 10 Dateien gleichzeitig
   },
   fileFilter: abgabeFileFilter

@@ -112,7 +112,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         Array.from(files).forEach(file => {
-            uploadFile(file);
+            if (file.size > MAX_SIZE) {
+                showMessage(`Datei "${file.name}" ist zu groß (max. 100 MB).`, 'danger');
+            } else {
+                uploadFile(file); //
+            }
         });
     }
 
