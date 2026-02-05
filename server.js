@@ -98,7 +98,7 @@ app.use('/challenges', require('./routes/challenges'));
 app.use('/schueler', require('./routes/schueler'));
 app.use('/aufgabenpakete', require('./routes/aufgabenpakete'));
 app.use('/kategorien', require('./routes/kategorien'));
-app.use('/api', require('./routes/api'));
+app.use('/api', require('./routes/api/searchApi'));
 app.use('/lehrer', require('./routes/lehrer'));
 app.use('/admin', require('./routes/admin'));
 app.use('/auth', require('./routes/auth'));
