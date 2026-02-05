@@ -8,8 +8,8 @@
         <div class="d-flex align-items-center gap-2 text-muted">
           <span class="badge bg-secondary">Team: <%= abgabe.team_name %></span>
           <span class="small">
-             Status:
-                <%= abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1) %>
+            Status:
+            <%= abgabe.status.charAt(0).toUpperCase() + abgabe.status.slice(1) %>
 
           </span>
         </div>
@@ -18,27 +18,44 @@
         <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
       </a>
     </div>
-    
+
 
     <div class="row">
       <div class="col-lg-8">
 
         <div class="card mb-3">
-        <div class="card">
-          <div class="card-header text-bg-light">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-people"></i> Teammitglieder
-            </h5>
+          <div class="card">
+            <div class="card-header text-bg-light">
+              <h5 class="card-title mb-0">
+                <i class="bi bi-people"></i> Teammitglieder
+              </h5>
+            </div>
+            <ul class="list-group list-group-flush">
+              <% if (teamMitglieder && teamMitglieder.length> 0) { %>
+                <% teamMitglieder.forEach(mitglied=> { %>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <i class="bi bi-person-circle me-2 text-primary"></i>
+                      <strong>
+                        <%= mitglied.vorname %>
+                          <%= mitglied.nachname %>
+                      </strong>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-secondary border">
+                      <%= mitglied.klasse_name || 'Keine Klasse' %>
+                    </span>
+                  </li>
+                  <% }) %>
+                    <% } else { %>
+                      <li class="list-group-item text-muted small italic text-center py-3">
+                        <i class="bi bi-info-circle me-1"></i> Keine Mitglieder gefunden.
+                      </li>
+                      <% } %>
+            </ul>
           </div>
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item text-muted">
-              *Teammitgliederliste würde hier über eine weitere Abfrage eingefügt*
-            </li>
-          </ul>
-        </div>
         </div>
 
-        
+
         <div class="card ">
           <div class="card-header text-bg-light mb-3">
             <h5 class="card-title mb-0">
@@ -48,50 +65,65 @@
           <div class="card-body">
 
 
-                  <div id="mediaGallery" class="row g-3">
-                    <% if (medien && medien.length===0) { %>
-                      <div class="col-12 text-center py-5 text-muted">
-                        <i class="bi bi-exclamation-triangle display-6"></i>
-                        <p class="mt-2">Keine Mediendateien zu dieser Abgabe gefunden.</p>
-                      </div>
-                      <% } %>
+            <div id="mediaGallery" class="row g-3">
+              <% if (medien && medien.length===0) { %>
+                <div class="col-12 text-center py-5 text-muted">
+                  <i class="bi bi-exclamation-triangle display-6"></i>
+                  <p class="mt-2">Keine Mediendateien zu dieser Abgabe gefunden.</p>
+                </div>
+                <% } %>
 
-                        <% medien.forEach(medium=> { %>
-                          <div class="col-sm-6 col-md-3 col-lg-3">
-                            <div class="media-preview card h-100 shadow-sm">
-                              <div
-                                class="media-container text-center bg-dark text-white rounded-top media-container-fixed">
+                  <% medien.forEach(medium=> { %>
+                    <div class="col-6 col-sm-4 col-md-4 col-xl-3">
+                      <div class="card h-100 shadow-sm border-0 bg-white">
+                        <div style="height: 120px; overflow: hidden; position: relative;"
+                          class="rounded-top bg-dark d-flex align-items-center justify-content-center">
 
-                                <% if (medium.datei_typ==='image' ) { %>
-                                  <img src="<%= medium.datei_pfad %>" alt="<%= medium.original_name %>"
-                                    class="img-fluid media-image-cover">
-                                  <% } else if (medium.datei_typ==='video' ) { %>
-                                    <i class="bi bi-camera-video display-4 d-block pt-4"></i>
-                                    Video
-                                    <% } else if (medium.datei_typ==='audio' ) { %>
-                                      <i class="bi bi-mic display-4 d-block pt-4"></i>
-                                      Audio
-                                      <% } else { %>
-                                        <i class="bi bi-file-earmark-text display-4 d-block pt-4 text-muted"></i>
-                                        Dokument
-                                        <% } %>
-
+                          <% if (medium.datei_typ==='image' ) { %>
+                            <img src="<%= medium.datei_pfad %>" class="w-100 h-100" style="object-fit: cover;">
+                            <% } else if (medium.datei_typ==='video' ) { %>
+                              <div class="text-center text-white">
+                                <i class="bi bi-play-circle-fill fs-1"></i>
+                                <div style="font-size: 0.6rem; text-transform: uppercase;">Video</div>
                               </div>
-                              <div class="card-body p-2 small">
-                                <div class="text-truncate fw-medium" title="<%= medium.original_name %>">
-                                  <%= medium.original_name %>
+                              <% } else if (medium.datei_typ==='audio' ) { %>
+                                <div class="text-center text-warning">
+                                  <i class="bi bi-mic-fill fs-1"></i>
+                                  <div style="font-size: 0.6rem; text-transform: uppercase;">Audio</div>
                                 </div>
-                                <a href="<%= medium.datei_pfad %>" target="_blank" class="text-decoration-none">
-                                  Anzeigen <i class="bi bi-box-arrow-up-right"></i>
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                          <% }); %>
-                  </div>
+                                <% } else { %>
+                                  <div class="text-center text-info">
+                                    <i class="bi bi-file-earmark-text-fill fs-1"></i>
+                                    <div style="font-size: 0.6rem; text-transform: uppercase;">Dokument</div>
+                                  </div>
+                                  <% } %>
+                        </div>
 
-                  <hr>
-                  <% if (abgabe.beschreibung) { %>
+                        <div class="card-body p-2 d-flex flex-column justify-content-between">
+                          <div class="small fw-bold text-truncate mb-2" title="<%= medium.original_name %>"
+                            style="max-width: 100%;">
+                            <%= medium.original_name %>
+                          </div>
+
+                          <div class="d-flex justify-content-between align-items-center border-top pt-2">
+                            <a href="<%= medium.datei_pfad %>" target="_blank" class="text-decoration-none fw-medium"
+                              style="font-size: 0.75rem;">
+                              Ansehen <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.65rem;"></i>
+                            </a>
+
+                            <a href="<%= medium.datei_pfad %>" download="<%= medium.original_name %>"
+                              class="text-secondary p-0" title="Herunterladen" style="line-height: 1;">
+                              <i class="bi bi-download" style="font-size: 1rem;"></i>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <% }); %>
+            </div>
+
+            <hr>
+            <% if (abgabe.beschreibung) { %>
               <p class="text-muted small">
                 <%= abgabe.beschreibung %>
               </p>
@@ -102,7 +134,7 @@
           </div>
         </div>
 
-        
+
       </div>
 
       <div class="col-lg-4">
