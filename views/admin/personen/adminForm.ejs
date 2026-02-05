@@ -1,0 +1,27 @@
+<% pageTitle = title %>
+
+<h1 class="h4 mb-3">
+  <%= title %>
+</h1>
+
+<form action="<%= action %>" method="POST">
+
+  <div class="input-group mb-3">
+    <span class="input-group-text">Vorname *</span>
+    <input type="text" name="vorname" class="form-control" value="<%= item.vorname || '' %>" required>
+  </div>
+
+  <div class="input-group mb-3">
+    <span class="input-group-text">Nachname *</span>
+    <input type="text" name="nachname" class="form-control" value="<%= item.nachname || '' %>" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="username" class="form-label">Schulkürzel (LDAP-Username)</label>
+    <input type="text" name="username" id="username" class="form-control" value="<%= item.username || '' %>" required>
+    <small class="text-muted">Wird für den Login benötigt (z.B. "mustermann").</small>
+  </div>
+
+  <button type="submit" class="btn btn-custom-safe">Administrator speichern</button>
+  <a href="/admin" class="btn btn-secondary">Abbrechen</a>
+</form>
