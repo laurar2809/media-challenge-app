@@ -49,24 +49,45 @@ router.get('/', requireAuth, async (req, res) => {
       });
 
     } else {
-      // 2. ROLLENPRÜFUNG: LEHRER / ADMIN (MySQL Optimiert)
-      console.log(`Lade ALLE Challenges für ${req.currentUser.rolle}`);
+      // 2. ROLLENPRÜFUNG: LEHRER / ADMIN
+      console.log(`Lade ALLE Challenges für Rolle: ${req.currentUser.user_role_id}`);
+
+      // --- DATENBANK-WEICHE START ---
+      const isSqlite = req.db.client.config.client === 'sqlite3' || req.db.client.config.client === 'better-sqlite3';
+
+      // SQL-Syntax für Namen (SQLite nutzt ||, MySQL nutzt CONCAT)
+      const nameExpression = isSqlite
+        ? "m.vorname || ' ' || m.nachname"
+        : "CONCAT(m.vorname, ' ', m.nachname)";
+
+      // SQL-Syntax für Group_Concat (MySQL braucht SEPARATOR Wort, SQLite nicht)
+      const groupConcatSql = isSqlite
+        ? `GROUP_CONCAT(DISTINCT ${nameExpression})`
+        : `GROUP_CONCAT(DISTINCT ${nameExpression} SEPARATOR ', ')`;
+      // --- DATENBANK-WEICHE ENDE ---
 
       let challengesQuery = req.db('challenges')
         .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
         .leftJoin('teams', 'challenges.team_id', 'teams.id')
         .leftJoin('schuljahre', 'challenges.schuljahr_id', 'schuljahre.id')
-        // Neu: Joins für die Mitglieder-Namen
         .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
         .leftJoin('users as m', 'team_mitglieder.user_id', 'm.id');
 
-      // Filter anwenden
+      // Filter anwenden (Nur filtern, wenn nicht 'alle' gewählt ist)
       if (activeSchuljahr !== 'alle') {
         challengesQuery = challengesQuery.where('schuljahre.name', activeSchuljahr);
       }
+
+      // WICHTIG: Schuljahr-Fix für Lehrer (Falls Lehrer kein Schuljahr im Profil hat)
+      if (req.currentUser.schuljahr_id && activeSchuljahr === 'alle') {
+        // Optional: Lehrer sieht standardmäßig nur sein aktuelles Schuljahr
+        // challengesQuery = challengesQuery.where('challenges.schuljahr_id', req.currentUser.schuljahr_id);
+      }
+
       if (activeKategorie !== 'alle') {
         challengesQuery = challengesQuery.where('aufgabenpakete.kategorie', activeKategorie);
       }
+
       if (searchTerm && searchTerm.length >= 2) {
         const searchLower = searchTerm.toLowerCase();
         challengesQuery = challengesQuery.where(function () {
@@ -75,7 +96,6 @@ router.get('/', requireAuth, async (req, res) => {
         });
       }
 
-      // Die magische MySQL Abfrage mit GROUP_CONCAT
       const challenges = await challengesQuery
         .select(
           'challenges.*',
@@ -84,10 +104,10 @@ router.get('/', requireAuth, async (req, res) => {
           'aufgabenpakete.icon as aufgabenpaket_icon',
           'teams.name as team_name',
           'schuljahre.name as schuljahr_name',
-          // MySQL schmilzt alle Vornamen + Nachnamen der Gruppe zu einem String zusammen
-          req.db.raw("GROUP_CONCAT(DISTINCT CONCAT(m.vorname, ' ', m.nachname) SEPARATOR ', ') as team_mitglieder_names")
+          // Hier wird jetzt die dynamische Weiche eingesetzt:
+          req.db.raw(`${groupConcatSql} as team_mitglieder_names`)
         )
-        .groupBy('challenges.id') // Gruppieren, damit jede Challenge nur 1x erscheint
+        .groupBy('challenges.id')
         .orderBy('challenges.created_at', 'desc');
 
       // Filter-Daten für die Dropdowns laden
@@ -107,6 +127,7 @@ router.get('/', requireAuth, async (req, res) => {
         searchTerm
       });
     }
+
 
   } catch (error) {
     console.error('Challenges GET Fehler:', error);
