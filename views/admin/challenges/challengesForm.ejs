@@ -1,57 +1,6 @@
 <% pageTitle=title %>
 
 
-  <style>
-    /* 1. Deine Basis-Regeln: Scrollen immer erlauben */
-    body {
-      overflow-y: scroll !important;
-    }
-
-    body.modal-open {
-      overflow-y: auto !important;
-      padding-right: 0 !important;
-    }
-
-    /* 2. NEU: Graues Overlay entfernen, wenn das Modal nicht aktiv ist */
-    /* Falls Bootstrap vergisst, den Schatten zu löschen: */
-    body:not(.modal-open) .modal-backdrop {
-      display: none !important;
-    }
-
-    /* Falls das Modal zwar im HTML ist, aber nicht mehr angezeigt wird (.show fehlt) */
-    .modal-backdrop.fade:not(.show) {
-      display: none !important;
-    }
-
-    /* 3. Sicherheits-Fix: Klicks wieder freigeben */
-    /* Manchmal liegt eine unsichtbare Schicht über der Seite */
-    .modal-backdrop {
-      pointer-events: none;
-      /* Klicks gehen durch den Schatten hindurch */
-    }
-
-    .modal {
-      pointer-events: none;
-      /* Das Modal-Fenster selbst blockiert nichts mehr... */
-    }
-
-    .modal-dialog {
-      pointer-events: auto;
-      /* ...außer der Bereich, wo man wirklich tippt! */
-    }
-
-    /* Falls der offizielle Backdrop fehlt, lassen wir das Modal selbst den Hintergrund abdunkeln */
-    #teamModal.show {
-      background-color: rgba(0, 0, 0, 0.5) !important;
-    }
-
-    /* Verhindert "Doppel-Grau", falls doch beide da sind */
-    #teamModal.show .modal-backdrop {
-      display: none !important;
-    }
-  </style>
-
-
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <h1 class="h4 mb-3">
@@ -118,11 +67,11 @@
 
         <h5 class="mb-3">Teams</h5>
 
-        <div class="row g-2 mb-3 align-items-end">
+        <div class="row g-2 mb-3 align-items-end d-flex">
           <div class="col-md-7">
             <label class="form-label small text-muted">Bereits vorhandene Teams hinzufügen</label>
             <select id="existingTeamSelect" class="form-select">
-              <option value="">Team auswählen...</option>
+              <option value="">Vorhandenes Team auswählen...</option>
               <% allTeams.forEach(t=> { %>
                 <option value="<%= t.id %>" data-name="<%= t.name %>" data-members="<%= t.mitglieder_ids %>">
                   <%= t.name %>
@@ -130,13 +79,10 @@
                 <% }) %>
             </select>
           </div>
-          <div class="col-md-5 d-flex gap-2">
-            <button type="button" class="btn btn-outline-primary w-100" id="addExistingTeamBtn">
-              <i class="bi bi-plus-lg"></i> Hinzufügen
-            </button>
+          <div class="col-md-5 d-flex gap-2 d-flex justify-content-end">
             <button type="button" id="openCreateTeamModal" data-bs-toggle="modal" data-bs-target="#teamModal"
               class="btn btn-custom-safe">
-              + Team
+              + Neues Team erstellen
             </button>
           </div>
         </div>

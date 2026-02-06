@@ -56,19 +56,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
       teamCard.innerHTML = `
       <div class="card-body p-3">
-          <div class="d-flex justify-content-between align-items-center">
-              <h6 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>${team.name}</h6>
-              <div class="btn-group">
-                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.editChallengeTeam(${index})">
-                      <i class="bi bi-pencil"></i>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="window.removeChallengeTeam(${index})">
-                      <i class="bi bi-trash"></i>
-                  </button>
-              </div>
-          </div>
-          <div class="mt-2">${memberList}</div>
-      </div>`;
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold">
+            <i class="bi bi-people-fill me-2 text-primary"></i>${team.name}
+        </h6>
+        
+        <div class="d-flex gap-1"> 
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.editChallengeTeam(${index})">
+                Bearbeiten
+            </button>
+            <button type="button" class="btn btn-sm btn-custom-delete" onclick="window.removeChallengeTeam(${index})">
+                Löschen
+            </button>
+        </div>
+    </div> <div class="mt-2">${memberList}</div>
+</div>`;
       teamsContainer.appendChild(teamCard);
     });
   }
@@ -115,26 +117,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // === 4. BESTEHENDES TEAM HINZUFÜGEN ===
 
-  const addExistingBtn = document.getElementById('addExistingTeamBtn');
-  if (addExistingBtn) {
-    addExistingBtn.addEventListener('click', function () {
-      const select = document.getElementById('existingTeamSelect');
-      const teamId = select.value;
+  // === 4b. AUTOMATISCHES HINZUFÜGEN BEIM AUSWÄHLEN ===
+  const existingTeamSelect = document.getElementById('existingTeamSelect');
+
+  if (existingTeamSelect) {
+    existingTeamSelect.addEventListener('change', function () {
+      const teamId = this.value;
       if (!teamId) return;
 
-      const teamOption = select.options[select.selectedIndex];
+      const teamOption = this.selectedOptions[0];
       const memberIdsString = teamOption.dataset.members || "";
-      const memberIds = memberIdsString.split(',')
-        .map(id => id.trim())
-        .filter(id => id !== "");
+      const memberIds = memberIdsString.split(',').map(id => id.trim()).filter(id => id !== "");
 
-      // Wichtig: String-Vergleich für IDs sicherstellen
-      const membersObjects = schuelerListe.filter(s => {
-        return memberIds.includes(String(s.id));
-      });
+      const membersObjects = schuelerListe.filter(s => memberIds.includes(String(s.id)));
 
       if (teams.some(t => String(t.id) === `existing-${teamId}`)) {
         alert("Dieses Team ist bereits zugewiesen.");
+        this.value = ''; // Dropdown zurücksetzen
         return;
       }
 
@@ -146,7 +145,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
       renderTeams();
       updateTeamsData();
-      select.value = '';
+
+      this.value = ''; // Dropdown zurücksetzen
     });
   }
 

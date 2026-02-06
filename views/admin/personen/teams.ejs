@@ -1,21 +1,5 @@
 <% pageTitle="Team Übersicht" %>
 
-    <style>
-        /* Die Lebensversicherung: Scrollen immer erlauben und Starre verhindern */
-        body.modal-open {
-            overflow-y: auto !important;
-            padding-right: 0 !important;
-        }
-
-        body {
-            overflow-y: scroll !important;
-        }
-
-        .cursor-pointer {
-            cursor: pointer;
-        }
-    </style>
-
     <div id="schuelerDataContainer" class="d-none" data-schueler='<%= JSON.stringify(schueler) %>'></div>
 
     <div class="d-flex align-items-center justify-content-between mb-3">
