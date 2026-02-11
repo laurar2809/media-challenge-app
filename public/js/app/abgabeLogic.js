@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const filesJsonRaw = pageData.dataset.initialFiles;
     let filesJson = filesJsonRaw ? filesJsonRaw.trim() : '[]';
 
+    const MAX_SIZE = 100 * 1024 * 1024; // 100 MB (passend zu deiner server.js)
+
     try {
         if (filesJson.length > 0 && filesJson !== 'null') {
             initialFiles = JSON.parse(filesJson);
