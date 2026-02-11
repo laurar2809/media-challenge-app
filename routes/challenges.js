@@ -22,6 +22,11 @@ router.get('/', requireAuth, async (req, res) => {
     if (req.currentUser.user_role_id === 1) {
       console.log(`Lade Challenges für Schüler ${req.currentUser.vorname}`);
 
+      // Finde das primäre Team des Schülers (wir nehmen das erste)
+      const userTeamEntry = await req.db('team_mitglieder')
+        .where('user_id', req.currentUser.id)
+        .first();
+
       const userTeams = await req.db('team_mitglieder')
         .where('user_id', req.currentUser.id)
         .pluck('team_id');
@@ -31,12 +36,18 @@ router.get('/', requireAuth, async (req, res) => {
         challenges = await req.db('challenges')
           .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
           .leftJoin('teams', 'challenges.team_id', 'teams.id')
+          .leftJoin('challenge_abgaben', function () {
+            this.on('challenges.id', '=', 'challenge_abgaben.challenge_id')
+              // FIX: Hier nutzen wir die Team-ID des Schülers für den Join
+              .andOn('challenge_abgaben.team_id', '=', req.db.raw('?', [userTeamEntry ? userTeamEntry.team_id : 0]))
+          })
           .whereIn('challenges.team_id', userTeams)
           .select(
             'challenges.*',
             'aufgabenpakete.title as aufgabenpaket_title',
             'aufgabenpakete.kategorie',
-            'teams.name as team_name'
+            'teams.name as team_name',
+            'challenge_abgaben.status as abgabe_status' // Das lädt den Status für das EJS
           )
           .orderBy('challenges.created_at', 'desc');
       }
@@ -143,16 +154,25 @@ router.get('/:id/detail', requireAuth, async (req, res) => {
       return res.redirect('/');
     }
 
+    const userTeamEntry = await req.db('team_mitglieder')
+      .where('user_id', req.currentUser.id)
+      .first();
+
     const challenge = await req.db('challenges')
       .leftJoin('aufgabenpakete', 'challenges.aufgabenpaket_id', 'aufgabenpakete.id')
       .leftJoin('teams', 'challenges.team_id', 'teams.id')
+      .leftJoin('challenge_abgaben', function () {
+        this.on('challenges.id', '=', 'challenge_abgaben.challenge_id')
+          .andOn('challenge_abgaben.team_id', '=', req.db.raw('?', [userTeamEntry ? userTeamEntry.team_id : 0]))
+      })
       .where('challenges.id', req.params.id)
       .select(
         'challenges.*',
         'aufgabenpakete.title as aufgabenpaket_title',
         'aufgabenpakete.description as aufgabenpaket_description',
         'aufgabenpakete.icon as aufgabenpaket_icon',
-        'teams.name as team_name'
+        'teams.name as team_name',
+        'challenge_abgaben.status as abgabe_status'
       )
       .first();
 

@@ -159,13 +159,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function saveAbgabe(status, successMessage) {
-        // Logik zum Speichern der Abgabe
+        // 1. Video-Link aus dem DOM auslesen
+        const videoLinkInput = document.getElementById('videoLink');
+        const videoLinkValue = videoLinkInput ? videoLinkInput.value : null;
+
+        // 2. Daten-Objekt zusammenstellen
         const data = {
             challenge_id: challengeId,
             beschreibung: document.getElementById('abgabeBeschreibung').value,
+            video_link: videoLinkValue, // <--- NEU: Hier wird der Link hinzugefügt
             status: status
         };
 
+        // 3. Fetch-Anfrage an den Server
         fetch('/api/abgaben/save', {
             method: 'POST',
             headers: {
@@ -176,19 +182,26 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    showMessage(' ' + result.message, 'success');
+                    window.showMessage(successMessage || result.message, 'success');
+
+                    // Wenn final eingereicht, nach kurzer Verzögerung umleiten
                     if (status === 'eingereicht') {
                         setTimeout(() => {
                             window.location.href = '/challenges';
                         }, 2000);
+                    } else {
+                        // Bei Entwurf: Seite neu laden, damit die Daten (und der Link) aktuell im EJS landen
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     }
                 } else {
-                    showMessage(' ' + result.error, 'danger');
+                    window.showMessage(' Fehler: ' + result.error, 'danger');
                 }
             })
             .catch(error => {
                 console.error('Save error:', error);
-                showMessage(' Speichern fehlgeschlagen', 'danger');
+                window.showMessage(' Speichern fehlgeschlagen', 'danger');
             });
     }
 

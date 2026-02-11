@@ -10,67 +10,83 @@
 
 
     <!-- Filter und Suchfunktion -->
-      <%- include('../../partials/filter_search', {
+    <%- include('../../partials/filter_search', { showKlasse: false, showSchuljahr: false, showKategorie: false,
+      showSearch: true, // Suche 
+      searchContainerId: 'studentChallengesSearchContainer' ,
+      searchInputId: 'challengesSearchStudent' , searchTerm: '' }) %>
 
-        showKlasse: false,
-        showSchuljahr: false,
-        showKategorie: false,
-        showSearch: true,
 
-        // Suche
-        searchContainerId: 'studentChallengesSearchContainer',
-        searchInputId: 'challengesSearchStudent',
-        searchTerm: ''
-      }) %>
-  
+      <% if (challenges && challenges.length> 0) { %>
+        <div class="row" id="studentChallengesContainer">
+          <% challenges.forEach(challenge=> { %>
+            <div class="col-md-6 mb-4 challenge-card-wrapper">
+              <div class="card h-100 challenge-card" data-title="<%= challenge.title %>"
+                data-team="<%= challenge.team_name || '' %>" data-category="<%= challenge.kategorie || '' %>">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    <%= challenge.title %>
+                  </h5>
 
-        <% if (challenges && challenges.length> 0) { %>
-          <div class="row" id="studentChallengesContainer">
-            <% challenges.forEach(challenge=> { %>
-              <div class="col-md-6 mb-4 challenge-card-wrapper">
-                <div class="card h-100 challenge-card" data-title="<%= challenge.title %>"
-                  data-team="<%= challenge.team_name || '' %>" data-category="<%= challenge.kategorie || '' %>">
-                  <div class="card-body">
-                    <h5 class="card-title">
-                      <%= challenge.title %>
-                    </h5>
+                  <div class="mb-2">
+                    <% if (challenge.abgabe_status==='bewertet' ) { %>
+                      <span class="badge bg-success"><i class="bi bi-check-all me-1"></i> Bewertet</span>
+
+                      <% } else if (challenge.abgabe_status==='abgegeben' ) { %>
+                        <span class="badge bg-warning text-dark"><i class="bi bi-send-check me-1"></i>
+                          Eingereicht</span>
+
+                        <% } else if (challenge.abgabe_status==='abgelehnt' ) { %>
+                          <span class="badge bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>
+                            Überarbeiten</span>
+
+                          <% } else if (challenge.abgabe_status==='entwurf' ) { %>
+                            <span class="badge bg-info text-dark"><i class="bi bi-pencil-square me-1"></i>
+                              Entwurf</span>
+
+                            <% } else { %>
+                              <span class="badge bg-light text-muted border"><i class="bi bi-circle me-1"></i>
+                                Offen</span>
+                              <% } %>
+                  </div>
+
+
+                  <p class="card-text">
+                    <%= challenge.beschreibung %>
+                  </p>
+
+                  <span class="badge bg-secondary mb-2">
+                    <%= challenge.kategorie %>
+                  </span>
+
+                  <% if (challenge.abgabedatum) { %>
                     <p class="card-text">
-                      <%= challenge.beschreibung %>
+                      <small class="text-muted">
+                        Abgabedatum: <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
+                      </small>
                     </p>
+                    <% } %>
+                </div>
 
-                    <span class="badge bg-secondary mb-2">
-                      <%= challenge.kategorie %>
-                    </span>
-
-                    <% if (challenge.abgabedatum) { %>
-                      <p class="card-text">
-                        <small class="text-muted">
-                          Abgabedatum: <%= new Date(challenge.abgabedatum).toLocaleDateString('de-DE') %>
-                        </small>
-                      </p>
-                      <% } %>
-                  </div>
-
-                  <div class="card-footer">
-                    <% if (currentUser && currentUser.user_role_id===1) { %>
-                      <a href="/challenges/<%= challenge.id %>/detail" class="btn btn-sm">
-                        Details
-                      </a>
-                      <% } %>
-                  </div>
+                <div class="card-footer">
+                  <% if (currentUser && currentUser.user_role_id===1) { %>
+                    <a href="/challenges/<%= challenge.id %>/detail" class="btn btn-sm">
+                      Details
+                    </a>
+                    <% } %>
                 </div>
               </div>
-              <% }); %>
-          </div>
-
-          <% } else { %>
-            <div class="alert alert-info">
-              <% if (currentUser && currentUser.user_role_id===1) { %>
-                <h4>Keine Challenges verfügbar</h4>
-                <p>Du hast aktuell keine Challenges zugewiesen bekommen.</p>
-                <% } %>
             </div>
-            <% } %>
+            <% }); %>
+        </div>
+
+        <% } else { %>
+          <div class="alert alert-info">
+            <% if (currentUser && currentUser.user_role_id===1) { %>
+              <h4>Keine Challenges verfügbar</h4>
+              <p>Du hast aktuell keine Challenges zugewiesen bekommen.</p>
+              <% } %>
+          </div>
+          <% } %>
   </div>
 
   <script src="/js/app/schueler/challengesLogic.js"></script>

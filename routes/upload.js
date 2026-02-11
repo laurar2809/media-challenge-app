@@ -242,7 +242,7 @@ router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res)
 // API: Abgabe speichern/einreichen
 router.post('/api/abgaben/save', async (req, res) => {
     try {
-        const { challenge_id, titel, beschreibung, status } = req.body;
+        const { challenge_id, titel, beschreibung, status, video_link } = req.body;
 
         if (!req.currentUser) {
             return res.json({ success: false, error: 'Nicht angemeldet' });
@@ -282,6 +282,7 @@ router.post('/api/abgaben/save', async (req, res) => {
             user_id: req.currentUser.id,
             titel: titel || null,
             beschreibung: beschreibung || null,
+            video_link: video_link || null,
             status: status || 'entwurf',
             updated_at: db.fn.now()
         };
