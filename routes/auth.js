@@ -28,7 +28,9 @@ router.post('/login', async (req, res) => {
         // Nutze LIKE statt exaktem Match, falls der Vorname "Test Schüler" ist
         query = query.where('users.nachname', 'like', '%Test%');
       } else if (quickId === '3') {
-        query = query.where('users.nachname', 'like', '%Nobis%');
+        query = query.where(function() {
+          this.where('users.nachname', 'like', '%Nobis%');
+        });
       }
 
       user = await query.select('users.*', 'user_roles.rolle').first();
