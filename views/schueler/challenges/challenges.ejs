@@ -69,7 +69,7 @@
 
                 <div class="card-footer">
                   <% if (currentUser && currentUser.user_role_id===1) { %>
-                    <a href="/challenges/<%= challenge.id %>/detail" class="btn btn-sm">
+                    <a href="/challenges/<%= challenge.id %>/detail" class="btn btn-custom-details btn-sm">
                       Details
                     </a>
                     <% } %>
@@ -79,7 +79,7 @@
             <% }); %>
         </div>
 
-        <% } else { %>
+        <% } else { %> 
           <div class="alert alert-info">
             <% if (currentUser && currentUser.user_role_id===1) { %>
               <h4>Keine Challenges verfügbar</h4>

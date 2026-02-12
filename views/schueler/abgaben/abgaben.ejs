@@ -61,10 +61,10 @@
                 <% } %>
               </td>
               <td class="text-end">
-                <a href="/challenges/<%= item.challenge_id %>/detail?returnTo=/schueler/abgaben" class="btn btn-sm btn-outline-secondary">
+                <a href="/challenges/<%= item.challenge_id %>/detail?returnTo=/schueler/abgaben" class="btn btn-custom-details btn-sm">
                   Details
                 </a>
-                <a href="/challenges/<%= item.challenge_id %>/abgabe?returnTo=/schueler/abgaben" class="btn btn-sm btn-primary ms-1">
+                <a href="/challenges/<%= item.challenge_id %>/abgabe?returnTo=/schueler/abgaben" class="btn btn-custom-newCategorieChallenge btn-sm ms-1">
                   <% if (item.status === 'eingereicht') { %>
                     Abgabe ansehen
                   <% } else if (item.status === 'bewertet' || item.status === 'abgelehnt') { %>

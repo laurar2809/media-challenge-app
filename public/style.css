@@ -306,8 +306,8 @@ body:not(.modal-open) .modal-backdrop {
 .btn-custom-newCategorieChallenge,
 .btn-custom-safe {
   background-color: #0082ba;
+  border-color: #0082ba;
   color: white;
-  border: none;
   text-decoration: none;
   transition: background-color 0.2s ease;
 }
