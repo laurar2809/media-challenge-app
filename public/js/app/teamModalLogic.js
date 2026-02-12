@@ -92,7 +92,7 @@ class TeamModal {
         if (this.dropZone.querySelector(`[data-id="${s.id}"]`)) return;
 
         const badge = document.createElement('div');
-        badge.className = 'badge bg-primary p-2 m-1 d-flex align-items-center justify-content-between';
+        badge.className = 'badge bg-custom p-2 m-1 d-flex align-items-center justify-content-between';
         badge.style.fontSize = '0.9rem';
         badge.dataset.id = s.id;
         badge.dataset.vorname = s.vorname;

@@ -850,3 +850,8 @@ input.form-control:focus {
   /* Sorgt für die leicht abgerundeten Ecken */
   box-shadow: none !important;
 }
+
+.bg-custom{
+   background-color: #0082ba;   /* deine Farbe */
+    color: white;
+}
