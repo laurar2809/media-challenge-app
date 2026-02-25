@@ -115,6 +115,7 @@ router.get('/:id/teamDetail', requireAuth, requireLehrer, async (req, res) => {
       })
       .where('challenges.team_id', teamId)
       .select(
+        'challenge_abgaben.id as abgabe_id',
         'challenges.id as challenge_id',
         'challenges.abgabedatum as deadline',
         'aufgabenpakete.title',
