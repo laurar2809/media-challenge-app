@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { requireAuth, requireLehrer } = require('../middleware/auth'); // Brauchen wir für die Sicherheit
+const { requireAuth, requireLehrer, requireAdmin } = require('../middleware/auth'); // Brauchen wir für die Sicherheit
 const { db } = require('../db'); // Direkter DB-Import
 
 router.get('/', requireAuth, requireLehrer, async (req, res) => {
@@ -202,7 +202,7 @@ router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
 });
 
 
-router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     const teamId = req.params.id;
     try {
         await db.transaction(async tr => {

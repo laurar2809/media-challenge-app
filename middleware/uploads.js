@@ -44,10 +44,21 @@ const uploadAbgabeStorage = multer.diskStorage({
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext = mime.extension(file.mimetype) || path.extname(file.originalname).slice(1);
+    // 1. Die tatsächliche Endung sicher extrahieren (z.B. "jpg")
+    const extension = mime.extension(file.mimetype) || path.extname(file.originalname).toLowerCase().replace('.', '') || 'bin';
+    
+    // 2. Den Originalnamen OHNE seine Endung nehmen, damit wir sie nicht doppelt haben
+    // Wir löschen alles ab dem letzten Punkt
+    const originalNameWithoutExt = file.originalname.split('.').slice(0, -1).join('.');
+    
+    // 3. Den Namen säubern (Sonderzeichen weg)
+    const sanitizedName = originalNameWithoutExt.replace(/[^a-zA-Z0-9._-]/g, '_');
+    
+    // 4. Eindeutigen Zeitstempel generieren
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, `abgabe-${unique}-${sanitizedName.substring(0, 50)}.${ext}`);
+    
+    // 5. Finalen Namen zusammenbauen: Nur EINE Endung am Ende!
+    cb(null, `abgabe-${unique}-${sanitizedName.substring(0, 50)}.${extension}`);
   }
 });
 

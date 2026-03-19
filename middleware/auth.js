@@ -1,4 +1,4 @@
-// middleware/auth.js - KOMPLETT KORRIGIERT
+// middleware/auth.js 
 const mockUsers = {
   1: { id: 1, vorname: "Max Schüler", user_role_id: 1, rolle: "Schüler" },
   2: { id: 2, vorname: "Lisa Lehrer", user_role_id: 2, rolle: "Lehrer" },
