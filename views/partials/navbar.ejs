@@ -14,7 +14,7 @@
     <!-- NAVIGATION (jetzt als Collapse) -->
     <div class="collapse navbar-collapse" id="navbarContent">
       <!-- LINKS daneben: Navigation -->
-      <ul class="navbar-nav me-auto d-flex flex-row gap-3">
+      <ul class="navbar-nav me-auto flex-column flex-lg-row gap-2 gap-lg-3">
         <% if (currentUser && currentUser.user_role_id !== 1) { %>
           <li class="nav-item">
             <a class="nav-link <%= activePage === 'kategorien' ? 'active' : '' %>" href="/">Kategorien</a>

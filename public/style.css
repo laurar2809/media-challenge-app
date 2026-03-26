@@ -63,6 +63,25 @@ table th {
   text-decoration: none;
 }
 
+@media (max-width: 991px) {
+  .navbar-nav .nav-link.active {
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  .navbar-nav .nav-link.active::after {
+    display: none; /* Unterstrich entfernen */
+  }
+}
+
+@media (max-width: 768px) {
+  table td:last-child .btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+}
+
 /*--------------------------------------
   Navbar Layout: Links – Mitte – Rechts
 --------------------------------------*/
@@ -741,9 +760,6 @@ input.form-control:focus {
   min-width: 200px;
 }
 
-.nowrap-column {
-  white-space: nowrap;
-}
 
 /*--------------------------------------
   Abgaben & Team
