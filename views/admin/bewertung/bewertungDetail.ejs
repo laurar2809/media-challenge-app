@@ -14,9 +14,8 @@
           </span>
         </div>
       </div>
-      <% 
-        const backUrl=(typeof fromTeam
-        !=='undefined' && fromTeam) ? `/teams/${fromTeam}/teamDetail` : '/bewertung' ; %>
+      <% const backUrl=(typeof fromTeam !=='undefined' && fromTeam) ? `/teams/${fromTeam}/teamDetail` : '/bewertung' ;
+        %>
 
         <a href="<%= backUrl %>" class="btn btn-outline-secondary">
           <i class="bi bi-arrow-left"></i> Zurück
@@ -79,10 +78,10 @@
           </div>
           <div class="card-body">
 
-              
+
             <div id="mediaGallery" class="row g-3">
 
-            
+
 
 
               <% if (abgabe.video_link) { %>
@@ -129,7 +128,7 @@
                 </div>
                 <% } %>
 
-                  <% if (medien && medien.length===0) { %>
+                  <% if ((!medien || medien.length===0) && !abgabe.video_link) { %>
                     <div class="col-12 text-center py-5 text-muted">
                       <i class="bi bi-exclamation-triangle display-6"></i>
                       <p class="mt-2">Keine Mediendateien zu dieser Abgabe gefunden.</p>
@@ -186,7 +185,7 @@
             </div>
 
             <hr>
-            
+
           </div>
         </div>
 
@@ -204,7 +203,7 @@
 
             <form action="/bewertung/<%= abgabe.id %>" method="POST">
               <div class="mb-3">
-                <label for="punkte" class="form-label">Punktzahl</label>
+                <label for="punkte" class="form-label">Punktzahl (0 - 100)</label>
                 <input type="number" class="form-control" id="punkte" name="punkte" min="0" max="100"
                   value="<%= bewertung && bewertung.punkte ? bewertung.punkte : '' %>">
               </div>
