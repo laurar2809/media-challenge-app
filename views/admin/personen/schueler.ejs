@@ -2,7 +2,9 @@
 
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h2 class="h4 m-0">Schüler</h2>
+   <% if (currentUser && currentUser.user_role_id === 3) { %>
   <a href="/schueler/new" class="btn btn-custom-newCategorieChallenge btn-sm">+ Neuer Schüler</a>
+  <%}%>
 </div>
 
   
@@ -72,11 +74,14 @@
               <%= schueler.schuljahr_name || 'Kein Schuljahr' %>
             </td> -->
             <td class="text-end nowrap-column">
+               <% if (currentUser && currentUser.user_role_id === 3) { %>
               <a href="/schueler/<%= schueler.id %>/edit"
                  class="btn btn-outline-secondary btn-custom-edit btn-sm">Bearbeiten</a>
-              <button type="button" class="btn btn-outline-danger btn-custom-delete btn-sm"
+             
+                 <button type="button" class="btn btn-outline-danger btn-custom-delete btn-sm"
                       data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"
                       data-id="<%= schueler.id %>">Löschen</button>
+              <%}%>
             </td>
           </tr>
         <% }) %>
@@ -84,13 +89,15 @@
     </tbody>
   </table>
 
+
+  <% if (currentUser && currentUser.user_role_id === 3) { %>
   <%- include('../../partials/deleteModal', {
     modalId: 'confirmDeleteModal',
     formId: 'deleteConfirmForm',
     submitButtonId: 'confirmDeleteSubmit',
     title: 'Schüler löschen',
     bodyText: 'Bist du sicher, dass du diesen Schüler löschen möchtest?'
-  }) %>
+  }) %><%}%>
 </div>
 
 <script src="/js/app/utils/filterUtils.js"></script>

@@ -112,6 +112,7 @@ router.get('/', requireLehrer, async (req, res) => {
 router.get('/:id', requireLehrer, async (req, res) => {
     try {
         const abgabeId = req.params.id;
+        const fromTeam = req.query.fromTeam;
 
         // 1. Abgabe, Challenge und Team-Infos laden (Joins ergänzen, falls nötig)
         const abgabe = await db('challenge_abgaben')
@@ -149,6 +150,7 @@ router.get('/:id', requireLehrer, async (req, res) => {
             medien,
             bewertung: bewertung || null,
             teamMitglieder,
+            fromTeam,
             activePage: 'bewertung'
         });
     } catch (error) {
@@ -221,7 +223,10 @@ router.post('/:id', requireAuth, requireLehrer, async (req, res) => {
 
         await trx.commit();
         req.flash('success', ` Abgabe ${abgabeId} erfolgreich als '${status}' markiert.`);
-        res.redirect('/bewertung');
+        
+        const fromTeam = req.query.fromTeam;
+        const redirectUrl = fromTeam ? `/teams/${fromTeam}/teamDetail` : '/bewertung';
+        res.redirect(redirectUrl);
 
     } catch (error) {
         await trx.rollback();

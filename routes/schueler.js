@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { requireAuth, requireLehrer } = require('../middleware/auth');
+const { requireAuth, requireLehrer, requireAdmin } = require('../middleware/auth');
 
 // Schüler Übersicht mit Filterung - VOLLSTÄNDIG KORRIGIERT
 router.get('/', requireAuth, requireLehrer, async (req, res) => {
@@ -223,7 +223,7 @@ router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
 
 // routes/schueler.js - Fügen Sie DIESEN BLOCK hinzu oder überprüfen Sie ihn
 
-router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     const userId = req.params.id;
     const trx = await db.transaction();
 

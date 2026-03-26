@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { requireAuth, requireLehrer } = require('../middleware/auth');
+const { requireAuth, requireLehrer, requireAdmin } = require('../middleware/auth');
 const { deleteFile } = require('../utils/fileHandler');
 const { deleteImageFile } = require('../utils/fileHandler'); // Sicherstellen, dass deleteFile/deleteImageFile verfügbar ist
 
@@ -569,7 +569,7 @@ router.post('/test-form', async (req, res) => {
 });
 
 // DELETE /challenges/:id (Challenge löschen)
-router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const challengeId = parseInt(req.params.id);
   const trx = await db.transaction();
 

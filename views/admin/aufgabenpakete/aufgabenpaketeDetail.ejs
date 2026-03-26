@@ -84,11 +84,11 @@
       <button type="button" class="btn btn-custom-delete btn-sm px-3" 
               data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
         Löschen
-      </button>
+      </button> 
     </div>
   </div>
 
-
+  
 <%- include('../../partials/deleteModal', {
   modalId: 'confirmDeleteModal',
   formId: 'deleteConfirmForm',
@@ -96,3 +96,5 @@
   title: 'Aufgabenpaket löschen',
   bodyText: 'Bist du sicher, dass du dieses Aufgabenpaket löschen möchtest?'
 }) %>
+
+

@@ -68,7 +68,7 @@ async function init() {
       console.log('Categories-Tabelle fehlt. Bitte manuell erstellen.');
     }
     if (!challengesExists) {
-      console.log('ℹAufgabenpakete-Tabelle fehlt. Bitte manuell erstellen.');
+      console.log('Aufgabenpakete-Tabelle fehlt. Bitte manuell erstellen.');
     }
     
   } catch (error) {

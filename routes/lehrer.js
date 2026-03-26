@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { db } = require('../db');
-const { requireAuth, requireLehrer } = require('../middleware/auth');
+const { requireAuth, requireLehrer, requireAdmin } = require('../middleware/auth');
 
 // Lehrer Übersicht - NUR Vorname und Nachname
 router.get('/', requireAuth, requireLehrer, async (req, res) => {
@@ -139,7 +139,7 @@ router.put('/:id', requireAuth, requireLehrer, async (req, res) => {
 });
 
 // Lehrer löschen
-router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   await db('users')
     .where({
       id: req.params.id,

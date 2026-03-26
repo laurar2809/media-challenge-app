@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db } = require('../db');
 const { uploadCategory } = require('../middleware/uploads');
-const { requireAuth, requireLehrer} =require('../middleware/auth');
+const { requireAuth, requireLehrer,requireAdmin} =require('../middleware/auth');
 
 // Kategorien Übersicht (Homepage)
 // Wird bereits in routes/index.js behandelt
@@ -74,7 +74,7 @@ router.put('/:id',requireAuth, requireLehrer, uploadCategory.single('iconFile'),
 });
 
 // Kategorie löschen
-router.delete('/:id', requireAuth, requireLehrer, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   const item = await db('categories').where({ id: req.params.id }).first();
   if (item && res.locals.isUploadPath(item.icon)) {
     // try to remove uploaded file

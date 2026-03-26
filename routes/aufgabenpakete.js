@@ -4,7 +4,7 @@ const { db } = require('../db');
 const { uploadAufgabenpaket } = require('../middleware/uploads');
 const fs = require('fs').promises;
 const path = require('path');
-const { requireAuth, requireLehrer } = require('../middleware/auth');
+const { requireAuth, requireLehrer,requireAdmin } = require('../middleware/auth');
 
 // Aufgabenpakete Übersicht mit Filterung
 router.get('/',  requireAuth, requireLehrer, async (req, res) => {
@@ -200,7 +200,7 @@ router.put('/:id',  requireAuth, requireLehrer, uploadAufgabenpaket.single('icon
 });
 
 // Aufgabenpaket löschen
-router.delete('/:id',  requireAuth, requireLehrer, async (req, res) => {
+router.delete('/:id',  requireAuth, requireAdmin, async (req, res) => {
   try {
     const aufgabenpaketId = parseInt(req.params.id);
     const aufgabenpaketToDelete = await db('aufgabenpakete').where({ id: aufgabenpaketId }).first();

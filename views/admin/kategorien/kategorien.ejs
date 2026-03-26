@@ -10,7 +10,9 @@
         </th>
       </table>
     </div>
+     <% if (currentUser && currentUser.user_role_id === 3) { %>
     <a href="/kategorien/new" class="btn btn-custom-newCategorieChallenge btn-sm">+ Neue Kategorie</a>
+      <%}%>
   </div>
 
   <div class="table-responsive">
@@ -20,7 +22,9 @@
           <th class="text-center" scope="col">Icon</th>
           <th scope="col">Name</th>
           <th scope="col">Beschreibung</th>
+           <% if (currentUser && currentUser.user_role_id === 3) { %>
           <th scope="col" class="text-end">Aktionen</th>
+          <%}%>
         </tr>
       </thead>
       <tbody>
@@ -50,6 +54,7 @@
                   <%= item.description %>
                 </td>
                 <td class="text-end">
+                   <% if (currentUser && currentUser.user_role_id === 3) { %>
                   <a href="/kategorien/<%= item.id %>/edit"
                     class="btn btn-sm btn-outline-secondary btn-custom-edit">Bearbeiten</a>
 
@@ -59,6 +64,7 @@
                       Löschen
                     </button>
                   </form>
+                  <%}%>
                 </td>
               </tr>
               <% }) %>
