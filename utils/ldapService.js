@@ -40,13 +40,13 @@ async function getLdapData() {
             if (isLehrer) {
               if (!allGroupsData["_LehrerImport"]) allGroupsData["_LehrerImport"] = [];
 
-              // Korrektur: Wir gehen davon aus, dass im LDAP "Nachname Vorname" steht
+              // Korrektur: Wir gehen davon aus, dass im LDAP "Vorname Nachname" steht
               const nameParts = fullName.split(' ');
               allGroupsData["_LehrerImport"].push({
                 fullName,
                 username: username.toLowerCase(),
-                nachname: nameParts[0] || fullName, // Erster Teil ist meist Nachname
-                vorname: nameParts[1] || "",        // Zweiter Teil Vorname
+                nachname: nameParts[0] || fullName, 
+                vorname: nameParts[1] || "",        
                 roleId: 2
               });
             }
