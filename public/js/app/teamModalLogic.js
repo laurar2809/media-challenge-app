@@ -30,7 +30,7 @@ class TeamModal {
             this.renderAvailable();
         });
         
-        // Speichern-Button & Cleanup (bleibt gleich wie in deinem Code...)
+        // Speichern-Button & Cleanup (bleibt gleich wie im Code...)
         this.submitBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleSave();
