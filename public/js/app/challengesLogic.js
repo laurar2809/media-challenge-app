@@ -24,7 +24,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Filter bei Änderung
     kategorienFilter.addEventListener('change', () => applyFilters());
-    schuljahrFilter.addEventListener('change', () => applyFilters());
+    schuljahrFilter.addEventListener('change', function() {
+    const ausgewähltesSchuljahr = this.value;
+    // Lädt die Seite neu und hängt das gewählte Schuljahr als Query-Parameter an die URL an
+    window.location.href = window.location.pathname + '?schuljahr=' + encodeURIComponent(ausgewähltesSchuljahr);
+});
 
     // NEU: Suche über FilterUtils
     FilterUtils.initSearchWithBadge({

@@ -10,13 +10,23 @@ const { deleteImageFile } = require('../utils/fileHandler'); // Sicherstellen, d
 // =========================================================
 // HAUPTANSICHT: /challenges (Abgesichert für alle)
 // =========================================================
+
+
+
+
 // HAUPTANSICHT: /challenges
 router.get('/', requireAuth, async (req, res) => {
   try {
     const { kategorie, search, schuljahr } = req.query;
     const activeKategorie = kategorie || 'alle';
-    const activeSchuljahr = schuljahr || 'alle';
     const searchTerm = search || '';
+
+    const dbAktivesSchuljahr = await req.db('schuljahre').where('aktiv', 1).first();
+    const aktivesSchuljahrName = dbAktivesSchuljahr ? dbAktivesSchuljahr.name : 'alle';
+
+    // 2. Wenn in der URL 'schuljahr' steht, nimm das. Wenn die URL leer ist (Erstaufruf), nimm das aktive Schuljahr.
+    // WICHTIG: Wenn der Lehrer im Dropdown "alle" wählt, steht 'alle' in req.query.schuljahr, das müssen wir erlauben!
+    const activeSchuljahr = req.query.schuljahr !== undefined ? req.query.schuljahr : aktivesSchuljahrName;
 
     // 1. ROLLENPRÜFUNG: SCHÜLER
     if (req.currentUser.user_role_id === 1) {
@@ -84,11 +94,9 @@ router.get('/', requireAuth, async (req, res) => {
         .leftJoin('team_mitglieder', 'teams.id', 'team_mitglieder.team_id')
         .leftJoin('users as m', 'team_mitglieder.user_id', 'm.id');
 
-      // Filter anwenden (Nur filtern, wenn nicht 'alle' gewählt ist)
-      if (activeSchuljahr !== 'alle') {
+      if (activeSchuljahr && activeSchuljahr !== 'alle') {
         challengesQuery = challengesQuery.where('schuljahre.name', activeSchuljahr);
       }
-
       // WICHTIG: Schuljahr-Fix für Lehrer (Falls Lehrer kein Schuljahr im Profil hat)
       if (req.currentUser.schuljahr_id && activeSchuljahr === 'alle') {
         // Optional: Lehrer sieht standardmäßig nur sein aktuelles Schuljahr
@@ -145,6 +153,10 @@ router.get('/', requireAuth, async (req, res) => {
     res.status(500).send('Server Fehler beim Laden der Challenges');
   }
 });
+
+
+
+
 
 // in challenges.js mit Rollencheck
 router.get('/:id/detail', requireAuth, async (req, res) => {
@@ -212,10 +224,12 @@ router.get('/:id/detail', requireAuth, async (req, res) => {
 
 
 
-// Neue Challenge Formular
+// Neue Challenge erstellen - Formular
 router.get('/new', requireAuth, requireLehrer, async (req, res) => {
   try {
-    const aufgabenpakete = await db('aufgabenpakete').select('*').orderBy('title', 'asc');
+    const aufgabenpakete = await db('aufgabenpakete')
+      .select('*')
+      .orderBy('title', 'asc');
 
     const schueler = await db('users')
       .where('user_role_id', 1)
@@ -581,27 +595,19 @@ router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
       req.flash('error', 'Challenge nicht gefunden.');
       return res.redirect('/challenges');
     }
-
     const teamId = challenge.team_id;
-
-    // 1. Abgaben finden, um deren Medienpfade zu erhalten
     const abgaben = await trx('challenge_abgaben')
       .where('challenge_id', challengeId)
       .select('id');
-
     const abgabeIds = abgaben.map(a => a.id);
 
-    // 2. Mediendateien und DB-Einträge der Abgaben löschen
     if (abgabeIds.length > 0) {
-      // Finde ALLE Medienpfade VOR dem Löschen der DB-Referenzen
       const mediaPaths = await trx('abgabe_medien')
         .whereIn('abgabe_id', abgabeIds)
-        .pluck('datei_pfad'); // Verwende den Pfad, den Sie in abgabe_medien speichern
+        .pluck('datei_pfad'); 
 
-      //  LÖSCHEN DER DATEIEN VOM DATEISYSTEM
       mediaPaths.forEach(path => deleteFile(path));
 
-      // DB-Einträge der Abgaben und Abhängigkeiten löschen
       await trx('abgabe_bewertungen').whereIn('abgabe_id', abgabeIds).del();
       await trx('abgabe_medien').whereIn('abgabe_id', abgabeIds).del();
       await trx('challenge_abgaben').where('challenge_id', challengeId).del();

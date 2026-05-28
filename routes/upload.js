@@ -169,27 +169,23 @@ router.post('/api/abgaben/upload', uploadAbgabe.single('file'), async (req, res)
         }
 
 
-        // 4a. PFADE DEFINIEREN (Dynamische Ordnerstruktur)
+
         const currentPath = req.file.path;
-
-        // Ziel: /uploads/abgaben/2025-2026/team-15
         const newRelativeDir = `/uploads/abgaben/${safeSchuljahrName}/team-${challenge.team_id}`;
-
-
         const newFullPath = path.join(__dirname, '..', 'public', newRelativeDir, req.file.filename);
-        const newDbPath = `${newRelativeDir}/${req.file.filename}`; // Der Pfad für die Datenbank
-
-        // 4b. ZIELORDNER ERSTELLEN
+        
+        const newDbPath = `${newRelativeDir}/${req.file.filename}`;
         const targetDir = path.join(__dirname, '..', 'public', newRelativeDir);
         await fs.mkdir(targetDir, { recursive: true });
 
-        // 4c. DATEI VERSCHIEBEN
         try {
+
             await fs.rename(currentPath, newFullPath);
+
             console.log(`Datei erfolgreich verschoben nach ${newFullPath}`);
         } catch (error) {
             console.error(`FEHLER beim Verschieben der Datei: ${error.message}`);
-            throw error; // Wirf den Fehler weiter, um den globalen catch zu erreichen
+            throw error; 
         }
 
         // 4d. Datei in Datenbank speichern

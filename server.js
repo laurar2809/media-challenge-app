@@ -106,24 +106,9 @@ app.use('/teams', require('./routes/teams'));
 app.use('/', require('./routes/upload'));
 app.use('/bewertung', require('./routes/bewertung'));
 
-// ========== NUR EIN 404 HANDLER ==========
-app.use((req, res) => {
-  console.log('404 für:', req.method, req.originalUrl);
-  res.status(404).render('404', {
-    title: 'Seite nicht gefunden',
-    activePage: ''
-  });
-});
 
-// ========== NUR EIN ERROR HANDLER ==========
-app.use((err, req, res, next) => {
-  console.error('Server Error:', err);
-  res.status(500).render('500', {
-    title: 'Server Fehler',
-    activePage: '',
-    error: process.env.NODE_ENV === 'development' ? err : {}
-  });
-});
+
+
 
 // Server starten
 init().then(() => {
@@ -135,4 +120,25 @@ init().then(() => {
 }).catch((err) => {
   console.error('DB init error:', err);
   process.exit(1);
+});
+
+
+// ========== NUR EIN 404 HANDLER ==========
+app.use((req, res) => {
+  console.log('404 für:', req.method, req.originalUrl);
+  res.status(404).render('404', {
+    title: 'Seite nicht gefunden',
+    activePage: ''
+  });
+});
+
+
+// ========== NUR EIN ERROR HANDLER ==========
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).render('500', {
+    title: 'Server Fehler',
+    activePage: '',
+    error: process.env.NODE_ENV === 'development' ? err : {}
+  });
 });

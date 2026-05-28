@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { db } = require('../db');
 const { uploadCategory } = require('../middleware/uploads');
-const { requireAuth, requireLehrer,requireAdmin} =require('../middleware/auth');
+const { requireAuth, requireLehrer, requireAdmin } = require('../middleware/auth');
 
 // Kategorien Übersicht (Homepage)
 // Wird bereits in routes/index.js behandelt
@@ -56,7 +56,7 @@ router.get('/:id/edit', requireAuth, requireLehrer, async (req, res) => {
 });
 
 // Kategorie aktualisieren
-router.put('/:id',requireAuth, requireLehrer, uploadCategory.single('iconFile'), async (req, res) => {
+router.put('/:id', requireAuth, requireLehrer, uploadCategory.single('iconFile'), async (req, res) => {
   let { title, description, icon } = req.body;
   const currentItem = await db('categories').where({ id: req.params.id }).first();
   if (!req.file) icon = currentItem.icon;
@@ -74,16 +74,43 @@ router.put('/:id',requireAuth, requireLehrer, uploadCategory.single('iconFile'),
 });
 
 // Kategorie löschen
+// router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
+//   const item = await db('categories').where({ id: req.params.id }).first();
+//   if (item && res.locals.isUploadPath(item.icon)) {
+//     // try to remove uploaded file
+//     const filePath = path.join(__dirname, '../public', item.icon);
+//     fs.unlink(filePath, () => { });
+//   }
+//   await db('categories').where({ id: req.params.id }).del();
+//   req.flash('success', 'Kategorie gelöscht.');
+//   res.redirect('/');
+// });
+
+
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
-  const item = await db('categories').where({ id: req.params.id }).first();
-  if (item && res.locals.isUploadPath(item.icon)) {
-    // try to remove uploaded file
-    const filePath = path.join(__dirname, '../public', item.icon);
-    fs.unlink(filePath, () => { });
+  try {
+
+    const item = await db('categories').where({ id: req.params.id }).first();
+    if (!item) {
+      req.flash('error', 'Kategorie existiert nicht.');
+      return res.redirect('/');
+    }
+    if (res.locals.isUploadPath(item.icon)) {
+      const filePath = path.join(__dirname, '../public', item.icon);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error(`Fehler beim Löschen der Datei: ${err.message}`);
+      });
+    }
+    await db('categories').where({ id: req.params.id }).del();
+    req.flash('success', 'Kategorie gelöscht.');
+    res.redirect('/');
+
+  } catch (error) {
+    console.error(`Fehler im Delete-Router: ${error.message}`);
+    req.flash('error', 'Kategorie konnte nicht gelöscht werden.');
+    res.redirect('/');
   }
-  await db('categories').where({ id: req.params.id }).del();
-  req.flash('success', 'Kategorie gelöscht.');
-  res.redirect('/');
 });
+
 
 module.exports = router;
